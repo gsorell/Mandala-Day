@@ -29,7 +29,7 @@ const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused
   <Text
     style={[
       styles.tabIcon,
-      { color: focused ? colors.primary : colors.textMuted },
+      { color: focused ? colors.primary : colors.textTertiary },
     ]}
   >
     {label === 'Today' ? '◉' : label === 'History' ? '◷' : '⚙'}
@@ -43,7 +43,7 @@ const MainTabs: React.FC = () => {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: styles.tabLabel,
       }}
     >
@@ -177,17 +177,18 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   tabBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
+    backgroundColor: colors.ritualSurface,
+    borderTopColor: colors.charcoal,
     borderTopWidth: 1,
-    height: 60,
-    paddingBottom: 8,
-    paddingTop: 8,
+    height: 70,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   tabLabel: {
     fontSize: typography.fontSizes.xs,
+    marginTop: 4,
   },
   tabIcon: {
-    fontSize: 24,
+    fontSize: 22,
   },
 });
