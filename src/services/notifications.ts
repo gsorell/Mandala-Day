@@ -70,14 +70,23 @@ export const scheduleSessionNotification = async (
 
     const scheduledHour = scheduledTime.getHours();
     const scheduledMin = scheduledTime.getMinutes();
+    const scheduledTimeInMin = scheduledHour * 60 + scheduledMin;
+    const quietStartInMin = quietStartHour * 60 + quietStartMin;
+    const quietEndInMin = quietEndHour * 60 + quietEndMin;
 
-    const isInQuietHours =
-      (scheduledHour > quietStartHour ||
-        (scheduledHour === quietStartHour && scheduledMin >= quietStartMin)) ||
-      (scheduledHour < quietEndHour ||
-        (scheduledHour === quietEndHour && scheduledMin <= quietEndMin));
+    let isInQuietHours = false;
+    
+    // Handle quiet hours that span across midnight
+    if (quietStartInMin > quietEndInMin) {
+      // Quiet hours like 22:00 to 07:00
+      isInQuietHours = scheduledTimeInMin >= quietStartInMin || scheduledTimeInMin <= quietEndInMin;
+    } else {
+      // Normal quiet hours like 13:00 to 14:00
+      isInQuietHours = scheduledTimeInMin >= quietStartInMin && scheduledTimeInMin <= quietEndInMin;
+    }
 
     if (isInQuietHours) {
+      console.log(`Notification for ${session.title} skipped - in quiet hours`);
       return null;
     }
   }
@@ -97,6 +106,7 @@ export const scheduleSessionNotification = async (
       },
     });
 
+    console.log(`Scheduled notification for "${session.title}" at ${scheduledTime.toLocaleString()}`);
     return identifier;
   } catch (error) {
     console.error('Error scheduling notification:', error);
@@ -119,13 +129,22 @@ export const scheduleAllSessionNotifications = async (
   instances: DailySessionInstance[],
   schedule: UserSchedule
 ): Promise<void> => {
+  console.log(`Scheduling notifications for ${instances.length} sessions...`);
+  
   // Cancel existing notifications first
   await cancelAllNotifications();
+  console.log('Cancelled all existing notifications');
 
+  let scheduledCount = 0;
   // Schedule new notifications
   for (const instance of instances) {
-    await scheduleSessionNotification(instance, schedule);
+    const identifier = await scheduleSessionNotification(instance, schedule);
+    if (identifier) {
+      scheduledCount++;
+    }
   }
+  
+  console.log(`Successfully scheduled ${scheduledCount} notifications`);
 };
 
 // Get all pending notifications

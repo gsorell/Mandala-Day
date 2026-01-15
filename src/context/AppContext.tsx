@@ -133,8 +133,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const newSchedule = { ...userSchedule, ...schedule };
       setUserSchedule(newSchedule);
       await saveUserSchedule(newSchedule);
+      
+      // Refresh today's instances to reflect the new schedule
+      await refreshTodayInstances();
     },
-    [userSchedule]
+    [userSchedule, refreshTodayInstances]
   );
 
   const updateAppSettingsAction = useCallback(

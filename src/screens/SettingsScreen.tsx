@@ -8,6 +8,7 @@ import {
   Switch,
   SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,12 +16,14 @@ import { useApp } from '../context/AppContext';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList } from '../types';
 import { clearAllData } from '../services/storage';
+import { debugNotifications } from '../utils/notificationDebug';
+import { scheduleAllSessionNotifications } from '../services/notifications';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { appSettings, updateAppSettings } = useApp();
+  const { appSettings, updateAppSettings, userSchedule, todayInstances } = useApp();
 
   const handleResetApp = () => {
     Alert.alert(
@@ -40,6 +43,36 @@ export const SettingsScreen: React.FC = () => {
           },
         },
       ]
+    );
+  };
+
+  const handleDebugNotifications = async () => {
+    const result = await debugNotifications();
+    
+    Alert.alert(
+      'Notification Debug Info',
+      `Permission: ${result.permissionStatus}\nScheduled: ${result.scheduledCount} notifications\n\nCheck console for details.`,
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleRescheduleNotifications = async () => {
+    if (!userSchedule || !todayInstances.length) {
+      Alert.alert(
+        'Cannot Reschedule',
+        'No sessions available to schedule notifications for.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    await scheduleAllSessionNotifications(todayInstances, userSchedule);
+    const result = await debugNotifications();
+    
+    Alert.alert(
+      'Notifications Rescheduled',
+      `Successfully scheduled ${result.scheduledCount} notifications for today's sessions.`,
+      [{ text: 'OK' }]
     );
   };
 
@@ -76,6 +109,22 @@ export const SettingsScreen: React.FC = () => {
               thumbColor={colors.white}
             />
           </View>
+          {Platform.OS !== 'web' && (
+            <>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleRescheduleNotifications}
+              >
+                <Text style={styles.menuItemText}>Reschedule Notifications</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleDebugNotifications}
+              >
+                <Text style={styles.menuItemText}>Debug Notifications</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <View style={styles.section}>
