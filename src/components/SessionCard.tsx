@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    justifyContent: 'flex-start',
   },
   button: {
     paddingHorizontal: spacing.lg,
