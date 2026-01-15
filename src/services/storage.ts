@@ -166,8 +166,9 @@ export const generateDailyInstances = (
       const time = schedule.sessionTimes[session.id] || session.defaultTime;
       const [hours, minutes] = time.split(':').map(Number);
 
-      const scheduledAt = new Date(date);
-      scheduledAt.setHours(hours, minutes, 0, 0);
+      // Parse the date string properly to avoid timezone issues
+      const [year, month, day] = date.split('-').map(Number);
+      const scheduledAt = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
       instances.push({
         id: `${date}_${session.id}`,

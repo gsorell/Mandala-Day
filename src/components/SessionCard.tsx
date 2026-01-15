@@ -97,26 +97,28 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
 
-          {canSnooze && instance.status === SessionStatus.DUE && (
-            <View style={styles.snoozeContainer}>
-              {snoozeOptions.map((minutes) => (
-                <TouchableOpacity
-                  key={minutes}
-                  style={styles.snoozeButton}
-                  onPress={() => onSnooze(minutes)}
-                >
-                  <Text style={styles.snoozeText}>+{minutes}m</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <View style={styles.rightActions}>
+            {canSnooze && instance.status === SessionStatus.DUE && (
+              <View style={styles.snoozeContainer}>
+                {snoozeOptions.map((minutes) => (
+                  <TouchableOpacity
+                    key={minutes}
+                    style={styles.snoozeButton}
+                    onPress={() => onSnooze(minutes)}
+                  >
+                    <Text style={styles.snoozeText}>+{minutes}m</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
-          <TouchableOpacity
-            style={[styles.button, styles.buttonPrimary]}
-            onPress={onStart}
-          >
-            <Text style={styles.buttonTextPrimary}>Begin</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={onStart}
+            >
+              <Text style={styles.buttonTextPrimary}>Begin</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -218,9 +220,12 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
-    justifyContent: 'flex-end',
   },
   button: {
     paddingHorizontal: spacing.lg,
@@ -250,8 +255,8 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.sm,
   },
   skipButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
+    marginLeft: spacing.sm,
   },
   skipText: {
     color: colors.textMuted,

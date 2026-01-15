@@ -63,7 +63,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAppSettings(settings);
 
         const today = format(new Date(), 'yyyy-MM-dd');
-        const instances = await getDailyInstances(today);
+        
+        const { generateDailyInstances, saveDailyInstances, getDailyInstances } = await import('../services/storage');
+        let instances = await getDailyInstances(today);
+        
+        // Check if instances' scheduledAt times are actually for today
+        if (instances.length > 0) {
+          const firstScheduledDate = format(new Date(instances[0].scheduledAt), 'yyyy-MM-dd');
+          if (firstScheduledDate !== today) {
+            // Generate fresh instances for today
+            instances = generateDailyInstances(today, schedule);
+            await saveDailyInstances(today, instances);
+          }
+        }
+        
         setTodayInstances(instances);
       } catch (error) {
         console.error('Error loading initial data:', error);
