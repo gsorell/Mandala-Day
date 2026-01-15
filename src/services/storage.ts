@@ -1,0 +1,235 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  UserSchedule,
+  AppSettings,
+  DailySessionInstance,
+  EventLog,
+  SessionStatus,
+} from '../types';
+import { DEFAULT_SESSIONS } from '../data/sessions';
+import {
+  STORAGE_KEYS,
+  DEFAULT_SCHEDULE_TIMES,
+  DEFAULT_SNOOZE_OPTIONS,
+  DEFAULT_GRACE_WINDOW,
+} from '../utils/theme';
+import { format, parseISO, isToday, startOfDay, addMinutes } from 'date-fns';
+
+// Default user schedule
+const getDefaultUserSchedule = (): UserSchedule => ({
+  sessionTimes: { ...DEFAULT_SCHEDULE_TIMES },
+  enabledSessions: DEFAULT_SESSIONS.reduce(
+    (acc, session) => ({ ...acc, [session.id]: true }),
+    {} as Record<string, boolean>
+  ),
+  quietHours: {
+    start: '22:00',
+    end: '07:00',
+    enabled: false,
+  },
+  snoozeOptionsMin: DEFAULT_SNOOZE_OPTIONS,
+  graceWindowMin: DEFAULT_GRACE_WINDOW,
+});
+
+// Default app settings
+const getDefaultAppSettings = (): AppSettings => ({
+  hasCompletedOnboarding: false,
+  notificationsEnabled: true,
+  weekendScheduleEnabled: false,
+});
+
+// User Schedule
+export const getUserSchedule = async (): Promise<UserSchedule> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.USER_SCHEDULE);
+    if (data) {
+      return { ...getDefaultUserSchedule(), ...JSON.parse(data) };
+    }
+    return getDefaultUserSchedule();
+  } catch (error) {
+    console.error('Error loading user schedule:', error);
+    return getDefaultUserSchedule();
+  }
+};
+
+export const saveUserSchedule = async (schedule: UserSchedule): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_SCHEDULE, JSON.stringify(schedule));
+  } catch (error) {
+    console.error('Error saving user schedule:', error);
+  }
+};
+
+// App Settings
+export const getAppSettings = async (): Promise<AppSettings> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.APP_SETTINGS);
+    if (data) {
+      return { ...getDefaultAppSettings(), ...JSON.parse(data) };
+    }
+    return getDefaultAppSettings();
+  } catch (error) {
+    console.error('Error loading app settings:', error);
+    return getDefaultAppSettings();
+  }
+};
+
+export const saveAppSettings = async (settings: AppSettings): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.APP_SETTINGS, JSON.stringify(settings));
+  } catch (error) {
+    console.error('Error saving app settings:', error);
+  }
+};
+
+// Daily Session Instances
+export const getDailyInstances = async (
+  date: string
+): Promise<DailySessionInstance[]> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_INSTANCES);
+    const allInstances: Record<string, DailySessionInstance[]> = data
+      ? JSON.parse(data)
+      : {};
+
+    if (allInstances[date]) {
+      return allInstances[date];
+    }
+
+    // Generate instances for this date if they don't exist
+    const schedule = await getUserSchedule();
+    const instances = generateDailyInstances(date, schedule);
+    await saveDailyInstances(date, instances);
+    return instances;
+  } catch (error) {
+    console.error('Error loading daily instances:', error);
+    return [];
+  }
+};
+
+export const saveDailyInstances = async (
+  date: string,
+  instances: DailySessionInstance[]
+): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_INSTANCES);
+    const allInstances: Record<string, DailySessionInstance[]> = data
+      ? JSON.parse(data)
+      : {};
+
+    allInstances[date] = instances;
+
+    // Clean up old instances (keep only last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const cutoffDate = format(thirtyDaysAgo, 'yyyy-MM-dd');
+
+    Object.keys(allInstances).forEach((key) => {
+      if (key < cutoffDate) {
+        delete allInstances[key];
+      }
+    });
+
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.DAILY_INSTANCES,
+      JSON.stringify(allInstances)
+    );
+  } catch (error) {
+    console.error('Error saving daily instances:', error);
+  }
+};
+
+export const updateSessionInstance = async (
+  instance: DailySessionInstance
+): Promise<void> => {
+  try {
+    const instances = await getDailyInstances(instance.date);
+    const index = instances.findIndex((i) => i.id === instance.id);
+    if (index !== -1) {
+      instances[index] = instance;
+      await saveDailyInstances(instance.date, instances);
+    }
+  } catch (error) {
+    console.error('Error updating session instance:', error);
+  }
+};
+
+// Generate daily instances based on schedule
+export const generateDailyInstances = (
+  date: string,
+  schedule: UserSchedule
+): DailySessionInstance[] => {
+  const instances: DailySessionInstance[] = [];
+
+  DEFAULT_SESSIONS.forEach((session) => {
+    if (schedule.enabledSessions[session.id]) {
+      const time = schedule.sessionTimes[session.id] || session.defaultTime;
+      const [hours, minutes] = time.split(':').map(Number);
+
+      const scheduledAt = new Date(date);
+      scheduledAt.setHours(hours, minutes, 0, 0);
+
+      instances.push({
+        id: `${date}_${session.id}`,
+        date,
+        templateId: session.id,
+        scheduledAt: scheduledAt.toISOString(),
+        status: SessionStatus.UPCOMING,
+        snoozeCount: 0,
+      });
+    }
+  });
+
+  return instances.sort(
+    (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+  );
+};
+
+// Event Log
+export const logEvent = async (event: Omit<EventLog, 'id'>): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.EVENT_LOG);
+    const logs: EventLog[] = data ? JSON.parse(data) : [];
+
+    const newEvent: EventLog = {
+      ...event,
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    };
+
+    logs.push(newEvent);
+
+    // Keep only last 1000 events
+    if (logs.length > 1000) {
+      logs.splice(0, logs.length - 1000);
+    }
+
+    await AsyncStorage.setItem(STORAGE_KEYS.EVENT_LOG, JSON.stringify(logs));
+  } catch (error) {
+    console.error('Error logging event:', error);
+  }
+};
+
+export const getEventLogs = async (limit = 100): Promise<EventLog[]> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.EVENT_LOG);
+    const logs: EventLog[] = data ? JSON.parse(data) : [];
+    return logs.slice(-limit);
+  } catch (error) {
+    console.error('Error getting event logs:', error);
+    return [];
+  }
+};
+
+// Clear all data (for testing/reset)
+export const clearAllData = async (): Promise<void> => {
+  try {
+    await AsyncStorage.multiRemove([
+      STORAGE_KEYS.USER_SCHEDULE,
+      STORAGE_KEYS.APP_SETTINGS,
+      STORAGE_KEYS.DAILY_INSTANCES,
+      STORAGE_KEYS.EVENT_LOG,
+    ]);
+  } catch (error) {
+    console.error('Error clearing data:', error);
+  }
+};

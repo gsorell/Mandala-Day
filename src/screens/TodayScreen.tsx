@@ -1,0 +1,210 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  SafeAreaView,
+} from 'react-native';
+import { format } from 'date-fns';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useApp } from '../context/AppContext';
+import { SessionCard } from '../components/SessionCard';
+import { colors, typography, spacing, borderRadius } from '../utils/theme';
+import { RootStackParamList, SessionStatus } from '../types';
+import { MAX_SNOOZE_COUNT, DEFAULT_SNOOZE_OPTIONS } from '../utils/theme';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+export const TodayScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+  const {
+    todayInstances,
+    userSchedule,
+    isLoading,
+    refreshTodayInstances,
+    skipSession,
+    snoozeSession,
+    getNextDueSession,
+  } = useApp();
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refreshTodayInstances();
+    setRefreshing(false);
+  }, [refreshTodayInstances]);
+
+  const handleStart = (instanceId: string) => {
+    navigation.navigate('SessionPlayer', { instanceId });
+  };
+
+  const handleSkip = async (instanceId: string) => {
+    await skipSession(instanceId);
+  };
+
+  const handleSnooze = async (instanceId: string, minutes: number) => {
+    await snoozeSession(instanceId, minutes);
+  };
+
+  const nextSession = getNextDueSession();
+  const completedCount = todayInstances.filter(
+    (i) => i.status === SessionStatus.COMPLETED
+  ).length;
+
+  const today = format(new Date(), 'EEEE, MMMM d');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primaryLight}
+          />
+        }
+      >
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Today</Text>
+          <Text style={styles.date}>{today}</Text>
+        </View>
+
+        <View style={styles.progressContainer}>
+          <Text style={styles.progressText}>
+            {completedCount} of {todayInstances.length} sessions completed
+          </Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${
+                    todayInstances.length > 0
+                      ? (completedCount / todayInstances.length) * 100
+                      : 0
+                  }%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
+
+        {nextSession && (
+          <TouchableOpacity
+            style={styles.nextSessionButton}
+            onPress={() => handleStart(nextSession.id)}
+          >
+            <Text style={styles.nextSessionLabel}>Start Next Session</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.sessionsContainer}>
+          <Text style={styles.sectionTitle}>Your Mandala</Text>
+          {todayInstances.map((instance) => (
+            <SessionCard
+              key={instance.id}
+              instance={instance}
+              onStart={() => handleStart(instance.id)}
+              onSkip={() => handleSkip(instance.id)}
+              onSnooze={(minutes) => handleSnooze(instance.id, minutes)}
+              snoozeOptions={userSchedule?.snoozeOptionsMin || DEFAULT_SNOOZE_OPTIONS}
+              maxSnoozeCount={MAX_SNOOZE_COUNT}
+            />
+          ))}
+        </View>
+
+        <View style={styles.gentleReminder}>
+          <Text style={styles.reminderText}>
+            No streaks. No guilt. Just return.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: spacing.md,
+    paddingBottom: spacing.xxl,
+  },
+  header: {
+    marginBottom: spacing.lg,
+  },
+  greeting: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.xxxl,
+    fontWeight: typography.fontWeights.bold,
+  },
+  date: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
+    marginTop: spacing.xs,
+  },
+  progressContainer: {
+    marginBottom: spacing.lg,
+  },
+  progressText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+    marginBottom: spacing.xs,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.full,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.full,
+  },
+  nextSessionButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  nextSessionLabel: {
+    color: colors.white,
+    fontSize: typography.fontSizes.lg,
+    fontWeight: typography.fontWeights.semibold,
+  },
+  sessionsContainer: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.md,
+  },
+  gentleReminder: {
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  reminderText: {
+    color: colors.textMuted,
+    fontSize: typography.fontSizes.sm,
+    fontStyle: 'italic',
+  },
+});
