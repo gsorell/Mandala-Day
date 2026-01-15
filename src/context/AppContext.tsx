@@ -83,7 +83,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const now = new Date();
       let hasChanges = false;
 
-      const updatedInstances = todayInstances.map((instance) => {
+      // Sort instances by scheduled time to find previous session
+      const sortedInstances = [...todayInstances].sort(
+        (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+      );
+
+      const updatedInstances = sortedInstances.map((instance, index) => {
         if (
           instance.status === SessionStatus.UPCOMING ||
           instance.status === SessionStatus.DUE
@@ -94,12 +99,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               (userSchedule.graceWindowMin || DEFAULT_GRACE_WINDOW) * 60 * 1000
           );
 
-          if (now >= scheduledTime && now < graceEnd) {
+          // Find the previous session's scheduled time
+          let previousSessionTime: Date | null = null;
+          if (index > 0) {
+            previousSessionTime = new Date(sortedInstances[index - 1].scheduledAt);
+          }
+
+          // UPCOMING: Between previous session time and current scheduled time
+          if (previousSessionTime && now >= previousSessionTime && now < scheduledTime) {
+            if (instance.status !== SessionStatus.UPCOMING) {
+              hasChanges = true;
+              return { ...instance, status: SessionStatus.UPCOMING };
+            }
+          }
+          // DUE: At or after scheduled time, before grace period ends
+          else if (now >= scheduledTime && now < graceEnd) {
             if (instance.status !== SessionStatus.DUE) {
               hasChanges = true;
               return { ...instance, status: SessionStatus.DUE };
             }
-          } else if (now >= graceEnd && instance.status === SessionStatus.DUE) {
+          }
+          // MISSED (Passed): After grace period and not completed
+          else if (now >= graceEnd) {
             hasChanges = true;
             logEvent({
               timestamp: new Date().toISOString(),
@@ -259,19 +280,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const getNextDueSession = useCallback(() => {
     const now = new Date();
-    return todayInstances.find((instance) => {
-      if (
-        instance.status === SessionStatus.DUE ||
-        instance.status === SessionStatus.UPCOMING
-      ) {
+    
+    // First, try to find a DUE or UPCOMING session
+    const nextSession = todayInstances.find((instance) => 
+      instance.status === SessionStatus.DUE ||
+      instance.status === SessionStatus.UPCOMING
+    );
+    
+    if (nextSession) {
+      return nextSession;
+    }
+    
+    // If no upcoming/due session, check for recently missed sessions (within 1 hour)
+    const missedWithinOneHour = todayInstances.find((instance) => {
+      if (instance.status === SessionStatus.MISSED) {
         const scheduledTime = new Date(instance.scheduledAt);
-        return (
-          instance.status === SessionStatus.DUE ||
-          scheduledTime.getTime() - now.getTime() < 15 * 60 * 1000
-        ); // Within 15 minutes
+        const timeSinceMissed = now.getTime() - scheduledTime.getTime();
+        return timeSinceMissed < 60 * 60 * 1000; // Within 1 hour
       }
       return false;
     });
+    
+    return missedWithinOneHour;
   }, [todayInstances]);
 
   return (
