@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   Modal,
+  Image,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
@@ -91,7 +92,10 @@ export const OnboardingScreen: React.FC = () => {
   const renderWelcome = () => (
     <View style={styles.stepContainer}>
       <View style={styles.centerContent}>
-        <Text style={styles.welcomeTitle}>Mandala Day</Text>
+        <Image
+          source={require('../../assets/mandala-logo.png')}
+          style={styles.logoImage}
+        />
         <Text style={styles.welcomeSubtitle}>
           Six daily moments of recognition
         </Text>
@@ -322,6 +326,13 @@ const styles = StyleSheet.create({
   topContent: {
     flex: 1,
     paddingTop: spacing.xl,
+  },
+  logoImage: {
+    width: 280,
+    height: 280,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: spacing.md,
   },
   welcomeTitle: {
     color: colors.textPrimary,

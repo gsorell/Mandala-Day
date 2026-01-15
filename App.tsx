@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, Image } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import { AppProvider, useApp } from './src/context/AppContext';
@@ -45,6 +45,7 @@ const MainTabs: React.FC = () => {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabBarItem,
       }}
     >
       <Tab.Screen
@@ -180,13 +181,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ritualSurface,
     borderTopColor: colors.charcoal,
     borderTopWidth: 1,
-    height: 70,
-    paddingTop: 10,
-    paddingBottom: 10,
+    height: 85,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 25 : 15,
+  },
+  tabBarItem: {
+    paddingBottom: 5,
   },
   tabLabel: {
     fontSize: typography.fontSizes.xs,
-    marginTop: 4,
+    marginTop: 2,
+    marginBottom: 0,
   },
   tabIcon: {
     fontSize: 22,

@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -36,9 +37,9 @@ export const SettingsScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             await clearAllData();
-            // Force reload to reset in-memory state and show onboarding
-            if (typeof window !== 'undefined') {
-              window.location.reload();
+            // Force hard reload to reset in-memory state and show onboarding
+            if (Platform.OS === 'web' && typeof window !== 'undefined') {
+              window.location.href = window.location.href;
             }
           },
         },
@@ -144,6 +145,10 @@ export const SettingsScreen: React.FC = () => {
         </View>
 
         <View style={styles.aboutSection}>
+          <Image
+            source={require('../../assets/mandala-icon.png')}
+            style={styles.aboutIcon}
+          />
           <Text style={styles.aboutTitle}>Mandala Day</Text>
           <Text style={styles.aboutText}>
             Six daily sessions for awareness and compassion.
@@ -227,6 +232,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl,
     marginTop: spacing.lg,
+  },
+  aboutIcon: {
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
+    marginBottom: spacing.md,
+    opacity: 0.8,
   },
   aboutTitle: {
     color: colors.textPrimary,
