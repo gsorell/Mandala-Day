@@ -63,9 +63,9 @@ export const SessionPlayerScreen: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Countdown finished, start meditation
+      // Countdown finished, start playing the pre-loaded audio
       setCountdown(null);
-      startMeditation();
+      playPreloadedAudio();
     }
   }, [countdown]);
 
@@ -97,43 +97,45 @@ export const SessionPlayerScreen: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startMeditation = async () => {
-    // Starting playback
+  // Play the pre-loaded audio after countdown finishes
+  const playPreloadedAudio = async () => {
     setIsPlaying(true);
-
-    // If session has a pre-recorded audio file, play it
-    if (hasAudioFile && sessionAudioFile && instance) {
-      try {
-        // On web, we need to resolve the asset URI first
-        let audioSource: number | { uri: string } = sessionAudioFile;
-
-        if (Platform.OS === 'web') {
-          const uri = await getSessionAudioUri(instance.templateId);
-          if (uri) {
-            audioSource = { uri };
-          }
-        }
-
-        await audioService.loadAndPlay(audioSource, {
-          onComplete: () => {
-            setShowDedication(true);
-            setIsPlaying(false);
-          },
-          onError: (error) => {
-            console.error('Audio playback error:', error);
-            setIsPlaying(false);
-          },
-        });
-      } catch (error) {
-        console.error('Failed to start meditation audio:', error);
-        setIsPlaying(false);
-      }
+    if (audioService.isLoaded()) {
+      await audioService.play();
     }
   };
 
   const togglePlay = async () => {
     if (!isPlaying) {
-      // Start countdown before meditation
+      // Pre-load audio during user gesture (required for iOS Safari)
+      // Then start countdown
+      if (hasAudioFile && sessionAudioFile && instance) {
+        try {
+          let audioSource: number | { uri: string } = sessionAudioFile;
+
+          if (Platform.OS === 'web') {
+            const uri = await getSessionAudioUri(instance.templateId);
+            if (uri) {
+              audioSource = { uri };
+            }
+          }
+
+          // Pre-load audio during the tap gesture
+          await audioService.preload(audioSource, {
+            onComplete: () => {
+              setShowDedication(true);
+              setIsPlaying(false);
+            },
+            onError: (error) => {
+              console.error('Audio playback error:', error);
+              setIsPlaying(false);
+            },
+          });
+        } catch (error) {
+          console.error('Failed to pre-load meditation audio:', error);
+        }
+      }
+      // Start countdown (audio will play when countdown reaches 0)
       setCountdown(5);
     } else {
       // Pausing playback

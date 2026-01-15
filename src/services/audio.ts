@@ -13,6 +13,10 @@ class AudioService {
   private isPaused = false;
   private options: AudioPlaybackOptions = {};
 
+  /**
+   * Load audio and start playing immediately.
+   * For iOS Safari, this must be called directly from a user gesture.
+   */
   async loadAndPlay(
     audioSource: number | { uri: string },
     options: AudioPlaybackOptions = {}
@@ -22,7 +26,7 @@ class AudioService {
 
     try {
       console.log('[AudioService] Starting audio playback, platform:', Platform.OS);
-      console.log('[AudioService] Audio source type:', typeof audioSource === 'number' ? 'require' : 'uri');
+      console.log('[AudioService] Audio source:', typeof audioSource === 'number' ? 'require()' : audioSource);
 
       // Configure audio mode for meditation playback
       // Note: setAudioModeAsync may not be fully supported on web
@@ -41,7 +45,7 @@ class AudioService {
         this.handlePlaybackStatusUpdate.bind(this)
       );
 
-      console.log('[AudioService] Sound created successfully');
+      console.log('[AudioService] Sound created successfully, playback starting');
       this.sound = sound;
       this.isPlaying = true;
       this.isPaused = false;
@@ -49,6 +53,67 @@ class AudioService {
       console.error('[AudioService] Error loading audio:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.options.onError?.(errorMessage);
+    }
+  }
+
+  /**
+   * Pre-load audio without playing. Used to prepare audio during user gesture
+   * so it can be played later (works around iOS Safari autoplay restrictions).
+   */
+  async preload(
+    audioSource: number | { uri: string },
+    options: AudioPlaybackOptions = {}
+  ): Promise<boolean> {
+    await this.stop();
+    this.options = options;
+
+    try {
+      console.log('[AudioService] Pre-loading audio, platform:', Platform.OS);
+
+      if (Platform.OS !== 'web') {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+        });
+      }
+
+      const { sound } = await Audio.Sound.createAsync(
+        audioSource,
+        { shouldPlay: false }, // Don't auto-play
+        this.handlePlaybackStatusUpdate.bind(this)
+      );
+
+      console.log('[AudioService] Audio pre-loaded successfully');
+      this.sound = sound;
+      this.isPlaying = false;
+      this.isPaused = true; // Treat as paused until play() is called
+      return true;
+    } catch (error) {
+      console.error('[AudioService] Error pre-loading audio:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.options.onError?.(errorMessage);
+      return false;
+    }
+  }
+
+  /**
+   * Start playing pre-loaded audio
+   */
+  async play(): Promise<void> {
+    if (this.sound) {
+      try {
+        console.log('[AudioService] Starting playback of pre-loaded audio');
+        await this.sound.playAsync();
+        this.isPlaying = true;
+        this.isPaused = false;
+      } catch (error) {
+        console.error('[AudioService] Error starting playback:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        this.options.onError?.(errorMessage);
+      }
+    } else {
+      console.warn('[AudioService] No audio loaded to play');
     }
   }
 
@@ -123,6 +188,10 @@ class AudioService {
 
   getIsPaused(): boolean {
     return this.isPaused;
+  }
+
+  isLoaded(): boolean {
+    return this.sound !== null;
   }
 }
 
