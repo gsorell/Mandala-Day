@@ -1,7 +1,10 @@
-// Audio files for meditation sessions
-// Add new audio files here as you upload them
+import { Platform } from 'react-native';
+import { Asset } from 'expo-asset';
 
-export const sessionAudioFiles: Record<string, number> = {
+// Audio files for meditation sessions
+// Using require for bundling, then resolving to URI for playback
+
+const audioRequires: Record<string, number> = {
   session1_waking_view: require('../../assets/audio/waking-the-view.mp3'),
   session2_embodying_presence: require('../../assets/audio/embodying-presence.mp3'),
   session3_compassion_activation: require('../../assets/audio/compassion-activation.mp3'),
@@ -11,6 +14,23 @@ export const sessionAudioFiles: Record<string, number> = {
 };
 
 // Helper to get audio file for a session
+// Returns the require() result which expo-av can use
 export const getSessionAudioFile = (sessionId: string): number | undefined => {
-  return sessionAudioFiles[sessionId];
+  return audioRequires[sessionId];
+};
+
+// For web, we need to resolve the asset URI
+export const getSessionAudioUri = async (sessionId: string): Promise<string | undefined> => {
+  const audioRequire = audioRequires[sessionId];
+  if (!audioRequire) return undefined;
+
+  if (Platform.OS === 'web') {
+    // On web, Asset.fromModule returns an object with a uri
+    const asset = Asset.fromModule(audioRequire);
+    await asset.downloadAsync();
+    return asset.uri;
+  }
+
+  // On native, we can use the require directly
+  return undefined;
 };

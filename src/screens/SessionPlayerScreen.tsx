@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,7 +15,7 @@ import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
-import { getSessionAudioFile } from '../data/audioAssets';
+import { getSessionAudioFile, getSessionAudioUri } from '../data/audioAssets';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -101,17 +102,32 @@ export const SessionPlayerScreen: React.FC = () => {
     setIsPlaying(true);
 
     // If session has a pre-recorded audio file, play it
-    if (hasAudioFile && sessionAudioFile) {
-      await audioService.loadAndPlay(sessionAudioFile, {
-        onComplete: () => {
-          setShowDedication(true);
-          setIsPlaying(false);
-        },
-        onError: (error) => {
-          console.error('Audio playback error:', error);
-          setIsPlaying(false);
-        },
-      });
+    if (hasAudioFile && sessionAudioFile && instance) {
+      try {
+        // On web, we need to resolve the asset URI first
+        let audioSource: number | { uri: string } = sessionAudioFile;
+
+        if (Platform.OS === 'web') {
+          const uri = await getSessionAudioUri(instance.templateId);
+          if (uri) {
+            audioSource = { uri };
+          }
+        }
+
+        await audioService.loadAndPlay(audioSource, {
+          onComplete: () => {
+            setShowDedication(true);
+            setIsPlaying(false);
+          },
+          onError: (error) => {
+            console.error('Audio playback error:', error);
+            setIsPlaying(false);
+          },
+        });
+      } catch (error) {
+        console.error('Failed to start meditation audio:', error);
+        setIsPlaying(false);
+      }
     }
   };
 
