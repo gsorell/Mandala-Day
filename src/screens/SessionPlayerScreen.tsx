@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,27 +6,24 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
-import { RootStackParamList, SessionTemplate } from '../types';
+import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
 import { getSessionAudioFile } from '../data/audioAssets';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-type ViewMode = 'script' | 'minimal';
-
 export const SessionPlayerScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { instanceId } = route.params;
-  const { todayInstances, startSession, completeSession, appSettings } = useApp();
+  const { todayInstances, startSession, completeSession } = useApp();
 
   const instance = todayInstances.find((i) => i.id === instanceId);
   const session = instance ? getSessionById(instance.templateId) : null;
@@ -37,67 +34,11 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(session?.durationSec || 600);
-  const [viewMode, setViewMode] = useState<ViewMode>('script');
   const [showDedication, setShowDedication] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasStartedRef = useRef(false);
-
-  // Parse script to identify pause markers
-  const parseScript = useCallback((scriptText: string) => {
-    const segments: Array<{
-      type: 'text' | 'pause';
-      content: string;
-      duration?: number;
-    }> = [];
-
-    const pauseRegex = /\[pause\s+(\d+)\s*(s|sec|min|m|minutes?)\]/gi;
-    let lastIndex = 0;
-    let match;
-
-    while ((match = pauseRegex.exec(scriptText)) !== null) {
-      // Add text before pause
-      if (match.index > lastIndex) {
-        segments.push({
-          type: 'text',
-          content: scriptText.slice(lastIndex, match.index).trim(),
-        });
-      }
-
-      // Parse pause duration
-      const value = parseInt(match[1], 10);
-      const unit = match[2].toLowerCase();
-      const durationSec =
-        unit.startsWith('m') && !unit.startsWith('mi')
-          ? value * 60
-          : unit.startsWith('min')
-          ? value * 60
-          : value;
-
-      segments.push({
-        type: 'pause',
-        content: `Pause for ${
-          durationSec >= 60 ? `${Math.floor(durationSec / 60)} minute${durationSec >= 120 ? 's' : ''}` : `${durationSec} seconds`
-        }`,
-        duration: durationSec,
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Add remaining text
-    if (lastIndex < scriptText.length) {
-      segments.push({
-        type: 'text',
-        content: scriptText.slice(lastIndex).trim(),
-      });
-    }
-
-    return segments;
-  }, []);
-
-  const scriptSegments = session ? parseScript(session.scriptText) : [];
 
   useEffect(() => {
     if (!hasStartedRef.current && instance) {
@@ -171,20 +112,6 @@ export const SessionPlayerScreen: React.FC = () => {
           setIsPlaying(false);
         },
       });
-    } else if (ttsEnabled && ttsSegments.length > 0) {
-      // Fall back to TTS if no audio file
-      await ttsService.speakSegments(ttsSegments, {
-        rate: appSettings?.ttsSpeakingRate ?? 0.85,
-        voice: appSettings?.ttsVoice,
-        onSegmentStart: (index) => {
-          setCurrentTTSSegment(index);
-        },
-        onComplete: () => {
-          setCurrentTTSSegment(-1);
-          setShowDedication(true);
-          setIsPlaying(false);
-        },
-      });
     }
   };
 
@@ -195,20 +122,7 @@ export const SessionPlayerScreen: React.FC = () => {
     } else {
       // Pausing playback
       setIsPlaying(false);
-      if (hasAudioFile) {
-        await audioService.pause();
-      } else if (ttsEnabled) {
-        ttsService.pause();
-      }
-    }
-  };
-
-  const toggleTTS = () => {
-    const newTtsEnabled = !ttsEnabled;
-    setTtsEnabled(newTtsEnabled);
-    if (!newTtsEnabled && ttsService.getIsPlaying()) {
-      ttsService.stop();
-      setCurrentTTSSegment(-1);
+      await audioService.pause();
     }
   };
 
@@ -219,7 +133,6 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const handleEndEarly = async () => {
     await audioService.stop();
-    await ttsService.stop();
     setIsPlaying(false);
     navigation.goBack();
   };
@@ -275,16 +188,6 @@ export const SessionPlayerScreen: React.FC = () => {
           </View>
 
           <View style={styles.meditationControls}>
-            {!hasAudioFile && (
-              <TouchableOpacity
-                style={[styles.ttsToggle, ttsEnabled && styles.ttsToggleActive]}
-                onPress={toggleTTS}
-              >
-                <Text style={[styles.ttsToggleText, ttsEnabled && styles.ttsToggleTextActive]}>
-                  Voice {ttsEnabled ? 'On' : 'Off'}
-                </Text>
-              </TouchableOpacity>
-            )}
             <TouchableOpacity style={styles.pauseButton} onPress={togglePlay}>
               <Text style={styles.pauseButtonText}>Pause</Text>
             </TouchableOpacity>
@@ -309,27 +212,6 @@ export const SessionPlayerScreen: React.FC = () => {
         </View>
         <View style={styles.headerRight} />
       </View>
-
-      {!hasAudioFile && (
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              ttsEnabled && styles.toggleButtonActive,
-            ]}
-            onPress={toggleTTS}
-          >
-            <Text
-              style={[
-                styles.toggleText,
-                ttsEnabled && styles.toggleTextActive,
-              ]}
-            >
-              Voice {ttsEnabled ? 'On' : 'Off'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -377,7 +259,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.charcoal,
   },
   closeButton: {
     paddingVertical: spacing.xs,
@@ -414,7 +296,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     alignItems: 'center',
     borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
   },
   toggleButtonActive: {
     backgroundColor: colors.primary,
@@ -438,7 +320,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   activeSegment: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginHorizontal: -spacing.md,
@@ -452,7 +334,7 @@ const styles = StyleSheet.create({
     color: colors.accent,
   },
   pauseMarker: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.md,
@@ -484,7 +366,7 @@ const styles = StyleSheet.create({
     lineHeight: typography.fontSizes.xxl * typography.lineHeights.relaxed,
   },
   minimalInstruction: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.md,
     textAlign: 'center',
   },
@@ -492,14 +374,14 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.xl,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.charcoal,
   },
   playButton: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
-    ...shadows.md,
+    ...shadows.presence,
   },
   playButtonText: {
     color: colors.white,
@@ -552,7 +434,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xxl,
     borderRadius: borderRadius.lg,
-    ...shadows.md,
+    ...shadows.presence,
   },
   completeButtonText: {
     color: colors.white,
@@ -574,7 +456,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   endButtonText: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.md,
   },
   meditationContent: {
@@ -594,7 +476,7 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   meditationPrompt: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.md,
     fontStyle: 'italic',
     textAlign: 'center',
@@ -604,27 +486,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
   },
-  ttsToggle: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
-  },
-  ttsToggleActive: {
-    backgroundColor: colors.primary,
-  },
-  ttsToggleText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.sm,
-  },
-  ttsToggleTextActive: {
-    color: colors.white,
-  },
   pauseButton: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
   },
   pauseButtonText: {
     color: colors.textSecondary,
@@ -646,7 +512,7 @@ const styles = StyleSheet.create({
     lineHeight: typography.fontSizes.xxl * typography.lineHeights.relaxed,
   },
   preSessionInstruction: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.md,
     textAlign: 'center',
   },
@@ -658,7 +524,7 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   countdownText: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.lg,
     fontStyle: 'italic',
     textAlign: 'center',
