@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, Image } from 'react-native';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import { AppProvider, useApp } from './src/context/AppContext';
@@ -14,7 +14,7 @@ import { ScheduleSettingsScreen } from './src/screens/ScheduleSettingsScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
-import { colors, typography, spacing } from './src/utils/theme';
+import { colors, typography, spacing, borderRadius } from './src/utils/theme';
 import {
   areNotificationsAvailable,
   scheduleAllSessionNotifications,
@@ -23,7 +23,67 @@ import {
 } from './src/services/notifications';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Tab = createMaterialTopTabNavigator<MainTabParamList>();
+
+const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigationRef }) => {
+  const { getNextDueSession } = useApp();
+  const nextSession = getNextDueSession();
+
+  useEffect(() => {
+    if (navigationRef) {
+      navigationRef.current = navigation;
+    }
+  }, [navigation, navigationRef]);
+
+  return (
+    <View style={styles.tabBarContainer}>
+      {nextSession && (
+        <TouchableOpacity
+          style={styles.nextSessionButtonFooter}
+          onPress={() => navigation.navigate('SessionPlayer', { instanceId: nextSession.id })}
+        >
+          <Text style={styles.nextSessionLabelFooter}>Start Next Session</Text>
+        </TouchableOpacity>
+      )}
+      <View style={styles.tabBar}>
+        {state.routes.map((route: any, index: number) => {
+          const { options } = descriptors[route.key];
+          const label = route.name;
+          const isFocused = state.index === index;
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              style={styles.tabBarItemCustom}
+            >
+              <TabIcon label={label} focused={isFocused} />
+              <Text style={[styles.tabLabel, { color: isFocused ? colors.primary : colors.textTertiary }]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
 
 const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused }) => (
   <Text
@@ -32,21 +92,39 @@ const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused
       { color: focused ? colors.primary : colors.textTertiary },
     ]}
   >
-    {label === 'Today' ? '◉' : label === 'History' ? '◷' : '⚙'}
+    {label === 'Today' ? '◉' : label === 'History' ? '◉' : '⚙'}
   </Text>
 );
 
 const MainTabs: React.FC = () => {
+  const navigationRef = useRef<any>(null);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (navigationRef.current) {
+        const state = navigationRef.current.getState();
+        const currentRoute = state.routes[state.index].name;
+        
+        if (currentRoute === 'History' || currentRoute === 'Settings') {
+          navigationRef.current.navigate('Today');
+          return true;
+        }
+      }
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, []);
+
   return (
     <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} navigationRef={navigationRef} />}
       screenOptions={{
-        headerShown: false,
-        tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textTertiary,
-        tabBarLabelStyle: styles.tabLabel,
-        tabBarItemStyle: styles.tabBarItem,
+        swipeEnabled: true,
+        animationEnabled: true,
       }}
+      tabBarPosition="bottom"
+      initialRouteName="Today"
     >
       <Tab.Screen
         name="Today"
@@ -177,15 +255,36 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
     marginTop: spacing.md,
   },
-  tabBar: {
+  tabBarContainer: {
     backgroundColor: colors.ritualSurface,
     borderTopColor: colors.charcoal,
     borderTopWidth: 1,
-    height: 85,
+  },
+  nextSessionButtonFooter: {
+    margin: spacing.md,
+    marginBottom: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  nextSessionLabelFooter: {
+    color: colors.white,
+    fontSize: typography.fontSizes.md,
+    fontWeight: typography.fontWeights.semibold,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    height: 70,
     paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 25 : 15,
+    backgroundColor: colors.ritualSurface,
   },
-  tabBarItem: {
+  tabBarItemCustom: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingBottom: 5,
   },
   tabLabel: {

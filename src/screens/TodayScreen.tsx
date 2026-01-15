@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import { format } from 'date-fns';
 import { useNavigation } from '@react-navigation/native';
@@ -71,6 +72,11 @@ export const TodayScreen: React.FC = () => {
           />
         }
       >
+        <Image
+          source={require('../../assets/mandala-logo.png')}
+          style={styles.logo}
+        />
+        
         <View style={styles.header}>
           <Text style={styles.greeting}>Today</Text>
           <Text style={styles.date}>{today}</Text>
@@ -95,15 +101,6 @@ export const TodayScreen: React.FC = () => {
             />
           </View>
         </View>
-
-        {nextSession && (
-          <TouchableOpacity
-            style={styles.nextSessionButton}
-            onPress={() => handleStart(nextSession.id)}
-          >
-            <Text style={styles.nextSessionLabel}>Start Next Session</Text>
-          </TouchableOpacity>
-        )}
 
         <View style={styles.sessionsContainer}>
           <Text style={styles.sectionTitle}>Your Mandala</Text>
@@ -142,17 +139,25 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: spacing.xxl,
   },
+  logo: {
+    width: 600,
+    height: 180,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: spacing.md,
+    opacity: 0.9,
+  },
   header: {
     marginBottom: spacing.lg,
   },
   greeting: {
     color: colors.textPrimary,
-    fontSize: typography.fontSizes.xxxl,
+    fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.bold,
   },
   date: {
     color: colors.textSecondary,
-    fontSize: typography.fontSizes.md,
+    fontSize: typography.fontSizes.sm,
     marginTop: spacing.xs,
   },
   progressContainer: {

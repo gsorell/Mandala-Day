@@ -1,7 +1,7 @@
 // RITUAL PALETTE - aged, monastic, contemplative
 export const colors = {
   // Primary ritual palette
-  ritualNight: '#0f0f1a', // Deep indigo-black (main background)
+  ritualNight: '#0b0817', // Deep indigo-black (main background)
   ritualVoid: '#1a1a2e', // Void space (secondary background)
   ritualSurface: '#252535', // Raised surfaces
   ritualThreshold: '#2d2d42', // Liminal spaces
@@ -40,7 +40,7 @@ export const colors = {
   // Legacy/compatibility
   primary: '#6B5B95',
   accent: '#B8945F',
-  background: '#0f0f1a',
+  background: '#0b0817',
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',

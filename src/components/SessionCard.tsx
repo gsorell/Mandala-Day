@@ -93,11 +93,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {isActive && (
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.button, styles.buttonPrimary]}
-            onPress={onStart}
-          >
-            <Text style={styles.buttonTextPrimary}>Begin</Text>
+          <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
+            <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
 
           {canSnooze && instance.status === SessionStatus.DUE && (
@@ -114,8 +111,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             </View>
           )}
 
-          <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
-            <Text style={styles.skipText}>Skip</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonPrimary]}
+            onPress={onStart}
+          >
+            <Text style={styles.buttonTextPrimary}>Begin</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
   },
   button: {
     paddingHorizontal: spacing.lg,
