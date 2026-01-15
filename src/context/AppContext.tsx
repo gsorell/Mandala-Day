@@ -127,6 +127,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => clearInterval(interval);
   }, [todayInstances, userSchedule]);
 
+  const refreshTodayInstances = useCallback(async () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const instances = await getDailyInstances(today);
+    setTodayInstances(instances);
+  }, []);
+
   const updateUserScheduleAction = useCallback(
     async (schedule: Partial<UserSchedule>) => {
       if (!userSchedule) return;
@@ -149,12 +155,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     },
     [appSettings]
   );
-
-  const refreshTodayInstances = useCallback(async () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const instances = await getDailyInstances(today);
-    setTodayInstances(instances);
-  }, []);
 
   const startSession = useCallback(
     async (instanceId: string) => {
