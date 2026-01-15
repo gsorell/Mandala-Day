@@ -72,80 +72,10 @@ export const SettingsScreen: React.FC = () => {
               onValueChange={(value) =>
                 updateAppSettings({ notificationsEnabled: value })
               }
-              trackColor={{ false: colors.surface, true: colors.primary }}
+              trackColor={{ false: colors.ritualSurface, true: colors.primary }}
               thumbColor={colors.white}
             />
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Audio</Text>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Text-to-Speech</Text>
-            <Switch
-              value={appSettings.ttsEnabled}
-              onValueChange={(value) => updateAppSettings({ ttsEnabled: value })}
-              trackColor={{ false: colors.surface, true: colors.primary }}
-              thumbColor={colors.white}
-            />
-          </View>
-          {appSettings.ttsEnabled && (
-            <View style={styles.speedControl}>
-              <Text style={styles.settingLabel}>Speaking Speed</Text>
-              <View style={styles.speedButtons}>
-                <TouchableOpacity
-                  style={[
-                    styles.speedButton,
-                    appSettings.ttsSpeakingRate === 0.7 && styles.speedButtonActive,
-                  ]}
-                  onPress={() => updateAppSettings({ ttsSpeakingRate: 0.7 })}
-                >
-                  <Text
-                    style={[
-                      styles.speedButtonText,
-                      appSettings.ttsSpeakingRate === 0.7 && styles.speedButtonTextActive,
-                    ]}
-                  >
-                    Slow
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.speedButton,
-                    (appSettings.ttsSpeakingRate === 0.85 || !appSettings.ttsSpeakingRate) &&
-                      styles.speedButtonActive,
-                  ]}
-                  onPress={() => updateAppSettings({ ttsSpeakingRate: 0.85 })}
-                >
-                  <Text
-                    style={[
-                      styles.speedButtonText,
-                      (appSettings.ttsSpeakingRate === 0.85 || !appSettings.ttsSpeakingRate) &&
-                        styles.speedButtonTextActive,
-                    ]}
-                  >
-                    Normal
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.speedButton,
-                    appSettings.ttsSpeakingRate === 1.0 && styles.speedButtonActive,
-                  ]}
-                  onPress={() => updateAppSettings({ ttsSpeakingRate: 1.0 })}
-                >
-                  <Text
-                    style={[
-                      styles.speedButtonText,
-                      appSettings.ttsSpeakingRate === 1.0 && styles.speedButtonTextActive,
-                    ]}
-                  >
-                    Fast
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
         </View>
 
         <View style={styles.section}>
@@ -215,7 +145,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xs,
@@ -225,14 +155,14 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
   },
   menuItemArrow: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.xl,
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ritualSurface,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xs,
@@ -240,35 +170,6 @@ const styles = StyleSheet.create({
   settingLabel: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.md,
-  },
-  speedControl: {
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.xs,
-  },
-  speedButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  speedButton: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background,
-  },
-  speedButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  speedButtonText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.sm,
-    fontWeight: typography.fontWeights.medium,
-  },
-  speedButtonTextActive: {
-    color: colors.white,
   },
   destructive: {
     color: colors.missed,
@@ -290,7 +191,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   aboutVersion: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.sm,
     marginTop: spacing.sm,
   },
@@ -299,7 +200,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   gentleText: {
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontSize: typography.fontSizes.sm,
     fontStyle: 'italic',
   },
