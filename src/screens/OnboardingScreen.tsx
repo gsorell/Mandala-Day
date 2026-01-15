@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
@@ -18,6 +19,9 @@ type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing';
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
   const [step, setStep] = useState<OnboardingStep>('welcome');
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [tempHour, setTempHour] = useState(7);
+  const [tempMinute, setTempMinute] = useState(0);
 
   const handleRequestNotifications = async () => {
     try {
@@ -54,6 +58,36 @@ export const OnboardingScreen: React.FC = () => {
     await updateAppSettings({ hasCompletedOnboarding: true });
   };
 
+  const handleTimePress = (sessionId: string) => {
+    const currentTime = userSchedule?.sessionTimes[sessionId] ||
+      DEFAULT_SESSIONS.find(s => s.id === sessionId)?.defaultTime || '07:00';
+    const [hours, minutes] = currentTime.split(':').map(Number);
+    setTempHour(hours);
+    setTempMinute(minutes);
+    setSelectedSession(sessionId);
+  };
+
+  const handleTimeSave = async () => {
+    if (!selectedSession || !userSchedule) return;
+
+    const timeString = `${tempHour.toString().padStart(2, '0')}:${tempMinute
+      .toString()
+      .padStart(2, '0')}`;
+
+    await updateUserSchedule({
+      sessionTimes: {
+        ...userSchedule.sessionTimes,
+        [selectedSession]: timeString,
+      },
+    });
+
+    setSelectedSession(null);
+  };
+
+  const getSessionTime = (sessionId: string, defaultTime: string): string => {
+    return userSchedule?.sessionTimes[sessionId] || defaultTime;
+  };
+
   const renderWelcome = () => (
     <View style={styles.stepContainer}>
       <View style={styles.centerContent}>
@@ -83,20 +117,29 @@ export const OnboardingScreen: React.FC = () => {
       <View style={styles.topContent}>
         <Text style={styles.stepTitle}>Your Daily Mandala</Text>
         <Text style={styles.stepDescription}>
-          Here are your six sessions with suggested times. You can adjust these anytime in Settings.
+          Tap any time to adjust it. You can also change these later in Settings.
         </Text>
 
         <View style={styles.sessionsPreview}>
           {DEFAULT_SESSIONS.map((session) => (
-            <View key={session.id} style={styles.sessionRow}>
+            <TouchableOpacity
+              key={session.id}
+              style={styles.sessionRow}
+              onPress={() => handleTimePress(session.id)}
+              activeOpacity={0.7}
+            >
               <View style={styles.sessionOrderBadge}>
                 <Text style={styles.sessionOrderText}>{session.order}</Text>
               </View>
               <View style={styles.sessionDetails}>
                 <Text style={styles.sessionTitle}>{session.title}</Text>
-                <Text style={styles.sessionTime}>{formatTime(session.defaultTime)}</Text>
+                <View style={styles.timeButton}>
+                  <Text style={styles.sessionTimeEditable}>
+                    {formatTime(getSessionTime(session.id, session.defaultTime))}
+                  </Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
@@ -105,7 +148,7 @@ export const OnboardingScreen: React.FC = () => {
         style={styles.primaryButton}
         onPress={() => setStep('notifications')}
       >
-        <Text style={styles.primaryButtonText}>Use These Times</Text>
+        <Text style={styles.primaryButtonText}>Continue</Text>
       </TouchableOpacity>
     </View>
   );
@@ -182,6 +225,75 @@ export const OnboardingScreen: React.FC = () => {
       {step === 'schedule' && renderSchedule()}
       {step === 'notifications' && renderNotifications()}
       {step === 'framing' && renderFraming()}
+
+      {/* Time Picker Modal */}
+      <Modal
+        visible={selectedSession !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedSession(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Set Time</Text>
+
+            <View style={styles.pickerContainer}>
+              <View style={styles.pickerColumn}>
+                <TouchableOpacity
+                  onPress={() => setTempHour((h) => (h + 1) % 24)}
+                  style={styles.pickerButton}
+                >
+                  <Text style={styles.pickerButtonText}>▲</Text>
+                </TouchableOpacity>
+                <Text style={styles.pickerValue}>
+                  {tempHour.toString().padStart(2, '0')}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setTempHour((h) => (h - 1 + 24) % 24)}
+                  style={styles.pickerButton}
+                >
+                  <Text style={styles.pickerButtonText}>▼</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.pickerSeparator}>:</Text>
+
+              <View style={styles.pickerColumn}>
+                <TouchableOpacity
+                  onPress={() => setTempMinute((m) => (m + 5) % 60)}
+                  style={styles.pickerButton}
+                >
+                  <Text style={styles.pickerButtonText}>▲</Text>
+                </TouchableOpacity>
+                <Text style={styles.pickerValue}>
+                  {tempMinute.toString().padStart(2, '0')}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setTempMinute((m) => (m - 5 + 60) % 60)}
+                  style={styles.pickerButton}
+                >
+                  <Text style={styles.pickerButtonText}>▼</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setSelectedSession(null)}
+              >
+                <Text style={styles.modalButtonCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonSave}
+                onPress={handleTimeSave}
+              >
+                <Text style={styles.modalButtonSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -349,5 +461,94 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.md,
+  },
+  timeButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.primary + '20',
+    borderRadius: borderRadius.sm,
+  },
+  sessionTimeEditable: {
+    color: colors.primary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    width: '80%',
+    maxWidth: 300,
+  },
+  modalTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.lg,
+    fontWeight: typography.fontWeights.semibold,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  pickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  pickerColumn: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  pickerButton: {
+    padding: spacing.sm,
+  },
+  pickerButtonText: {
+    color: colors.primary,
+    fontSize: typography.fontSizes.xl,
+  },
+  pickerValue: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.xxl,
+    fontWeight: typography.fontWeights.bold,
+    minWidth: 50,
+    textAlign: 'center',
+  },
+  pickerSeparator: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.xxl,
+    fontWeight: typography.fontWeights.bold,
+    marginHorizontal: spacing.md,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  modalButtonCancel: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+  },
+  modalButtonCancelText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
+    fontWeight: typography.fontWeights.medium,
+  },
+  modalButtonSave: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+  },
+  modalButtonSaveText: {
+    color: colors.white,
+    fontSize: typography.fontSizes.md,
+    fontWeight: typography.fontWeights.medium,
   },
 });
