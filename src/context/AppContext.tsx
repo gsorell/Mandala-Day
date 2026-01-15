@@ -89,47 +89,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       );
 
       const updatedInstances = sortedInstances.map((instance, index) => {
+        // Skip completed and skipped sessions - they don't change
         if (
-          instance.status === SessionStatus.UPCOMING ||
-          instance.status === SessionStatus.DUE
+          instance.status === SessionStatus.COMPLETED ||
+          instance.status === SessionStatus.SKIPPED
         ) {
-          const scheduledTime = new Date(instance.scheduledAt);
-          const graceEnd = new Date(
-            scheduledTime.getTime() +
-              (userSchedule.graceWindowMin || DEFAULT_GRACE_WINDOW) * 60 * 1000
-          );
+          return instance;
+        }
 
-          // Find the previous session's scheduled time
-          let previousSessionTime: Date | null = null;
-          if (index > 0) {
-            previousSessionTime = new Date(sortedInstances[index - 1].scheduledAt);
-          }
+        const scheduledTime = new Date(instance.scheduledAt);
+        const graceEnd = new Date(
+          scheduledTime.getTime() +
+            (userSchedule.graceWindowMin || DEFAULT_GRACE_WINDOW) * 60 * 1000
+        );
 
-          // UPCOMING: Between previous session time and current scheduled time
-          if (previousSessionTime && now >= previousSessionTime && now < scheduledTime) {
-            if (instance.status !== SessionStatus.UPCOMING) {
-              hasChanges = true;
-              return { ...instance, status: SessionStatus.UPCOMING };
-            }
+        // Find the previous session's scheduled time
+        let previousSessionTime: Date | null = null;
+        if (index > 0) {
+          previousSessionTime = new Date(sortedInstances[index - 1].scheduledAt);
+        }
+
+        // UPCOMING: Before scheduled time (and after previous session if exists)
+        if (now < scheduledTime) {
+          if (instance.status !== SessionStatus.UPCOMING) {
+            hasChanges = true;
+            return { ...instance, status: SessionStatus.UPCOMING };
           }
-          // DUE: At or after scheduled time, before grace period ends
-          else if (now >= scheduledTime && now < graceEnd) {
-            if (instance.status !== SessionStatus.DUE) {
-              hasChanges = true;
-              return { ...instance, status: SessionStatus.DUE };
-            }
+        }
+        // DUE: At or after scheduled time, before grace period ends
+        else if (now >= scheduledTime && now < graceEnd) {
+          if (instance.status !== SessionStatus.DUE) {
+            hasChanges = true;
+            return { ...instance, status: SessionStatus.DUE };
           }
-          // MISSED (Passed): After grace period and not completed
-          else if (now >= graceEnd) {
+        }
+        // MISSED (Passed): After grace period and not completed
+        else if (now >= graceEnd) {
+          if (instance.status !== SessionStatus.MISSED) {
             hasChanges = true;
             logEvent({
               timestamp: new Date().toISOString(),
               eventType: EventType.MISS,
               instanceId: instance.id,
             });
-            return { ...instance, status: SessionStatus.MISSED };
           }
+          return { ...instance, status: SessionStatus.MISSED };
         }
+        
         return instance;
       });
 
