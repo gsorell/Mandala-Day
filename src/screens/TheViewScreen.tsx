@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
@@ -25,7 +26,13 @@ export const TheViewScreen: React.FC = () => {
           <Text style={styles.backText}>← Settings</Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>The View</Text>
+        <View style={styles.headerSection}>
+          <Image
+            source={require('../../assets/mandala-icon.png')}
+            style={styles.logo}
+          />
+          <Text style={styles.title}>The View</Text>
+        </View>
         <Text style={styles.subtitle}>
           The philosophical roots of these practices
         </Text>
@@ -114,11 +121,23 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: typography.fontSizes.md,
   },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginBottom: spacing.lg,
+    opacity: 0.8,
+  },
   title: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xxxl,
     fontWeight: typography.fontWeights.bold,
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
     color: colors.textTertiary,
