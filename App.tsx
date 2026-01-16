@@ -161,7 +161,7 @@ const AppNavigator: React.FC = () => {
   // Set up notifications (only on native platforms)
   useEffect(() => {
     if (Platform.OS === 'web') return; // Skip notifications on web
-    
+
     const setupNotifications = async () => {
       const available = await areNotificationsAvailable();
       if (available && appSettings?.notificationsEnabled && userSchedule && todayInstances.length > 0) {
@@ -175,7 +175,7 @@ const AppNavigator: React.FC = () => {
   // Handle notification responses (only on native platforms)
   useEffect(() => {
     if (Platform.OS === 'web') return; // Skip notifications on web
-    
+
     notificationListener.current = addNotificationResponseListener((response) => {
       const data = response.notification.request.content.data as { instanceId?: string };
       if (data.instanceId && navigationRef.current) {
@@ -188,6 +188,28 @@ const AppNavigator: React.FC = () => {
         removeNotificationSubscription(notificationListener.current);
       }
     };
+  }, []);
+
+  // Handle hardware back button for stack screens
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (!navigationRef.current) return false;
+
+      const state = navigationRef.current.getRootState();
+      if (!state) return false;
+
+      const currentRoute = state.routes[state.index];
+
+      // If we're on a stack screen (not Main), go back
+      if (currentRoute.name !== 'Main' && currentRoute.name !== 'Onboarding') {
+        navigationRef.current.goBack();
+        return true;
+      }
+
+      return false; // Let the tab navigator handle it
+    });
+
+    return () => backHandler.remove();
   }, []);
 
   if (isLoading) {
