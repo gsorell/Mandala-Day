@@ -4,8 +4,10 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
   ReactNode,
 } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { format } from 'date-fns';
 import {
   UserSchedule,
@@ -22,6 +24,8 @@ import {
   getDailyInstances,
   updateSessionInstance,
   logEvent,
+  generateDailyInstances,
+  saveDailyInstances,
 } from '../services/storage';
 import { DEFAULT_GRACE_WINDOW } from '../utils/theme';
 
@@ -50,6 +54,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [todayInstances, setTodayInstances] = useState<DailySessionInstance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const currentDateRef = useRef<string>(format(new Date(), 'yyyy-MM-dd'));
+  const appState = useRef(AppState.currentState);
+
+  // Helper function to load/generate instances for a given date
+  const loadInstancesForDate = useCallback(async (date: string, schedule: UserSchedule | null) => {
+    let instances = await getDailyInstances(date);
+
+    // Check if instances exist and are for the correct date
+    if (instances.length > 0) {
+      const firstScheduledDate = format(new Date(instances[0].scheduledAt), 'yyyy-MM-dd');
+      if (firstScheduledDate !== date) {
+        // Generate fresh instances for the date
+        instances = generateDailyInstances(date, schedule);
+        await saveDailyInstances(date, instances);
+      }
+    } else if (schedule) {
+      // No instances found, generate new ones
+      instances = generateDailyInstances(date, schedule);
+      await saveDailyInstances(date, instances);
+    }
+
+    return instances;
+  }, []);
+
+  // Check if date has changed and refresh if needed
+  const checkAndRefreshForNewDay = useCallback(async () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    if (currentDateRef.current !== today) {
+      console.log('Day changed from', currentDateRef.current, 'to', today);
+      currentDateRef.current = today;
+      const instances = await loadInstancesForDate(today, userSchedule);
+      setTodayInstances(instances);
+    }
+  }, [userSchedule, loadInstancesForDate]);
 
   // Load initial data
   useEffect(() => {
@@ -63,20 +101,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAppSettings(settings);
 
         const today = format(new Date(), 'yyyy-MM-dd');
-        
-        const { generateDailyInstances, saveDailyInstances, getDailyInstances } = await import('../services/storage');
-        let instances = await getDailyInstances(today);
-        
-        // Check if instances' scheduledAt times are actually for today
-        if (instances.length > 0) {
-          const firstScheduledDate = format(new Date(instances[0].scheduledAt), 'yyyy-MM-dd');
-          if (firstScheduledDate !== today) {
-            // Generate fresh instances for today
-            instances = generateDailyInstances(today, schedule);
-            await saveDailyInstances(today, instances);
-          }
-        }
-        
+        currentDateRef.current = today;
+
+        const instances = await loadInstancesForDate(today, schedule);
         setTodayInstances(instances);
       } catch (error) {
         console.error('Error loading initial data:', error);
@@ -86,7 +113,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     loadData();
-  }, []);
+  }, [loadInstancesForDate]);
+
+  // Listen for app state changes (foreground/background) and check for day change
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      // When app comes to foreground, check if day changed
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        checkAndRefreshForNewDay();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [checkAndRefreshForNewDay]);
+
+  // Periodic check for day change (every minute, along with status updates)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkAndRefreshForNewDay();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [checkAndRefreshForNewDay]);
 
   // Update session statuses based on time
   useEffect(() => {
@@ -169,9 +220,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const refreshTodayInstances = useCallback(async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
-    const instances = await getDailyInstances(today);
+    currentDateRef.current = today;
+    const instances = await loadInstancesForDate(today, userSchedule);
     setTodayInstances(instances);
-  }, []);
+  }, [userSchedule, loadInstancesForDate]);
 
   const updateUserScheduleAction = useCallback(
     async (schedule: Partial<UserSchedule>) => {
