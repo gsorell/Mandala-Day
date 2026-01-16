@@ -166,14 +166,23 @@ export const SessionPlayerScreen: React.FC = () => {
   };
 
   const handleEndEarly = async () => {
-    if (isPaused) {
-      // If already paused, just end without confirmation
+    const endSession = async () => {
       await audioService.stop();
       setIsPlaying(false);
       setIsPaused(false);
       navigation.goBack();
+    };
+
+    if (isPaused || !isPlaying) {
+      // If paused or not yet started, just end without confirmation
+      await endSession();
+    } else if (Platform.OS === 'web') {
+      // On web, use browser confirm dialog
+      if (window.confirm('Are you sure you want to end this session early?')) {
+        await endSession();
+      }
     } else {
-      // If playing, show confirmation
+      // On native, use Alert
       Alert.alert(
         'End Session',
         'Are you sure you want to end this session early?',
@@ -182,12 +191,7 @@ export const SessionPlayerScreen: React.FC = () => {
           {
             text: 'End',
             style: 'destructive',
-            onPress: async () => {
-              await audioService.stop();
-              setIsPlaying(false);
-              setIsPaused(false);
-              navigation.goBack();
-            },
+            onPress: endSession,
           },
         ]
       );

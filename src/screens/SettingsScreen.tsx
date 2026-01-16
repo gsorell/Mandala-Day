@@ -155,6 +155,18 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('TheView')}
+          >
+            <Text style={styles.menuItemText}>The View</Text>
+            <Text style={styles.menuItemSubtext}>Philosophy & practice roots</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.aboutSection}>
           <Image
             source={require('../../assets/mandala-icon.png')}
@@ -222,6 +234,12 @@ const styles = StyleSheet.create({
   menuItemArrow: {
     color: colors.textTertiary,
     fontSize: typography.fontSizes.xl,
+  },
+  menuItemSubtext: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    flex: 1,
+    marginLeft: spacing.sm,
   },
   settingRow: {
     flexDirection: 'row',

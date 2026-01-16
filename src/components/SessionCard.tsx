@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { DailySessionInstance, SessionStatus, SessionTemplate } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { getSessionById } from '../data/sessions';
+import { getPracticeTypeInfo } from '../data/philosophy';
 
 interface SessionCardProps {
   instance: DailySessionInstance;
@@ -62,6 +63,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   snoozeOptions,
   maxSnoozeCount,
 }) => {
+  const [showInfo, setShowInfo] = useState(false);
   const session = getSessionById(instance.templateId);
   if (!session) return null;
 
@@ -71,6 +73,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     instance.status === SessionStatus.UPCOMING;
   const canSnooze = instance.snoozeCount < maxSnoozeCount;
   const scheduledTime = format(new Date(instance.scheduledAt), 'h:mm a');
+  const practiceInfo = getPracticeTypeInfo(session.practiceType);
 
   return (
     <View style={[styles.card, isActive && styles.cardActive]}>
@@ -84,12 +87,34 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <Text style={styles.time}>{scheduledTime}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{getStatusLabel(instance.status)}</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() => setShowInfo(!showInfo)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.infoButtonText, showInfo && styles.infoButtonActive]}>
+              {showInfo ? '−' : '○'}
+            </Text>
+          </TouchableOpacity>
+          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+            <Text style={styles.statusText}>{getStatusLabel(instance.status)}</Text>
+          </View>
         </View>
       </View>
 
       <Text style={styles.prompt}>{session.shortPrompt}</Text>
+
+      {showInfo && (
+        <View style={styles.infoPanel}>
+          <Text style={styles.infoPracticeType}>{practiceInfo.name}</Text>
+          <Text style={styles.infoEssence}>{practiceInfo.essence}</Text>
+          <Text style={styles.infoDescription}>{practiceInfo.description}</Text>
+          {practiceInfo.whyThisTime && (
+            <Text style={styles.infoWhyTime}>{practiceInfo.whyThisTime}</Text>
+          )}
+        </View>
+      )}
 
       {isActive && (
         <View style={styles.actions}>
@@ -200,6 +225,24 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.sm,
     marginTop: 2,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  infoButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoButtonText: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.lg,
+  },
+  infoButtonActive: {
+    color: colors.primary,
+  },
   statusBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -209,6 +252,37 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.medium,
+  },
+  infoPanel: {
+    backgroundColor: colors.charcoal,
+    borderRadius: borderRadius.sm,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  infoPracticeType: {
+    color: colors.primary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.xs,
+  },
+  infoEssence: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.md,
+    fontStyle: 'italic',
+    marginBottom: spacing.sm,
+  },
+  infoDescription: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+    lineHeight: typography.fontSizes.sm * typography.lineHeights.relaxed,
+    marginBottom: spacing.sm,
+  },
+  infoWhyTime: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    fontStyle: 'italic',
   },
   prompt: {
     color: colors.textSecondary,
