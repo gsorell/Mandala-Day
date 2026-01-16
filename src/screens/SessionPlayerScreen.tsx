@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Platform,
+  Image,
+  Alert,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,6 +36,7 @@ export const SessionPlayerScreen: React.FC = () => {
   const hasAudioFile = sessionAudioFile !== undefined;
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(session?.durationSec || 600);
   const [showDedication, setShowDedication] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -138,12 +141,22 @@ export const SessionPlayerScreen: React.FC = () => {
       }
       // Start countdown (audio will play when countdown reaches 0, or timer only for silent mode)
       setCountdown(5);
+      setIsPaused(false);
     } else {
       // Pausing playback
       setIsPlaying(false);
+      setIsPaused(true);
       if (!isSilentMode) {
         await audioService.pause();
       }
+    }
+  };
+
+  const handleResume = async () => {
+    setIsPlaying(true);
+    setIsPaused(false);
+    if (!isSilentMode && audioService.isLoaded()) {
+      await audioService.play();
     }
   };
 
@@ -153,9 +166,32 @@ export const SessionPlayerScreen: React.FC = () => {
   };
 
   const handleEndEarly = async () => {
-    await audioService.stop();
-    setIsPlaying(false);
-    navigation.goBack();
+    if (isPaused) {
+      // If already paused, just end without confirmation
+      await audioService.stop();
+      setIsPlaying(false);
+      setIsPaused(false);
+      navigation.goBack();
+    } else {
+      // If playing, show confirmation
+      Alert.alert(
+        'End Session',
+        'Are you sure you want to end this session early?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'End',
+            style: 'destructive',
+            onPress: async () => {
+              await audioService.stop();
+              setIsPlaying(false);
+              setIsPaused(false);
+              navigation.goBack();
+            },
+          },
+        ]
+      );
+    }
   };
 
   if (!session || !instance) {
@@ -178,6 +214,10 @@ export const SessionPlayerScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.dedicationContainer}>
+          <Image
+            source={require('../../assets/mandala-icon.png')}
+            style={styles.dedicationLogo}
+          />
           <Text style={styles.dedicationTitle}>Session Complete</Text>
           {session.dedication && (
             <Text style={styles.dedicationText}>{session.dedication}</Text>
@@ -185,6 +225,34 @@ export const SessionPlayerScreen: React.FC = () => {
           <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
             <Text style={styles.completeButtonText}>Return</Text>
           </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Paused state view
+  if (isPaused) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.meditationView}>
+          <TouchableOpacity
+            style={styles.endButtonFloating}
+            onPress={handleEndEarly}
+          >
+            <Text style={styles.endButtonText}>End</Text>
+          </TouchableOpacity>
+
+          <View style={styles.meditationContent}>
+            <Text style={styles.meditationTitle}>{session.title}</Text>
+            <Text style={styles.meditationTimer}>{formatTime(timeRemaining)}</Text>
+            <Text style={styles.meditationPrompt}>Paused</Text>
+          </View>
+
+          <View style={styles.meditationControls}>
+            <TouchableOpacity style={styles.resumeButton} onPress={handleResume}>
+              <Text style={styles.resumeButtonText}>Resume</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -447,6 +515,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
+  },  dedicaLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: spacing.xl,
+    opacity: 0.8,
+  },
+  dedicationtionLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: spacing.xl,
+    opacity: 0.8,
+  },  dedicationLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: spacing.xl,
+    opacity: 0.8,
   },
   dedicationTitle: {
     color: colors.textPrimary,
@@ -528,6 +612,17 @@ const styles = StyleSheet.create({
   pauseButtonText: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.sm,
+  },
+  resumeButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.primary,
+  },
+  resumeButtonText: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
   },
   // Pre-session view styles
   preSessionView: {

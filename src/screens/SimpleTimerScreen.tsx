@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
@@ -18,6 +19,7 @@ export const SimpleTimerScreen: React.FC = () => {
   const [duration, setDuration] = useState(10); // minutes
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [showComplete, setShowComplete] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(duration * 60); // seconds
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasPlayedGong = useRef(false);
@@ -59,6 +61,7 @@ export const SimpleTimerScreen: React.FC = () => {
               playGongSound();
             }
             setIsRunning(false);
+            setShowComplete(true);
             return 0;
           }
           return prev - 1;
@@ -101,6 +104,7 @@ export const SimpleTimerScreen: React.FC = () => {
   const handleReset = () => {
     setIsRunning(false);
     setIsPaused(false);
+    setShowComplete(false);
     setTimeRemaining(duration * 60);
     hasPlayedGong.current = false;
     audioService.stop();
@@ -131,6 +135,11 @@ export const SimpleTimerScreen: React.FC = () => {
     }
   };
 
+  const handleComplete = () => {
+    handleReset();
+    navigation.goBack();
+  };
+
   const adjustDuration = (minutes: number) => {
     if (!isRunning && !isPaused) {
       const newDuration = Math.max(1, duration + minutes);
@@ -138,6 +147,27 @@ export const SimpleTimerScreen: React.FC = () => {
       setTimeRemaining(newDuration * 60);
     }
   };
+
+  // Completion screen
+  if (showComplete) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.completionContainer}>
+          <Image
+            source={require('../../assets/mandala-icon.png')}
+            style={styles.completionLogo}
+          />
+          <Text style={styles.completionTitle}>Practice Complete</Text>
+          <Text style={styles.completionText}>
+            May your practice bring benefit to all beings.
+          </Text>
+          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
+            <Text style={styles.completeButtonText}>Return</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Paused state view
   if (isPaused) {
@@ -434,5 +464,44 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.medium,
+  },
+  // Completion screen styles
+  completionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  completionLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: spacing.xl,
+    opacity: 0.8,
+  },
+  completionTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.xxl,
+    fontWeight: typography.fontWeights.semibold,
+    marginBottom: spacing.xl,
+  },
+  completionText: {
+    color: colors.accent,
+    fontSize: typography.fontSizes.lg,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: typography.fontSizes.lg * typography.lineHeights.relaxed,
+    marginBottom: spacing.xl,
+    maxWidth: 300,
+  },
+  completeButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
+  },
+  completeButtonText: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.lg,
+    fontWeight: typography.fontWeights.semibold,
   },
 });
