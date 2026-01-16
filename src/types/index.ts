@@ -91,6 +91,7 @@ export type RootStackParamList = {
   Settings: undefined;
   ScheduleSettings: undefined;
   History: undefined;
+  SimpleTimer: undefined;
 };
 
 export type MainTabParamList = {

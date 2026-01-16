@@ -87,6 +87,17 @@ export const SettingsScreen: React.FC = () => {
         <Text style={styles.title}>Settings</Text>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Practice</Text>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('SimpleTimer')}
+          >
+            <Text style={styles.menuItemText}>Simple Timer</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Schedule</Text>
           <TouchableOpacity
             style={styles.menuItem}

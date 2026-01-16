@@ -11,6 +11,7 @@ const audioRequires: Record<string, number> = {
   session4_cutting_through: require('../../assets/audio/cutting-through.mp3'),
   session5_integration_motion: require('../../assets/audio/integration-motion.mp3'),
   session6_dissolution_rest: require('../../assets/audio/dissolution-rest.mp3'),
+  gong: require('../../assets/audio/gong.mp3'),
 };
 
 // Helper to get audio file for a session
@@ -32,5 +33,20 @@ export const getSessionAudioUri = async (sessionId: string): Promise<string | un
   }
 
   // On native, we can use the require directly
+  return undefined;
+};
+
+// Get the gong sound effect
+export const getGongSound = (): number => {
+  return audioRequires.gong;
+};
+
+export const getGongUri = async (): Promise<string | undefined> => {
+  const gongRequire = audioRequires.gong;
+  if (Platform.OS === 'web') {
+    const asset = Asset.fromModule(gongRequire);
+    await asset.downloadAsync();
+    return asset.uri;
+  }
   return undefined;
 };

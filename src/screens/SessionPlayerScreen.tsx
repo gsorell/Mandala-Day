@@ -37,6 +37,7 @@ export const SessionPlayerScreen: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(session?.durationSec || 600);
   const [showDedication, setShowDedication] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [isSilentMode, setIsSilentMode] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasStartedRef = useRef(false);
@@ -100,7 +101,7 @@ export const SessionPlayerScreen: React.FC = () => {
   // Play the pre-loaded audio after countdown finishes
   const playPreloadedAudio = async () => {
     setIsPlaying(true);
-    if (audioService.isLoaded()) {
+    if (!isSilentMode && audioService.isLoaded()) {
       await audioService.play();
     }
   };
@@ -109,7 +110,7 @@ export const SessionPlayerScreen: React.FC = () => {
     if (!isPlaying) {
       // Pre-load audio during user gesture (required for iOS Safari)
       // Then start countdown
-      if (hasAudioFile && sessionAudioFile && instance) {
+      if (hasAudioFile && sessionAudioFile && instance && !isSilentMode) {
         try {
           let audioSource: number | { uri: string } = sessionAudioFile;
 
@@ -135,12 +136,14 @@ export const SessionPlayerScreen: React.FC = () => {
           console.error('Failed to pre-load meditation audio:', error);
         }
       }
-      // Start countdown (audio will play when countdown reaches 0)
+      // Start countdown (audio will play when countdown reaches 0, or timer only for silent mode)
       setCountdown(5);
     } else {
       // Pausing playback
       setIsPlaying(false);
-      await audioService.pause();
+      if (!isSilentMode) {
+        await audioService.pause();
+      }
     }
   };
 
@@ -249,6 +252,18 @@ export const SessionPlayerScreen: React.FC = () => {
               <Text style={styles.preSessionInstruction}>
                 Find a comfortable position and prepare to begin.
               </Text>
+              
+              {hasAudioFile && (
+                <TouchableOpacity
+                  style={styles.silentToggle}
+                  onPress={() => setIsSilentMode(!isSilentMode)}
+                >
+                  <View style={styles.toggleIndicator}>
+                    {isSilentMode && <View style={styles.toggleDot} />}
+                  </View>
+                  <Text style={styles.silentToggleText}>Silent Practice</Text>
+                </TouchableOpacity>
+              )}
             </>
           )}
         </View>
@@ -533,6 +548,34 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontSize: typography.fontSizes.md,
     textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  silentToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    paddingVertical: spacing.sm,
+  },
+  toggleIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.textTertiary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+  },
+  silentToggleText: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.normal,
   },
   countdownNumber: {
     color: colors.accent,

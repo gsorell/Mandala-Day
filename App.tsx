@@ -13,6 +13,7 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { ScheduleSettingsScreen } from './src/screens/ScheduleSettingsScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing, borderRadius } from './src/utils/theme';
 import {
@@ -223,6 +224,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="ScheduleSettings"
               component={ScheduleSettingsScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="SimpleTimer"
+              component={SimpleTimerScreen}
               options={{
                 presentation: 'card',
               }}
