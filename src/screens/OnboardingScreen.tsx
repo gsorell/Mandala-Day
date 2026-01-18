@@ -189,25 +189,25 @@ export const OnboardingScreen: React.FC = () => {
   const renderFraming = () => (
     <View style={styles.stepContainer}>
       <View style={styles.centerContent}>
-        <Text style={styles.framingTitle}>A Gentle Approach</Text>
+        <Text style={styles.framingTitle}>Practice as Life</Text>
 
         <View style={styles.framingPoints}>
           <View style={styles.framingPoint}>
             <Text style={styles.framingBullet}>•</Text>
             <Text style={styles.framingText}>
-              There are no streaks to maintain.
+              Six invitations to recognize what's already here.
             </Text>
           </View>
           <View style={styles.framingPoint}>
             <Text style={styles.framingBullet}>•</Text>
             <Text style={styles.framingText}>
-              Missing a session is not failure.
+              Not separate from your day, but woven into it.
             </Text>
           </View>
           <View style={styles.framingPoint}>
             <Text style={styles.framingBullet}>•</Text>
             <Text style={styles.framingText}>
-              Each return is complete in itself.
+              Each moment a doorway to presence.
             </Text>
           </View>
         </View>

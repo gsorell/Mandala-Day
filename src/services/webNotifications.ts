@@ -175,7 +175,6 @@ const showNotification = async (notification: ScheduledNotification): Promise<vo
         badge: '/icon-192.png',
         tag: notification.id,
         requireInteraction: false,
-        vibrate: [200, 100, 200],
       });
     } else {
       // Fallback to regular notification
