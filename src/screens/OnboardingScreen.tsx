@@ -191,26 +191,9 @@ export const OnboardingScreen: React.FC = () => {
       <View style={styles.centerContent}>
         <Text style={styles.framingTitle}>Practice as Life</Text>
 
-        <View style={styles.framingPoints}>
-          <View style={styles.framingPoint}>
-            <Text style={styles.framingBullet}>•</Text>
-            <Text style={styles.framingText}>
-              Six invitations to recognize what's already here.
-            </Text>
-          </View>
-          <View style={styles.framingPoint}>
-            <Text style={styles.framingBullet}>•</Text>
-            <Text style={styles.framingText}>
-              Not separate from your day, but woven into it.
-            </Text>
-          </View>
-          <View style={styles.framingPoint}>
-            <Text style={styles.framingBullet}>•</Text>
-            <Text style={styles.framingText}>
-              Each moment a doorway to presence.
-            </Text>
-          </View>
-        </View>
+        <Text style={styles.framingParagraph}>
+          Six invitations throughout the day to recognize what's already present. This is practice woven into life itself, not separate from it. Each moment becomes a doorway to presence.
+        </Text>
 
         <Text style={styles.framingQuote}>
           "Practice without edges."
@@ -424,25 +407,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
-  framingPoints: {
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  framingPoint: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  framingBullet: {
-    color: colors.accent,
-    fontSize: typography.fontSizes.lg,
-    marginRight: spacing.sm,
-    marginTop: -2,
-  },
-  framingText: {
+  framingParagraph: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.lg,
-    flex: 1,
     lineHeight: typography.fontSizes.lg * typography.lineHeights.relaxed,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
   },
   framingQuote: {
     color: colors.accent,
