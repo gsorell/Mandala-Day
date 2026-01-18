@@ -18,6 +18,7 @@ import { colors, typography, spacing, borderRadius, shadows } from '../utils/the
 import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
 import { getSessionAudioFile, getSessionAudioUri } from '../data/audioAssets';
+import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -104,6 +105,10 @@ export const SessionPlayerScreen: React.FC = () => {
   // Play the pre-loaded audio after countdown finishes
   const playPreloadedAudio = async () => {
     setIsPlaying(true);
+    // Track meditation start
+    if (session) {
+      trackMeditationStart(session.title, session.practiceType);
+    }
     if (!isSilentMode && audioService.isLoaded()) {
       await audioService.play();
     }
@@ -161,12 +166,21 @@ export const SessionPlayerScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    // Track meditation completion
+    if (session) {
+      trackMeditationComplete(session.title, session.practiceType, session.durationSec);
+    }
     await completeSession(instanceId);
     navigation.goBack();
   };
 
   const handleEndEarly = async () => {
     const endSession = async () => {
+      // Track ending early (calculate elapsed time)
+      if (session) {
+        const elapsedSeconds = session.durationSec - timeRemaining;
+        trackMeditationEndEarly(session.title, session.practiceType, elapsedSeconds);
+      }
       await audioService.stop();
       setIsPlaying(false);
       setIsPaused(false);

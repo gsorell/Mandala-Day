@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
+import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
 
 export const SimpleTimerScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -87,6 +88,7 @@ export const SimpleTimerScreen: React.FC = () => {
       setTimeRemaining(duration * 60);
       hasPlayedGong.current = false;
     }
+    trackSimpleTimerStart(duration);
     setIsRunning(true);
     setIsPaused(false);
   };
@@ -136,6 +138,7 @@ export const SimpleTimerScreen: React.FC = () => {
   };
 
   const handleComplete = () => {
+    trackSimpleTimerComplete(duration);
     handleReset();
     navigation.goBack();
   };
