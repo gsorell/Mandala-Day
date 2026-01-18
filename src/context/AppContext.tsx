@@ -7,7 +7,7 @@ import React, {
   useRef,
   ReactNode,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import { format } from 'date-fns';
 import {
   UserSchedule,
@@ -28,6 +28,13 @@ import {
   saveDailyInstances,
 } from '../services/storage';
 import { DEFAULT_GRACE_WINDOW } from '../utils/theme';
+import {
+  scheduleAllWebNotifications,
+  startWebNotificationCheck,
+  stopWebNotificationCheck,
+  areWebNotificationsSupported,
+  getNotificationPermission,
+} from '../services/webNotifications';
 
 interface AppContextType {
   // State
@@ -138,6 +145,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     return () => clearInterval(interval);
   }, [checkAndRefreshForNewDay]);
+
+  // Schedule web notifications when on web platform
+  useEffect(() => {
+    if (Platform.OS === 'web' && appSettings?.notificationsEnabled && userSchedule && todayInstances.length > 0) {
+      // Check if notifications are supported and permission is granted
+      if (areWebNotificationsSupported() && getNotificationPermission() === 'granted') {
+        scheduleAllWebNotifications(todayInstances, userSchedule);
+        startWebNotificationCheck();
+      }
+    }
+
+    // Cleanup notification checker
+    return () => {
+      if (Platform.OS === 'web') {
+        stopWebNotificationCheck();
+      }
+    };
+  }, [todayInstances, userSchedule, appSettings?.notificationsEnabled]);
 
   // Update session statuses based on time
   useEffect(() => {

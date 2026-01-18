@@ -19,12 +19,41 @@ import { RootStackParamList } from '../types';
 import { clearAllData } from '../services/storage';
 import { debugNotifications } from '../utils/notificationDebug';
 import { scheduleAllSessionNotifications } from '../services/notifications';
+import {
+  areWebNotificationsSupported,
+  requestWebNotificationPermission,
+  getNotificationPermission,
+  getPendingWebNotificationsCount,
+  clearWebNotifications,
+} from '../services/webNotifications';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { appSettings, updateAppSettings, userSchedule, todayInstances } = useApp();
+
+  const handleNotificationToggle = async (value: boolean) => {
+    if (value && Platform.OS === 'web') {
+      // Request permission on web
+      const granted = await requestWebNotificationPermission();
+      if (!granted) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow notifications in your browser settings to receive session reminders.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+    }
+    
+    if (!value && Platform.OS === 'web') {
+      // Clear scheduled notifications when disabling
+      clearWebNotifications();
+    }
+    
+    updateAppSettings({ notificationsEnabled: value });
+  };
 
   const handleResetApp = () => {
     Alert.alert(
@@ -114,9 +143,7 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.settingLabel}>Enable Notifications</Text>
             <Switch
               value={appSettings.notificationsEnabled}
-              onValueChange={(value) =>
-                updateAppSettings({ notificationsEnabled: value })
-              }
+              onValueChange={handleNotificationToggle}
               trackColor={{ false: colors.ritualSurface, true: colors.primary }}
               thumbColor={colors.white}
             />
