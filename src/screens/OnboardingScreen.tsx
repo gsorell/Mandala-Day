@@ -213,7 +213,7 @@ export const OnboardingScreen: React.FC = () => {
         </View>
 
         <Text style={styles.framingQuote}>
-          "No streaks. No guilt. Just return."
+          "Practice without edges."
         </Text>
       </View>
 

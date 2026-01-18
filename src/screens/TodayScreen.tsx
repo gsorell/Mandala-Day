@@ -119,7 +119,7 @@ export const TodayScreen: React.FC = () => {
 
         <View style={styles.gentleReminder}>
           <Text style={styles.reminderText}>
-            No streaks. No guilt. Just return.
+            Practice without edges.
           </Text>
         </View>
       </ScrollView>
