@@ -169,7 +169,7 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.aboutSection}>
           <Image
-            source={require('../../assets/mandala-icon.png')}
+            source={require('../../assets/mandala-icon-display.png')}
             style={styles.aboutIcon}
           />
           <Text style={styles.aboutTitle}>Mandala Day</Text>

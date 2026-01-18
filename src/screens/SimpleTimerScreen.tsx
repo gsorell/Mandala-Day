@@ -157,7 +157,7 @@ export const SimpleTimerScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.completionContainer}>
           <Image
-            source={require('../../assets/mandala-icon.png')}
+            source={require('../../assets/mandala-icon-display.png')}
             style={styles.completionLogo}
           />
           <Text style={styles.completionTitle}>Practice Complete</Text>

@@ -233,7 +233,7 @@ export const SessionPlayerScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.dedicationContainer}>
           <Image
-            source={require('../../assets/mandala-icon.png')}
+            source={require('../../assets/mandala-icon-display.png')}
             style={styles.dedicationLogo}
           />
           <Text style={styles.dedicationTitle}>Session Complete</Text>

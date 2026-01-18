@@ -28,7 +28,7 @@ export const TheViewScreen: React.FC = () => {
 
         <View style={styles.headerSection}>
           <Image
-            source={require('../../assets/mandala-icon.png')}
+            source={require('../../assets/mandala-icon-display.png')}
             style={styles.logo}
           />
           <Text style={styles.title}>The View</Text>
