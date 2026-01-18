@@ -181,7 +181,7 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.gentleMessage}>
           <Text style={styles.gentleText}>
-            "No streaks. No guilt. Just return."
+            "Practice without edges."
           </Text>
         </View>
       </ScrollView>
