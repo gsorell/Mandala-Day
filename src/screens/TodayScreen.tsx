@@ -25,11 +25,9 @@ export const TodayScreen: React.FC = () => {
   const {
     todayInstances,
     userSchedule,
-    isLoading,
     refreshTodayInstances,
     skipSession,
     snoozeSession,
-    getNextDueSession,
   } = useApp();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -51,11 +49,6 @@ export const TodayScreen: React.FC = () => {
   const handleSnooze = async (instanceId: string, minutes: number) => {
     await snoozeSession(instanceId, minutes);
   };
-
-  const nextSession = getNextDueSession();
-  const completedCount = todayInstances.filter(
-    (i) => i.status === SessionStatus.COMPLETED
-  ).length;
 
   const today = format(new Date(), 'EEEE, MMMM d');
 
@@ -82,24 +75,16 @@ export const TodayScreen: React.FC = () => {
           <Text style={styles.date}>{today}</Text>
         </View>
 
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            {completedCount} of {todayInstances.length} sessions completed
-          </Text>
-          <View style={styles.progressBar}>
+        <View style={styles.dotsContainer}>
+          {todayInstances.map((instance) => (
             <View
+              key={instance.id}
               style={[
-                styles.progressFill,
-                {
-                  width: `${
-                    todayInstances.length > 0
-                      ? (completedCount / todayInstances.length) * 100
-                      : 0
-                  }%`,
-                },
+                styles.dot,
+                instance.status === SessionStatus.COMPLETED && styles.dotFilled,
               ]}
             />
-          </View>
+          ))}
         </View>
 
         <View style={styles.sessionsContainer}>
@@ -160,24 +145,23 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.sm,
     marginTop: spacing.xs,
   },
-  progressContainer: {
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
     marginBottom: spacing.lg,
   },
-  progressText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.sm,
-    marginBottom: spacing.xs,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.textTertiary,
+    backgroundColor: 'transparent',
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.full,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.full,
+  dotFilled: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   nextSessionButton: {
     backgroundColor: colors.primary,
