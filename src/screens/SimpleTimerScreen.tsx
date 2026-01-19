@@ -8,7 +8,10 @@ import {
   Alert,
   Platform,
   Image,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
@@ -24,6 +27,73 @@ export const SimpleTimerScreen: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(duration * 60); // seconds
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasPlayedGong = useRef(false);
+  // Track wall-clock time to handle screen sleep correctly
+  const startTimeRef = useRef<number | null>(null);
+  const pausedTimeRemainingRef = useRef<number>(duration * 60);
+  // Track the expected end time for background completion detection
+  const endTimeRef = useRef<number | null>(null);
+  // Track notification ID for cancellation
+  const notificationIdRef = useRef<string | null>(null);
+
+  // Schedule notification for timer completion
+  const scheduleCompletionNotification = async (seconds: number) => {
+    if (Platform.OS === 'web') return; // Skip on web
+    
+    try {
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Timer Complete',
+          body: 'Your meditation timer has finished',
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds,
+        },
+      });
+      notificationIdRef.current = identifier;
+    } catch (error) {
+      console.error('Error scheduling completion notification:', error);
+    }
+  };
+
+  // Cancel the completion notification
+  const cancelCompletionNotification = async () => {
+    if (notificationIdRef.current && Platform.OS !== 'web') {
+      try {
+        await Notifications.cancelScheduledNotificationAsync(notificationIdRef.current);
+        notificationIdRef.current = null;
+      } catch (error) {
+        console.error('Error canceling notification:', error);
+      }
+    }
+  };
+
+  // Check if timer should have completed while app was in background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && isRunning && endTimeRef.current) {
+        const now = Date.now();
+        if (now >= endTimeRef.current) {
+          // Timer should have completed while in background
+          if (!hasPlayedGong.current) {
+            hasPlayedGong.current = true;
+            playGongSound();
+          }
+          cancelCompletionNotification();
+          setIsRunning(false);
+          setShowComplete(true);
+          setTimeRemaining(0);
+          startTimeRef.current = null;
+          endTimeRef.current = null;
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isRunning]);
 
   // Play gong sound when timer completes
   const playGongSound = async () => {
@@ -53,20 +123,32 @@ export const SimpleTimerScreen: React.FC = () => {
 
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
+      // Set start time when timer begins (using wall-clock time)
+      if (startTimeRef.current === null) {
+        startTimeRef.current = Date.now();
+        pausedTimeRemainingRef.current = timeRemaining;
+      }
+
       timerRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            // Play gong before stopping
-            if (!hasPlayedGong.current) {
-              hasPlayedGong.current = true;
-              playGongSound();
-            }
-            setIsRunning(false);
-            setShowComplete(true);
-            return 0;
+        // Calculate remaining time based on actual elapsed wall-clock time
+        const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
+        const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
+
+        if (newTimeRemaining <= 0) {
+          // Play gong before stopping
+          if (!hasPlayedGong.current) {
+            hasPlayedGong.current = true;
+            playGongSound();
           }
-          return prev - 1;
-        });
+          cancelCompletionNotification();
+          setIsRunning(false);
+          setShowComplete(true);
+          setTimeRemaining(0);
+          startTimeRef.current = null;
+          endTimeRef.current = null;
+        } else {
+          setTimeRemaining(newTimeRemaining);
+        }
       }, 1000);
     }
 
@@ -75,7 +157,7 @@ export const SimpleTimerScreen: React.FC = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, timeRemaining]);
+  }, [isRunning]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -84,31 +166,51 @@ export const SimpleTimerScreen: React.FC = () => {
   };
 
   const handleStart = () => {
+    const startingTime = timeRemaining === 0 ? duration * 60 : timeRemaining;
     if (timeRemaining === 0) {
       setTimeRemaining(duration * 60);
       hasPlayedGong.current = false;
     }
     trackSimpleTimerStart(duration);
+    // Set the expected end time for background completion detection
+    endTimeRef.current = Date.now() + startingTime * 1000;
+    // Schedule notification for completion
+    scheduleCompletionNotification(startingTime);
     setIsRunning(true);
     setIsPaused(false);
   };
 
   const handlePause = () => {
+    // Save the current time remaining when pausing
+    pausedTimeRemainingRef.current = timeRemaining;
+    startTimeRef.current = null;
+    endTimeRef.current = null;
+    cancelCompletionNotification();
     setIsRunning(false);
     setIsPaused(true);
   };
 
   const handleResume = () => {
+    // Reset start time - it will be set fresh when useEffect runs
+    startTimeRef.current = null;
+    // Set expected end time for background completion detection
+    endTimeRef.current = Date.now() + timeRemaining * 1000;
+    // Schedule notification for remaining time
+    scheduleCompletionNotification(timeRemaining);
     setIsRunning(true);
     setIsPaused(false);
   };
 
   const handleReset = () => {
+    cancelCompletionNotification();
     setIsRunning(false);
     setIsPaused(false);
     setShowComplete(false);
     setTimeRemaining(duration * 60);
     hasPlayedGong.current = false;
+    startTimeRef.current = null;
+    pausedTimeRemainingRef.current = duration * 60;
+    endTimeRef.current = null;
     audioService.stop();
   };
 
@@ -148,6 +250,7 @@ export const SimpleTimerScreen: React.FC = () => {
       const newDuration = Math.max(1, duration + minutes);
       setDuration(newDuration);
       setTimeRemaining(newDuration * 60);
+      pausedTimeRemainingRef.current = newDuration * 60;
     }
   };
 
@@ -253,6 +356,7 @@ export const SimpleTimerScreen: React.FC = () => {
             onPress={() => {
               setDuration(5);
               setTimeRemaining(5 * 60);
+              pausedTimeRemainingRef.current = 5 * 60;
             }}
           >
             <Text style={styles.presetButtonText}>5 min</Text>
@@ -262,6 +366,7 @@ export const SimpleTimerScreen: React.FC = () => {
             onPress={() => {
               setDuration(10);
               setTimeRemaining(10 * 60);
+              pausedTimeRemainingRef.current = 10 * 60;
             }}
           >
             <Text style={styles.presetButtonText}>10 min</Text>
@@ -271,6 +376,7 @@ export const SimpleTimerScreen: React.FC = () => {
             onPress={() => {
               setDuration(20);
               setTimeRemaining(20 * 60);
+              pausedTimeRemainingRef.current = 20 * 60;
             }}
           >
             <Text style={styles.presetButtonText}>20 min</Text>
@@ -280,6 +386,7 @@ export const SimpleTimerScreen: React.FC = () => {
             onPress={() => {
               setDuration(30);
               setTimeRemaining(30 * 60);
+              pausedTimeRemainingRef.current = 30 * 60;
             }}
           >
             <Text style={styles.presetButtonText}>30 min</Text>

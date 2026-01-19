@@ -88,6 +88,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
   SessionPlayer: { instanceId: string };
+  SessionComplete: { instanceId: string; sessionTitle: string; dedication?: string; completedAt?: string };
   Settings: undefined;
   ScheduleSettings: undefined;
   History: undefined;

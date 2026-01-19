@@ -17,6 +17,7 @@ interface SessionCardProps {
   onStart: () => void;
   onSkip: () => void;
   onSnooze: (minutes: number) => void;
+  onShare?: () => void;
   snoozeOptions: number[];
   maxSnoozeCount: number;
 }
@@ -60,6 +61,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onStart,
   onSkip,
   onSnooze,
+  onShare,
   snoozeOptions,
   maxSnoozeCount,
 }) => {
@@ -97,9 +99,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               {showInfo ? '−' : '○'}
             </Text>
           </TouchableOpacity>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{getStatusLabel(instance.status)}</Text>
-          </View>
+          {instance.status === SessionStatus.COMPLETED && onShare ? (
+            <TouchableOpacity
+              style={[styles.statusBadge, { backgroundColor: statusColor }]}
+              onPress={onShare}
+            >
+              <Text style={styles.statusText}>{getStatusLabel(instance.status)}</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+              <Text style={styles.statusText}>{getStatusLabel(instance.status)}</Text>
+            </View>
+          )}
         </View>
       </View>
 

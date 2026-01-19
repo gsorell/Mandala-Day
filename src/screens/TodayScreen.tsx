@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { SessionCard } from '../components/SessionCard';
+import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList, SessionStatus } from '../types';
 import { MAX_SNOOZE_COUNT, DEFAULT_SNOOZE_OPTIONS } from '../utils/theme';
@@ -48,6 +49,18 @@ export const TodayScreen: React.FC = () => {
 
   const handleSnooze = async (instanceId: string, minutes: number) => {
     await snoozeSession(instanceId, minutes);
+  };
+
+  const handleShare = (instanceId: string, templateId: string, endedAt?: string) => {
+    const session = getSessionById(templateId);
+    if (session) {
+      navigation.navigate('SessionComplete', {
+        instanceId,
+        sessionTitle: session.title,
+        dedication: session.dedication,
+        completedAt: endedAt,
+      });
+    }
   };
 
   const today = format(new Date(), 'EEEE, MMMM d');
@@ -96,6 +109,7 @@ export const TodayScreen: React.FC = () => {
               onStart={() => handleStart(instance.id)}
               onSkip={() => handleSkip(instance.id)}
               onSnooze={(minutes) => handleSnooze(instance.id, minutes)}
+              onShare={() => handleShare(instance.id, instance.templateId, instance.endedAt)}
               snoozeOptions={userSchedule?.snoozeOptionsMin || DEFAULT_SNOOZE_OPTIONS}
               maxSnoozeCount={MAX_SNOOZE_COUNT}
             />

@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Platform,
-  Image,
   Alert,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -45,6 +46,11 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasStartedRef = useRef(false);
+  // Track wall-clock time to handle screen sleep correctly
+  const startTimeRef = useRef<number | null>(null);
+  const pausedTimeRemainingRef = useRef<number>(session?.durationSec || 600);
+  // Track the expected end time for background completion detection
+  const endTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!hasStartedRef.current && instance) {
@@ -59,6 +65,27 @@ export const SessionPlayerScreen: React.FC = () => {
       audioService.stop();
     };
   }, []);
+
+  // Check if meditation should have completed while app was in background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
+        const now = Date.now();
+        if (now >= endTimeRef.current) {
+          // Timer should have completed while in background
+          setIsPlaying(false);
+          setShowDedication(true);
+          setTimeRemaining(0);
+          startTimeRef.current = null;
+          endTimeRef.current = null;
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isPlaying]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -76,16 +103,27 @@ export const SessionPlayerScreen: React.FC = () => {
 
   useEffect(() => {
     if (isPlaying && timeRemaining > 0) {
+      // Set start time when timer begins (using wall-clock time)
+      if (startTimeRef.current === null) {
+        startTimeRef.current = Date.now();
+        pausedTimeRemainingRef.current = timeRemaining;
+      }
+
       timerRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            setIsPlaying(false);
-            setShowDedication(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+        // Calculate remaining time based on actual elapsed wall-clock time
+        const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
+        const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
+
+        if (newTimeRemaining <= 0) {
+          clearInterval(timerRef.current!);
+          setIsPlaying(false);
+          setShowDedication(true);
+          setTimeRemaining(0);
+          startTimeRef.current = null;
+          endTimeRef.current = null;
+        } else {
+          setTimeRemaining(newTimeRemaining);
+        }
       }, 1000);
     }
 
@@ -94,7 +132,23 @@ export const SessionPlayerScreen: React.FC = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isPlaying, timeRemaining]);
+  }, [isPlaying]);
+
+  // Navigate to share screen when meditation completes
+  useEffect(() => {
+    if (showDedication && session) {
+      const completeAndNavigate = async () => {
+        trackMeditationComplete(session.title, session.practiceType, session.durationSec);
+        await completeSession(instanceId);
+        navigation.replace('SessionComplete', {
+          instanceId,
+          sessionTitle: session.title,
+          dedication: session.dedication,
+        });
+      };
+      completeAndNavigate();
+    }
+  }, [showDedication]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -109,6 +163,8 @@ export const SessionPlayerScreen: React.FC = () => {
     if (session) {
       trackMeditationStart(session.title, session.practiceType);
     }
+    // Set the expected end time for background completion detection
+    endTimeRef.current = Date.now() + timeRemaining * 1000;
     if (!isSilentMode && audioService.isLoaded()) {
       await audioService.play();
     }
@@ -148,7 +204,10 @@ export const SessionPlayerScreen: React.FC = () => {
       setCountdown(5);
       setIsPaused(false);
     } else {
-      // Pausing playback
+      // Pausing playback - save the current time remaining
+      pausedTimeRemainingRef.current = timeRemaining;
+      startTimeRef.current = null;
+      endTimeRef.current = null;
       setIsPlaying(false);
       setIsPaused(true);
       if (!isSilentMode) {
@@ -158,20 +217,15 @@ export const SessionPlayerScreen: React.FC = () => {
   };
 
   const handleResume = async () => {
+    // Reset start time - it will be set fresh when useEffect runs
+    startTimeRef.current = null;
+    // Set the expected end time for background completion detection
+    endTimeRef.current = Date.now() + timeRemaining * 1000;
     setIsPlaying(true);
     setIsPaused(false);
     if (!isSilentMode && audioService.isLoaded()) {
       await audioService.play();
     }
-  };
-
-  const handleComplete = async () => {
-    // Track meditation completion
-    if (session) {
-      trackMeditationComplete(session.title, session.practiceType, session.durationSec);
-    }
-    await completeSession(instanceId);
-    navigation.goBack();
   };
 
   const handleEndEarly = async () => {
@@ -182,6 +236,7 @@ export const SessionPlayerScreen: React.FC = () => {
         trackMeditationEndEarly(session.title, session.practiceType, elapsedSeconds);
       }
       await audioService.stop();
+      endTimeRef.current = null;
       setIsPlaying(false);
       setIsPaused(false);
       navigation.goBack();
@@ -228,25 +283,6 @@ export const SessionPlayerScreen: React.FC = () => {
     );
   }
 
-  if (showDedication) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.dedicationContainer}>
-          <Image
-            source={require('../../assets/mandala-icon-display.png')}
-            style={styles.dedicationLogo}
-          />
-          <Text style={styles.dedicationTitle}>Session Complete</Text>
-          {session.dedication && (
-            <Text style={styles.dedicationText}>{session.dedication}</Text>
-          )}
-          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-            <Text style={styles.completeButtonText}>Return</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // Paused state view
   if (isPaused) {

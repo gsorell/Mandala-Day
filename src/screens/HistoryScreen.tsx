@@ -8,11 +8,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, subDays, parseISO } from 'date-fns';
 import { getDailyInstances } from '../services/storage';
-import { DailySessionInstance, SessionStatus } from '../types';
+import { DailySessionInstance, SessionStatus, RootStackParamList } from '../types';
 import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface DayData {
   date: string;
@@ -22,7 +25,7 @@ interface DayData {
 }
 
 export const HistoryScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [historyData, setHistoryData] = useState<DayData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,6 +80,18 @@ export const HistoryScreen: React.FC = () => {
     0
   );
 
+  const handleShareSession = (instance: DailySessionInstance) => {
+    const session = getSessionById(instance.templateId);
+    if (session) {
+      navigation.navigate('SessionComplete', {
+        instanceId: instance.id,
+        sessionTitle: session.title,
+        dedication: session.dedication,
+        completedAt: instance.endedAt,
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
@@ -114,6 +129,23 @@ export const HistoryScreen: React.FC = () => {
               <View style={styles.sessionDots}>
                 {day.instances.map((instance) => {
                   const session = getSessionById(instance.templateId);
+                  const isCompleted = instance.status === SessionStatus.COMPLETED;
+
+                  if (isCompleted) {
+                    return (
+                      <TouchableOpacity
+                        key={instance.id}
+                        style={[
+                          styles.sessionDot,
+                          { backgroundColor: getStatusColor(instance.status) },
+                        ]}
+                        onPress={() => handleShareSession(instance)}
+                      >
+                        <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
+                      </TouchableOpacity>
+                    );
+                  }
+
                   return (
                     <View
                       key={instance.id}
