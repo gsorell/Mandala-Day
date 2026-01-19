@@ -10,7 +10,6 @@ import {
   Image,
 } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, parseISO } from 'date-fns';
@@ -62,8 +61,10 @@ export const SessionCompleteScreen: React.FC = () => {
           quality: 1,
         });
 
-        // Check if sharing is available
+        // Dynamically import expo-sharing only on native platforms
+        const Sharing = await import('expo-sharing');
         const isAvailable = await Sharing.isAvailableAsync();
+        
         if (isAvailable) {
           await Sharing.shareAsync(uri, {
             mimeType: 'image/png',
