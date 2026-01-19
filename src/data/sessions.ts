@@ -286,7 +286,7 @@ Rest for a few moments in that.
     practiceType: PracticeType.DIRECT_AWARENESS,
     defaultTime: '15:00',
     shortPrompt: 'Look directly at what knows.',
-    durationSec: 600,
+    durationSec: 605,
     tags: ['mahamudra', 'awareness', 'inquiry', 'recognition'],
     dedication: 'May the nature of mind be recognized.',
     scriptText: `Settle into stillness.

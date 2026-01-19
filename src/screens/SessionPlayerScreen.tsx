@@ -114,7 +114,9 @@ export const SessionPlayerScreen: React.FC = () => {
         const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
-        if (newTimeRemaining <= 0) {
+        // Only end session via timer in silent mode (no audio)
+        // When audio is playing, let the audio's onComplete callback handle completion
+        if (newTimeRemaining <= 0 && isSilentMode) {
           clearInterval(timerRef.current!);
           setIsPlaying(false);
           setShowDedication(true);
@@ -132,7 +134,7 @@ export const SessionPlayerScreen: React.FC = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isPlaying]);
+  }, [isPlaying, isSilentMode]);
 
   // Navigate to share screen when meditation completes
   useEffect(() => {
