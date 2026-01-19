@@ -39,8 +39,8 @@ export const SessionCompleteScreen: React.FC = () => {
 
   const handleShare = async () => {
     const shareText = dedication
-      ? `I just completed a ten minute meditation with MandalaDay.\n\n${sessionTitle}\n"${dedication}"\n\nhttps://mandaladay.netlify.app`
-      : `I just completed a ten minute meditation with MandalaDay.\n\n${sessionTitle}\n\nhttps://mandaladay.netlify.app`;
+      ? `I'm practicing six moments of awareness throughout the day with MandalaDay. These returns to presence have been grounding.\n\n${sessionTitle}\n"${dedication}"\n\nJoin me:\nhttps://mandaladay.netlify.app`
+      : `I'm practicing six moments of awareness throughout the day with MandalaDay. These returns to presence have been grounding.\n\n${sessionTitle}\n\nJoin me:\nhttps://mandaladay.netlify.app`;
 
     try {
       if (Platform.OS === 'web') {
