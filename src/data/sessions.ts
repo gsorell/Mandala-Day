@@ -11,6 +11,7 @@ export const DEFAULT_SESSIONS: SessionTemplate[] = [
     durationSec: 600,
     tags: ['view', 'shamatha', 'morning'],
     dedication: 'May clarity and kindness guide this day.',
+    shareMessage: 'May clarity find you today',
     scriptText: `Begin where you are.
 
 There's no preparation needed.
@@ -90,6 +91,7 @@ carry itself into the day.
     durationSec: 600,
     tags: ['body', 'breath', 'grounding'],
     dedication: 'May this body be a vessel for awakening.',
+    shareMessage: 'Feeling connected to you',
     scriptText: `Let yourself arrive in the body.
 
 Not as an object to observe,
@@ -189,6 +191,7 @@ Rest here a moment longer.
     durationSec: 600,
     tags: ['compassion', 'chenrezig', 'mantra', 'heart'],
     dedication: 'May all beings be free from suffering.',
+    shareMessage: 'Sending warmth your way',
     scriptText: `Begin by letting yourself arrive.
 
 Let the body settle enough
@@ -289,6 +292,7 @@ Rest for a few moments in that.
     durationSec: 605,
     tags: ['mahamudra', 'awareness', 'inquiry', 'recognition'],
     dedication: 'May the nature of mind be recognized.',
+    shareMessage: 'Recognizing what matters',
     scriptText: `Settle into stillness.
 
 Let the body be as it is.
@@ -384,6 +388,7 @@ as you move back into the day.
     durationSec: 600,
     tags: ['walking', 'movement', 'integration', 'embodiment'],
     dedication: 'May awareness infuse all activity.',
+    shareMessage: 'Carrying you with me',
     scriptText: `Begin by standing,
 or by letting the body move naturally.
 
@@ -472,6 +477,7 @@ for awareness to remain present.
     durationSec: 600,
     tags: ['evening', 'rest', 'dissolution', 'sleep'],
     dedication: 'May rest carry awareness into dreams.',
+    shareMessage: 'Wishing you peaceful rest',
     scriptText: `Let the day begin to loosen its hold.
 
 You don't need to review everything.

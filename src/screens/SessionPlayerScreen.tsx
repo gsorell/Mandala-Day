@@ -146,6 +146,7 @@ export const SessionPlayerScreen: React.FC = () => {
           instanceId,
           sessionTitle: session.title,
           dedication: session.dedication,
+          shareMessage: session.shareMessage,
         });
       };
       completeAndNavigate();

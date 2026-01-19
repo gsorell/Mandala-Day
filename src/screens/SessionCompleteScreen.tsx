@@ -24,7 +24,7 @@ export const SessionCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { todayInstances } = useApp();
-  const { sessionTitle, dedication, completedAt } = route.params;
+  const { sessionTitle, dedication, shareMessage, completedAt } = route.params;
   const shareCardRef = useRef<View>(null);
 
   // Use completedAt if provided (viewing past completion), otherwise use current time
@@ -38,9 +38,10 @@ export const SessionCompleteScreen: React.FC = () => {
     todayInstances.every((instance) => instance.status === SessionStatus.COMPLETED);
 
   const handleShare = async () => {
+    const message = shareMessage || 'Thinking of you';
     const shareText = dedication
-      ? `Thinking of you 🙏\n\n${sessionTitle}\n"${dedication}"\n\nhttps://mandaladay.netlify.app`
-      : `Thinking of you 🙏\n\n${sessionTitle}\n\nhttps://mandaladay.netlify.app`;
+      ? `${message} 🙏\n\n${sessionTitle}\n"${dedication}"\n\nhttps://mandaladay.netlify.app`
+      : `${message} 🙏\n\n${sessionTitle}\n\nhttps://mandaladay.netlify.app`;
 
     try {
       if (Platform.OS === 'web') {

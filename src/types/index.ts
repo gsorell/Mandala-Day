@@ -38,6 +38,7 @@ export interface SessionTemplate {
   scriptText: string;
   tags: string[];
   dedication?: string;
+  shareMessage?: string; // Custom message for sharing after completion
   audioFile?: number; // require() asset for pre-recorded audio (replaces TTS)
 }
 
@@ -88,7 +89,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
   SessionPlayer: { instanceId: string };
-  SessionComplete: { instanceId: string; sessionTitle: string; dedication?: string; completedAt?: string };
+  SessionComplete: { instanceId: string; sessionTitle: string; dedication?: string; shareMessage?: string; completedAt?: string };
   Settings: undefined;
   ScheduleSettings: undefined;
   History: undefined;
