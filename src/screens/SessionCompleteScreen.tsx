@@ -44,15 +44,44 @@ export const SessionCompleteScreen: React.FC = () => {
 
     try {
       if (Platform.OS === 'web') {
-        // Web: Use Web Share API if available, otherwise copy to clipboard
-        if (navigator.share) {
-          await navigator.share({
-            title: 'MandalaDay',
-            text: shareText,
+        // Web/PWA: Capture card as image and share using Web Share API
+        const html2canvas = (await import('html2canvas')).default;
+        const element = shareCardRef.current;
+        
+        if (element) {
+          const canvas = await html2canvas(element as any);
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              const file = new File([blob], 'meditation-complete.png', { type: 'image/png' });
+              
+              // Check if Web Share API with files is supported
+              if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                try {
+                  await navigator.share({
+                    title: 'MandalaDay',
+                    text: shareText,
+                    files: [file],
+                  });
+                  return;
+                } catch (err: any) {
+                  if (err.name !== 'AbortError') {
+                    console.error('Share failed:', err);
+                  }
+                }
+              }
+              
+              // Fallback: download image and copy text
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'meditation-complete.png';
+              a.click();
+              URL.revokeObjectURL(url);
+              
+              await navigator.clipboard.writeText(shareText);
+              alert('Image downloaded and text copied to clipboard');
+            }
           });
-        } else {
-          await navigator.clipboard.writeText(shareText);
-          alert('Copied to clipboard');
         }
       } else {
         // Native: Capture the card as an image and share with text using react-native-share
