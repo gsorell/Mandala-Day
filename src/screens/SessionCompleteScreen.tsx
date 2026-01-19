@@ -39,8 +39,8 @@ export const SessionCompleteScreen: React.FC = () => {
 
   const handleShare = async () => {
     const shareText = dedication
-      ? `Thinking of you.\n\n${sessionTitle}\n"${dedication}"\n\nhttps://mandaladay.netlify.app`
-      : `Thinking of you.\n\n${sessionTitle}\n\nhttps://mandaladay.netlify.app`;
+      ? `Thinking of you 🙏\n\n${sessionTitle}\n"${dedication}"\n\nhttps://mandaladay.netlify.app`
+      : `Thinking of you 🙏\n\n${sessionTitle}\n\nhttps://mandaladay.netlify.app`;
 
     try {
       if (Platform.OS === 'web') {
