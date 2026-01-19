@@ -278,6 +278,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const instance = todayInstances.find((i) => i.id === instanceId);
       if (!instance) return;
 
+      // Don't change status if already completed - allow reviewing completed sessions
+      if (instance.status === SessionStatus.COMPLETED) {
+        return;
+      }
+
       const updatedInstance: DailySessionInstance = {
         ...instance,
         status: SessionStatus.DUE,
