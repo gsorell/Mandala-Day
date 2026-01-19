@@ -135,12 +135,13 @@ export const SimpleTimerScreen: React.FC = () => {
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
         if (newTimeRemaining <= 0) {
+          // Cancel notification first to avoid duplicate sounds
+          cancelCompletionNotification();
           // Play gong before stopping
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
             playGongSound();
           }
-          cancelCompletionNotification();
           setIsRunning(false);
           setShowComplete(true);
           setTimeRemaining(0);
