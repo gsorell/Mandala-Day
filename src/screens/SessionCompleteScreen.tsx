@@ -9,6 +9,8 @@ import {
   Share,
   Image,
 } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, parseISO } from 'date-fns';
@@ -54,10 +56,25 @@ export const SessionCompleteScreen: React.FC = () => {
           alert('Copied to clipboard');
         }
       } else {
-        // Native: Use React Native Share
-        await Share.share({
-          message: shareText,
+        // Native: Capture the card as an image and share with text
+        const uri = await captureRef(shareCardRef, {
+          format: 'png',
+          quality: 1,
         });
+
+        // Check if sharing is available
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'image/png',
+            dialogTitle: shareText,
+          });
+        } else {
+          // Fallback to text-only share if image sharing isn't available
+          await Share.share({
+            message: shareText,
+          });
+        }
       }
     } catch (error) {
       console.error('Error sharing:', error);
