@@ -55,30 +55,27 @@ export const SessionCompleteScreen: React.FC = () => {
           alert('Copied to clipboard');
         }
       } else {
-        // Native: Capture the card as an image and share with text
+        // Native: Capture the card as an image and share with text using react-native-share
         const uri = await captureRef(shareCardRef, {
           format: 'png',
           quality: 1,
         });
 
-        // Dynamically import expo-sharing only on native platforms
-        const Sharing = await import('expo-sharing');
-        const isAvailable = await Sharing.isAvailableAsync();
+        // Dynamically import react-native-share only on native platforms
+        const RNShare = await import('react-native-share');
         
-        if (isAvailable) {
-          await Sharing.shareAsync(uri, {
-            mimeType: 'image/png',
-            dialogTitle: shareText,
-          });
-        } else {
-          // Fallback to text-only share if image sharing isn't available
-          await Share.share({
-            message: shareText,
-          });
-        }
+        await RNShare.default.open({
+          title: 'Share Meditation',
+          message: shareText,
+          url: `file://${uri}`,
+          type: 'image/png',
+        });
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
+    } catch (error: any) {
+      // User cancelled or error occurred
+      if (error?.message !== 'User did not share') {
+        console.error('Error sharing:', error);
+      }
     }
   };
 
