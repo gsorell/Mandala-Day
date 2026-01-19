@@ -94,11 +94,9 @@ export const SessionCompleteScreen: React.FC = () => {
         const RNShare = await import('react-native-share');
         
         await RNShare.default.open({
-          title: 'Share Meditation',
           message: shareText,
-          url: uri, // Remove file:// prefix - react-native-share handles it
+          url: `file://${uri}`,
           type: 'image/png',
-          subject: 'MandalaDay Meditation Complete',
         });
       }
     } catch (error: any) {
