@@ -16,6 +16,7 @@ import { format, parseISO } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { RootStackParamList, SessionStatus } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
+import { sessionSymbols } from '../utils/ritualSymbols';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -24,7 +25,7 @@ export const SessionCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { todayInstances } = useApp();
-  const { sessionTitle, dedication, shareMessage, completedAt } = route.params;
+  const { instanceId, sessionTitle, dedication, shareMessage, completedAt } = route.params;
   const shareCardRef = useRef<View>(null);
 
   // Use completedAt if provided (viewing past completion), otherwise use current time
@@ -32,6 +33,11 @@ export const SessionCompleteScreen: React.FC = () => {
   const completionDate = completedAt ? parseISO(completedAt) : new Date();
   const displayDate = format(completionDate, 'MMMM d, yyyy');
   const displayTime = format(completionDate, 'h:mm a');
+
+  // Get the session symbol from the templateId (instanceId format: "YYYY-MM-DD_templateId")
+  const templateId = instanceId.split('_').slice(1).join('_');
+  const symbolData = sessionSymbols[templateId as keyof typeof sessionSymbols];
+  const sessionSymbol = symbolData?.glyph || '◯';
 
   // Check if all sessions for today are complete (only for fresh completions)
   const allSessionsComplete = !isViewingPast && todayInstances.length > 0 &&
@@ -141,9 +147,19 @@ export const SessionCompleteScreen: React.FC = () => {
 
           {/* Content overlay */}
           <View style={styles.cardContent}>
+            {/* Session symbol */}
+            <Text style={styles.sessionSymbol}>{sessionSymbol}</Text>
+
             <Text style={styles.completedLabel}>Session Complete</Text>
 
             <Text style={styles.sessionTitle}>{sessionTitle}</Text>
+
+            {/* Decorative divider */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerOrnament}>✦</Text>
+              <View style={styles.dividerLine} />
+            </View>
 
             {dedication && (
               <Text style={styles.dedication}>"{dedication}"</Text>
@@ -219,7 +235,7 @@ const styles = StyleSheet.create({
     height: '120%',
     top: '-10%',
     left: '-10%',
-    opacity: 0.06,
+    opacity: 0.08,
     resizeMode: 'contain',
   },
   cardContent: {
@@ -227,45 +243,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
+    paddingTop: spacing.lg,
     zIndex: 1,
+  },
+  sessionSymbol: {
+    fontSize: 28,
+    color: colors.accent,
+    marginBottom: spacing.sm,
+    opacity: 0.9,
   },
   completedLabel: {
     color: colors.textTertiary,
-    fontSize: typography.fontSizes.sm,
+    fontSize: typography.fontSizes.xs,
     letterSpacing: typography.letterSpacing.spacious,
     textTransform: 'uppercase',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   sessionTitle: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xxl,
     fontWeight: typography.fontWeights.medium,
     textAlign: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
     lineHeight: typography.fontSizes.xxl * typography.lineHeights.tight,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    width: '60%',
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.charcoal,
+  },
+  dividerOrnament: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.xs,
+    marginHorizontal: spacing.sm,
+    opacity: 0.6,
   },
   dedication: {
     color: colors.accent,
-    fontSize: typography.fontSizes.lg,
+    fontSize: typography.fontSizes.md,
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: typography.fontSizes.lg * typography.lineHeights.relaxed,
-    marginBottom: spacing.xl,
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+    marginBottom: spacing.lg,
     paddingHorizontal: spacing.md,
+    opacity: 0.9,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   dateText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.sm,
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.xs,
   },
   timeSeparator: {
     color: colors.textTertiary,
-    fontSize: typography.fontSizes.sm,
+    fontSize: typography.fontSizes.xs,
     marginHorizontal: spacing.sm,
+    opacity: 0.5,
   },
   branding: {
     color: colors.textTertiary,
