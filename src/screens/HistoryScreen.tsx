@@ -15,6 +15,9 @@ import { DailySessionInstance, SessionStatus, RootStackParamList } from '../type
 import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 
+// Number of sessions that constitute a full mandala
+const FULL_MANDALA_COUNT = 6;
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface DayData {
@@ -116,12 +119,20 @@ export const HistoryScreen: React.FC = () => {
           const dateObj = parseISO(day.date);
           const isToday = format(new Date(), 'yyyy-MM-dd') === day.date;
           const dayLabel = isToday ? 'Today' : format(dateObj, 'EEEE, MMM d');
+          const isFullMandala = day.completedCount === FULL_MANDALA_COUNT && day.totalCount === FULL_MANDALA_COUNT;
 
           return (
-            <View key={day.date} style={styles.dayCard}>
+            <View key={day.date} style={[styles.dayCard, isFullMandala && styles.dayCardComplete]}>
               <View style={styles.dayHeader}>
-                <Text style={styles.dayLabel}>{dayLabel}</Text>
-                <Text style={styles.dayCount}>
+                <View style={styles.dayLabelRow}>
+                  <Text style={styles.dayLabel}>{dayLabel}</Text>
+                  {isFullMandala && (
+                    <View style={styles.charmBadge}>
+                      <Text style={styles.charmSymbol}>❁</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.dayCount, isFullMandala && styles.dayCountComplete]}>
                   {day.completedCount} / {day.totalCount}
                 </Text>
               </View>
@@ -236,11 +247,20 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
+  dayCardComplete: {
+    borderWidth: 1,
+    borderColor: colors.completeMandala,
+  },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
+  },
+  dayLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   dayLabel: {
     color: colors.textPrimary,
@@ -250,6 +270,21 @@ const styles = StyleSheet.create({
   dayCount: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.sm,
+  },
+  dayCountComplete: {
+    color: colors.completeMandala,
+  },
+  charmBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  charmSymbol: {
+    fontSize: 12,
+    color: colors.completeMandala,
   },
   sessionDots: {
     flexDirection: 'row',

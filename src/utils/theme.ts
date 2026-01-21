@@ -27,6 +27,7 @@ export const colors = {
   passed: '#5a5a6a', // Neutral gray-violet
   upcoming: '#4a5a6a', // Soft blue-gray
   complete: '#6a7a6a', // Muted sage (not "success" green)
+  completeMandala: '#D4AF37', // Golden radiance for full mandala completion
   
   // Geometry colors (for sacred shapes)
   geometryPrimary: '#B8945F', // Aged brass

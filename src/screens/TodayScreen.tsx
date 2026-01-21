@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { SessionCard } from '../components/SessionCard';
+import { MandalaComplete } from '../components/MandalaComplete';
 import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList, SessionStatus } from '../types';
@@ -65,6 +66,11 @@ export const TodayScreen: React.FC = () => {
 
   const today = format(new Date(), 'EEEE, MMMM d');
 
+  // Check if all sessions are completed for today
+  const allSessionsComplete =
+    todayInstances.length > 0 &&
+    todayInstances.every((instance) => instance.status === SessionStatus.COMPLETED);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -95,10 +101,13 @@ export const TodayScreen: React.FC = () => {
               style={[
                 styles.dot,
                 instance.status === SessionStatus.COMPLETED && styles.dotFilled,
+                allSessionsComplete && styles.dotComplete,
               ]}
             />
           ))}
         </View>
+
+        {allSessionsComplete && <MandalaComplete />}
 
         <View style={styles.sessionsContainer}>
           <Text style={styles.sectionTitle}>Your Mandala</Text>
@@ -176,6 +185,10 @@ const styles = StyleSheet.create({
   dotFilled: {
     backgroundColor: colors.accent,
     borderColor: colors.accent,
+  },
+  dotComplete: {
+    backgroundColor: colors.completeMandala,
+    borderColor: colors.completeMandala,
   },
   nextSessionButton: {
     backgroundColor: colors.primary,
