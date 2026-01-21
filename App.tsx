@@ -10,6 +10,7 @@ import { AppProvider, useApp } from './src/context/AppContext';
 import { TodayScreen } from './src/screens/TodayScreen';
 import { SessionPlayerScreen } from './src/screens/SessionPlayerScreen';
 import { SessionCompleteScreen } from './src/screens/SessionCompleteScreen';
+import { MandalaCompleteScreen } from './src/screens/MandalaCompleteScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { ScheduleSettingsScreen } from './src/screens/ScheduleSettingsScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
@@ -269,6 +270,14 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="SessionComplete"
               component={SessionCompleteScreen}
+              options={{
+                presentation: 'fullScreenModal',
+                animation: 'fade',
+              }}
+            />
+            <Stack.Screen
+              name="MandalaComplete"
+              component={MandalaCompleteScreen}
               options={{
                 presentation: 'fullScreenModal',
                 animation: 'fade',

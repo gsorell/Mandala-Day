@@ -89,10 +89,11 @@ export const TodayScreen: React.FC = () => {
           style={styles.logo}
         />
         
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Today</Text>
-          <Text style={styles.date}>{today}</Text>
-        </View>
+        {allSessionsComplete && (
+          <MandalaComplete
+            onPress={() => navigation.navigate('MandalaComplete', { date: format(new Date(), 'yyyy-MM-dd') })}
+          />
+        )}
 
         <View style={styles.dotsContainer}>
           {todayInstances.map((instance) => (
@@ -107,7 +108,10 @@ export const TodayScreen: React.FC = () => {
           ))}
         </View>
 
-        {allSessionsComplete && <MandalaComplete />}
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Today</Text>
+          <Text style={styles.date}>{today}</Text>
+        </View>
 
         <View style={styles.sessionsContainer}>
           <Text style={styles.sectionTitle}>Your Mandala</Text>

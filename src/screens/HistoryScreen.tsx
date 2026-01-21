@@ -127,9 +127,12 @@ export const HistoryScreen: React.FC = () => {
                 <View style={styles.dayLabelRow}>
                   <Text style={styles.dayLabel}>{dayLabel}</Text>
                   {isFullMandala && (
-                    <View style={styles.charmBadge}>
+                    <TouchableOpacity
+                      style={styles.charmBadge}
+                      onPress={() => navigation.navigate('MandalaComplete', { date: day.date })}
+                    >
                       <Text style={styles.charmSymbol}>❁</Text>
-                    </View>
+                    </TouchableOpacity>
                   )}
                 </View>
                 <Text style={[styles.dayCount, isFullMandala && styles.dayCountComplete]}>
