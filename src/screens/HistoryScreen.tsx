@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, subDays, parseISO } from 'date-fns';
 import { getDailyInstances } from '../services/storage';
@@ -32,38 +32,42 @@ export const HistoryScreen: React.FC = () => {
   const [historyData, setHistoryData] = useState<DayData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadHistory = async () => {
-      const days: DayData[] = [];
-      const today = new Date();
+  const loadHistory = useCallback(async () => {
+    setIsLoading(true);
+    const days: DayData[] = [];
+    const today = new Date();
 
-      for (let i = 0; i < 14; i++) {
-        const date = subDays(today, i);
-        const dateStr = format(date, 'yyyy-MM-dd');
+    for (let i = 0; i < 14; i++) {
+      const date = subDays(today, i);
+      const dateStr = format(date, 'yyyy-MM-dd');
 
-        try {
-          const instances = await getDailyInstances(dateStr);
-          const completedCount = instances.filter(
-            (inst) => inst.status === SessionStatus.COMPLETED
-          ).length;
+      try {
+        const instances = await getDailyInstances(dateStr);
+        const completedCount = instances.filter(
+          (inst) => inst.status === SessionStatus.COMPLETED
+        ).length;
 
-          days.push({
-            date: dateStr,
-            instances,
-            completedCount,
-            totalCount: instances.length,
-          });
-        } catch (error) {
-          console.error(`Error loading history for ${dateStr}:`, error);
-        }
+        days.push({
+          date: dateStr,
+          instances,
+          completedCount,
+          totalCount: instances.length,
+        });
+      } catch (error) {
+        console.error(`Error loading history for ${dateStr}:`, error);
       }
+    }
 
-      setHistoryData(days);
-      setIsLoading(false);
-    };
-
-    loadHistory();
+    setHistoryData(days);
+    setIsLoading(false);
   }, []);
+
+  // Reload history data every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadHistory();
+    }, [loadHistory])
+  );
 
   const getStatusColor = (status: SessionStatus): string => {
     switch (status) {
