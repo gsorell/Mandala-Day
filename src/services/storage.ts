@@ -82,18 +82,31 @@ export const saveAppSettings = async (settings: AppSettings): Promise<void> => {
   }
 };
 
-// Daily Session Instances
-export const getDailyInstances = async (
+// Daily Session Instances - read only, does not auto-generate
+export const getDailyInstancesRaw = async (
   date: string
-): Promise<DailySessionInstance[]> => {
+): Promise<DailySessionInstance[] | null> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_INSTANCES);
     const allInstances: Record<string, DailySessionInstance[]> = data
       ? JSON.parse(data)
       : {};
 
-    if (allInstances[date]) {
-      return allInstances[date];
+    return allInstances[date] || null;
+  } catch (error) {
+    console.error('Error loading daily instances:', error);
+    return null;
+  }
+};
+
+// Daily Session Instances - auto-generates if not found
+export const getDailyInstances = async (
+  date: string
+): Promise<DailySessionInstance[]> => {
+  try {
+    const existing = await getDailyInstancesRaw(date);
+    if (existing) {
+      return existing;
     }
 
     // Generate instances for this date if they don't exist
@@ -143,7 +156,12 @@ export const updateSessionInstance = async (
   instance: DailySessionInstance
 ): Promise<void> => {
   try {
-    const instances = await getDailyInstances(instance.date);
+    // Use raw read to avoid auto-generation which could cause race conditions
+    const instances = await getDailyInstancesRaw(instance.date);
+    if (!instances) {
+      console.error('No instances found for date:', instance.date);
+      return;
+    }
     const index = instances.findIndex((i) => i.id === instance.id);
     if (index !== -1) {
       instances[index] = instance;
