@@ -4,7 +4,7 @@
     "slug": "mandala-day",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/mandala-icon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -33,7 +33,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/mandala-icon.png",
+      "favicon": "./assets/favicon.png",
       "bundler": "metro",
       "output": "single",
       "themeColor": "#0b0817",
