@@ -32,9 +32,10 @@ export const areNotificationsAvailable = async (): Promise<boolean> => {
     });
 
     // Timer completion channel with gong sound
-    await Notifications.setNotificationChannelAsync('timer', {
+    // Using unique channel ID because Android caches channel settings
+    await Notifications.setNotificationChannelAsync('timer-gong', {
       name: 'Timer Completion',
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#6B5B95',
       sound: 'gong.mp3',
