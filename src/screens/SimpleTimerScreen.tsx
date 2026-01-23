@@ -35,16 +35,18 @@ export const SimpleTimerScreen: React.FC = () => {
   // Track notification ID for cancellation
   const notificationIdRef = useRef<string | null>(null);
 
-  // Schedule notification for timer completion
+  // Schedule notification for timer completion with gong sound
   const scheduleCompletionNotification = async (seconds: number) => {
     if (Platform.OS === 'web') return; // Skip on web
-    
+
     try {
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Timer Complete',
           body: 'Your meditation timer has finished',
-          sound: true,
+          // Use gong.mp3 for both platforms - expo-notifications handles the path
+          sound: 'gong.mp3',
+          ...(Platform.OS === 'android' && { channelId: 'timer' }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -221,14 +223,25 @@ export const SimpleTimerScreen: React.FC = () => {
       handleReset();
       navigation.goBack();
     } else {
-      // If running, show confirmation
+      // If running, show confirmation with option to keep timer running in background
       Alert.alert(
         'End Timer',
-        'Are you sure you want to end this meditation?',
+        'Would you like to end the meditation or let it continue in the background?',
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'End',
+            text: 'Continue in Background',
+            onPress: () => {
+              // Keep notification scheduled - it will play gong when timer completes
+              // Clear local state but let notification handle completion
+              if (timerRef.current) {
+                clearInterval(timerRef.current);
+              }
+              navigation.goBack();
+            },
+          },
+          {
+            text: 'End Timer',
             style: 'destructive',
             onPress: () => {
               handleReset();

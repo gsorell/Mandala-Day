@@ -30,6 +30,15 @@ export const areNotificationsAvailable = async (): Promise<boolean> => {
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#6B5B95',
     });
+
+    // Timer completion channel with gong sound
+    await Notifications.setNotificationChannelAsync('timer', {
+      name: 'Timer Completion',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#6B5B95',
+      sound: 'gong.mp3',
+    });
   }
 
   return true;

@@ -45,7 +45,7 @@
       [
         "expo-notifications",
         {
-          "sounds": []
+          "sounds": ["./assets/audio/gong.mp3"]
         }
       ]
     ]
