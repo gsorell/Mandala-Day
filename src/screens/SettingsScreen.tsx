@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,16 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
-import { RootStackParamList } from '../types';
-import { clearAllData } from '../services/storage';
+import { RootStackParamList, SessionStatus } from '../types';
+import { clearAllData, getExtraPracticeMinutes } from '../services/storage';
 import { debugNotifications } from '../utils/notificationDebug';
 import { scheduleAllSessionNotifications } from '../services/notifications';
+import { getSessionById } from '../data/sessions';
 import {
   areWebNotificationsSupported,
   requestWebNotificationPermission,
@@ -32,6 +34,32 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { appSettings, updateAppSettings, userSchedule, todayInstances } = useApp();
+  const [extraMinutes, setExtraMinutes] = useState(0);
+
+  // Load extra practice minutes when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadExtraMinutes = async () => {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const minutes = await getExtraPracticeMinutes(today);
+        setExtraMinutes(minutes);
+      };
+      loadExtraMinutes();
+    }, [])
+  );
+
+  // Calculate today's meditation minutes from completed mandala sessions
+  const mandalaMinutes = useMemo(() => {
+    return todayInstances
+      .filter((instance) => instance.status === SessionStatus.COMPLETED)
+      .reduce((total, instance) => {
+        const session = getSessionById(instance.templateId);
+        return total + (session ? Math.floor(session.durationSec / 60) : 0);
+      }, 0);
+  }, [todayInstances]);
+
+  // Total minutes = mandala sessions + extra practice (Simple Timer, Vipassana)
+  const todayMinutes = mandalaMinutes + extraMinutes;
 
   const handleNotificationToggle = async (value: boolean) => {
     if (value && Platform.OS === 'web') {
@@ -115,6 +143,11 @@ export const SettingsScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Settings</Text>
 
+        <View style={styles.todayCard}>
+          <Text style={styles.todayMinutes}>{todayMinutes}</Text>
+          <Text style={styles.todayLabel}>minutes today</Text>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Practice</Text>
           <TouchableOpacity
@@ -122,6 +155,14 @@ export const SettingsScreen: React.FC = () => {
             onPress={() => navigation.navigate('SimpleTimer')}
           >
             <Text style={styles.menuItemText}>Simple Timer</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Vipassana')}
+          >
+            <Text style={styles.menuItemText}>Vipassana</Text>
+            <Text style={styles.menuItemSubtext}>10 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
         </View>
@@ -233,6 +274,23 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.xxxl,
     fontWeight: typography.fontWeights.bold,
     marginBottom: spacing.lg,
+  },
+  todayCard: {
+    backgroundColor: colors.ritualSurface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  todayMinutes: {
+    color: colors.accent,
+    fontSize: 48,
+    fontWeight: typography.fontWeights.light,
+  },
+  todayLabel: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+    marginTop: spacing.xs,
   },
   section: {
     marginBottom: spacing.lg,

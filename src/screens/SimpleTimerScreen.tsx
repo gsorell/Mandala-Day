@@ -11,75 +11,14 @@ import {
   AppState,
   AppStateStatus,
 } from 'react-native';
-import { Audio } from 'expo-av';
 import * as Notifications from 'expo-notifications';
 import { useNavigation } from '@react-navigation/native';
+import { format } from 'date-fns';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
 import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
-
-// Module-level gong sound and timer for background playback
-// These persist even when the component unmounts
-let backgroundGongSound: Audio.Sound | null = null;
-let backgroundTimerId: ReturnType<typeof setTimeout> | null = null;
-
-const cleanupBackgroundGong = async () => {
-  if (backgroundTimerId) {
-    clearTimeout(backgroundTimerId);
-    backgroundTimerId = null;
-  }
-  if (backgroundGongSound) {
-    try {
-      await backgroundGongSound.unloadAsync();
-    } catch (e) {
-      // Ignore cleanup errors
-    }
-    backgroundGongSound = null;
-  }
-};
-
-const scheduleBackgroundGong = async (delayMs: number) => {
-  await cleanupBackgroundGong();
-
-  try {
-    // Configure audio for background playback
-    if (Platform.OS !== 'web') {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-        shouldDuckAndroid: true,
-      });
-    }
-
-    // Pre-load the gong sound
-    let audioSource: number | { uri: string } = getGongSound();
-    if (Platform.OS === 'web') {
-      const uri = await getGongUri();
-      if (uri) {
-        audioSource = { uri };
-      }
-    }
-
-    const { sound } = await Audio.Sound.createAsync(audioSource, { shouldPlay: false });
-    backgroundGongSound = sound;
-
-    // Schedule it to play after the delay
-    backgroundTimerId = setTimeout(async () => {
-      if (backgroundGongSound) {
-        try {
-          await backgroundGongSound.playAsync();
-          // Clean up after playback finishes (gong is ~5-10 seconds)
-          setTimeout(() => cleanupBackgroundGong(), 15000);
-        } catch (e) {
-          console.error('Error playing background gong:', e);
-        }
-      }
-    }, delayMs);
-  } catch (e) {
-    console.error('Error scheduling background gong:', e);
-  }
-};
+import { addExtraPracticeMinutes } from '../services/storage';
 
 export const SimpleTimerScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -109,7 +48,7 @@ export const SimpleTimerScreen: React.FC = () => {
           body: 'Your meditation timer has finished',
           // Use gong.mp3 for both platforms - expo-notifications handles the path
           sound: 'gong.mp3',
-          ...(Platform.OS === 'android' && { channelId: 'timer' }),
+          ...(Platform.OS === 'android' && { channelId: 'timer-gong' }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -140,11 +79,14 @@ export const SimpleTimerScreen: React.FC = () => {
       if (nextAppState === 'active' && isRunning && endTimeRef.current) {
         const now = Date.now();
         if (now >= endTimeRef.current) {
-          // Timer completed while in background - gong should have played via background scheduler
-          // Clean up and show completion screen
-          hasPlayedGong.current = true;
+          // Timer completed while in background
+          // On native, notification with gong should have played
+          // On web/PWA, we play gong now when user returns
+          if (!hasPlayedGong.current) {
+            hasPlayedGong.current = true;
+            playGongSound();
+          }
           cancelCompletionNotification();
-          cleanupBackgroundGong();
           setIsRunning(false);
           setShowComplete(true);
           setTimeRemaining(0);
@@ -199,9 +141,8 @@ export const SimpleTimerScreen: React.FC = () => {
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
         if (newTimeRemaining <= 0) {
-          // Cancel notification and background gong to avoid duplicate sounds
+          // Cancel notification to avoid duplicate sounds
           cancelCompletionNotification();
-          cleanupBackgroundGong();
           // Play gong before stopping
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
@@ -240,10 +181,8 @@ export const SimpleTimerScreen: React.FC = () => {
     trackSimpleTimerStart(duration);
     // Set the expected end time for background completion detection
     endTimeRef.current = Date.now() + startingTime * 1000;
-    // Schedule notification for completion
+    // Schedule notification for completion (plays gong on native Android/iOS)
     scheduleCompletionNotification(startingTime);
-    // Schedule background gong playback (works even when screen is closed)
-    scheduleBackgroundGong(startingTime * 1000);
     setIsRunning(true);
     setIsPaused(false);
   };
@@ -254,7 +193,6 @@ export const SimpleTimerScreen: React.FC = () => {
     startTimeRef.current = null;
     endTimeRef.current = null;
     cancelCompletionNotification();
-    cleanupBackgroundGong();
     setIsRunning(false);
     setIsPaused(true);
   };
@@ -266,15 +204,12 @@ export const SimpleTimerScreen: React.FC = () => {
     endTimeRef.current = Date.now() + timeRemaining * 1000;
     // Schedule notification for remaining time
     scheduleCompletionNotification(timeRemaining);
-    // Schedule background gong playback
-    scheduleBackgroundGong(timeRemaining * 1000);
     setIsRunning(true);
     setIsPaused(false);
   };
 
   const handleReset = () => {
     cancelCompletionNotification();
-    cleanupBackgroundGong();
     setIsRunning(false);
     setIsPaused(false);
     setShowComplete(false);
@@ -322,8 +257,11 @@ export const SimpleTimerScreen: React.FC = () => {
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     trackSimpleTimerComplete(duration);
+    // Save completed minutes to storage
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await addExtraPracticeMinutes(today, duration);
     handleReset();
     navigation.goBack();
   };

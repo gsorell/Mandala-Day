@@ -96,6 +96,7 @@ export type RootStackParamList = {
   History: undefined;
   SimpleTimer: undefined;
   TheView: undefined;
+  Vipassana: undefined;
 };
 
 export type MainTabParamList = {

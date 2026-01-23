@@ -219,6 +219,7 @@ export const STORAGE_KEYS = {
   APP_SETTINGS: '@mandala_day/app_settings',
   DAILY_INSTANCES: '@mandala_day/daily_instances',
   EVENT_LOG: '@mandala_day/event_log',
+  EXTRA_PRACTICE_MINUTES: '@mandala_day/extra_practice_minutes',
 };
 
 // =============================================================================

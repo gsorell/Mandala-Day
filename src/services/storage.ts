@@ -239,6 +239,43 @@ export const getEventLogs = async (limit = 100): Promise<EventLog[]> => {
   }
 };
 
+// Extra Practice Minutes (Simple Timer, Vipassana, etc.)
+// Stored as { "YYYY-MM-DD": number } for each day
+export const getExtraPracticeMinutes = async (date: string): Promise<number> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.EXTRA_PRACTICE_MINUTES);
+    const allMinutes: Record<string, number> = data ? JSON.parse(data) : {};
+    return allMinutes[date] || 0;
+  } catch (error) {
+    console.error('Error getting extra practice minutes:', error);
+    return 0;
+  }
+};
+
+export const addExtraPracticeMinutes = async (date: string, minutes: number): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.EXTRA_PRACTICE_MINUTES);
+    const allMinutes: Record<string, number> = data ? JSON.parse(data) : {};
+
+    allMinutes[date] = (allMinutes[date] || 0) + minutes;
+
+    // Clean up old entries (keep only last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const cutoffDate = format(thirtyDaysAgo, 'yyyy-MM-dd');
+
+    Object.keys(allMinutes).forEach((key) => {
+      if (key < cutoffDate) {
+        delete allMinutes[key];
+      }
+    });
+
+    await AsyncStorage.setItem(STORAGE_KEYS.EXTRA_PRACTICE_MINUTES, JSON.stringify(allMinutes));
+  } catch (error) {
+    console.error('Error adding extra practice minutes:', error);
+  }
+};
+
 // Clear all data (for testing/reset)
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -247,6 +284,7 @@ export const clearAllData = async (): Promise<void> => {
       STORAGE_KEYS.APP_SETTINGS,
       STORAGE_KEYS.DAILY_INSTANCES,
       STORAGE_KEYS.EVENT_LOG,
+      STORAGE_KEYS.EXTRA_PRACTICE_MINUTES,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);
