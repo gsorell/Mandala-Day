@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   aboutIcon: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
     marginBottom: spacing.md,
     opacity: 0.8,

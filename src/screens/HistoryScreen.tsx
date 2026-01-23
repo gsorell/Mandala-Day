@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -181,6 +182,18 @@ export const HistoryScreen: React.FC = () => {
           );
         })}
 
+        <View style={styles.aboutSection}>
+          <Image
+            source={require('../../assets/mandala-icon-display.png')}
+            style={styles.aboutIcon}
+          />
+          <Text style={styles.aboutTitle}>Mandala Day</Text>
+          <Text style={styles.aboutText}>
+            Six daily sessions for awareness and compassion.
+          </Text>
+          <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+        </View>
+
         <View style={styles.gentleReminder}>
           <Text style={styles.reminderText}>
             Numbers are just marks on the path.{'\n'}
@@ -309,10 +322,37 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
   },
-  gentleReminder: {
+  aboutSection: {
     alignItems: 'center',
     padding: spacing.xl,
     marginTop: spacing.lg,
+  },
+  aboutIcon: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: spacing.md,
+    opacity: 0.8,
+  },
+  aboutTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.xl,
+    fontWeight: typography.fontWeights.semibold,
+    marginBottom: spacing.xs,
+  },
+  aboutText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
+    textAlign: 'center',
+  },
+  aboutVersion: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    marginTop: spacing.sm,
+  },
+  gentleReminder: {
+    alignItems: 'center',
+    padding: spacing.lg,
   },
   reminderText: {
     color: colors.textMuted,
