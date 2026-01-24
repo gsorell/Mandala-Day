@@ -15,6 +15,25 @@ import {
 } from '../utils/theme';
 import { format, parseISO, isToday, startOfDay, addMinutes } from 'date-fns';
 
+// Simple mutex to prevent race conditions when updating daily instances
+let instancesLock: Promise<void> = Promise.resolve();
+
+const withInstancesLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+  // Wait for any pending operation to complete
+  const previousLock = instancesLock;
+  let releaseLock: () => void;
+  instancesLock = new Promise((resolve) => {
+    releaseLock = resolve;
+  });
+
+  await previousLock;
+  try {
+    return await fn();
+  } finally {
+    releaseLock!();
+  }
+};
+
 // Default user schedule
 const getDefaultUserSchedule = (): UserSchedule => ({
   sessionTimes: { ...DEFAULT_SCHEDULE_TIMES },
@@ -120,7 +139,8 @@ export const getDailyInstances = async (
   }
 };
 
-export const saveDailyInstances = async (
+// Internal save function without lock (used by updateSessionInstance which has its own lock)
+const saveDailyInstancesInternal = async (
   date: string,
   instances: DailySessionInstance[]
 ): Promise<void> => {
@@ -152,24 +172,34 @@ export const saveDailyInstances = async (
   }
 };
 
+export const saveDailyInstances = async (
+  date: string,
+  instances: DailySessionInstance[]
+): Promise<void> => {
+  return withInstancesLock(() => saveDailyInstancesInternal(date, instances));
+};
+
 export const updateSessionInstance = async (
   instance: DailySessionInstance
 ): Promise<void> => {
-  try {
-    // Use raw read to avoid auto-generation which could cause race conditions
-    const instances = await getDailyInstancesRaw(instance.date);
-    if (!instances) {
-      console.error('No instances found for date:', instance.date);
-      return;
+  return withInstancesLock(async () => {
+    try {
+      // Use raw read to avoid auto-generation which could cause race conditions
+      const instances = await getDailyInstancesRaw(instance.date);
+      if (!instances) {
+        console.error('No instances found for date:', instance.date);
+        return;
+      }
+      const index = instances.findIndex((i) => i.id === instance.id);
+      if (index !== -1) {
+        instances[index] = instance;
+        // Use internal save to avoid deadlock (we already hold the lock)
+        await saveDailyInstancesInternal(instance.date, instances);
+      }
+    } catch (error) {
+      console.error('Error updating session instance:', error);
     }
-    const index = instances.findIndex((i) => i.id === instance.id);
-    if (index !== -1) {
-      instances[index] = instance;
-      await saveDailyInstances(instance.date, instances);
-    }
-  } catch (error) {
-    console.error('Error updating session instance:', error);
-  }
+  });
 };
 
 // Generate daily instances based on schedule
