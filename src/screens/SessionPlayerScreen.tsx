@@ -151,7 +151,7 @@ export const SessionPlayerScreen: React.FC = () => {
       };
       completeAndNavigate();
     }
-  }, [showDedication]);
+  }, [showDedication, session, instanceId, completeSession, navigation]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
