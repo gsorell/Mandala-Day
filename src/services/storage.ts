@@ -150,7 +150,26 @@ const saveDailyInstancesInternal = async (
       ? JSON.parse(data)
       : {};
 
-    allInstances[date] = instances;
+    // CRITICAL: Merge with existing data to prevent losing completions from other app instances
+    // (e.g., PWA vs Chrome browser accessing the same storage)
+    const existingInstances = allInstances[date] || [];
+    const mergedInstances = instances.map((instance) => {
+      const existing = existingInstances.find((e) => e.id === instance.id);
+      if (existing) {
+        // Preserve COMPLETED or SKIPPED status from storage if the incoming instance doesn't have it
+        // This prevents another app instance from overwriting completions with stale data
+        if (
+          (existing.status === SessionStatus.COMPLETED || existing.status === SessionStatus.SKIPPED) &&
+          instance.status !== SessionStatus.COMPLETED &&
+          instance.status !== SessionStatus.SKIPPED
+        ) {
+          return existing; // Keep the completed/skipped version from storage
+        }
+      }
+      return instance;
+    });
+
+    allInstances[date] = mergedInstances;
 
     // Clean up old instances (keep only last 30 days)
     const thirtyDaysAgo = new Date();

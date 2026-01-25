@@ -126,12 +126,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     loadData();
   }, [loadInstancesForDate]);
 
-  // Listen for app state changes (foreground/background) and check for day change
+  // Listen for app state changes (foreground/background) and refresh data
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      // When app comes to foreground, check if day changed
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      // When app comes to foreground, always refresh to sync with storage
+      // This picks up any completions from other app instances (e.g., PWA vs Chrome)
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        checkAndRefreshForNewDay();
+        const today = format(new Date(), 'yyyy-MM-dd');
+        currentDateRef.current = today;
+        const instances = await loadInstancesForDate(today, userSchedule);
+        setTodayInstances(instances);
       }
       appState.current = nextAppState;
     });
@@ -139,7 +143,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => {
       subscription.remove();
     };
-  }, [checkAndRefreshForNewDay]);
+  }, [loadInstancesForDate, userSchedule]);
 
   // Periodic check for day change (every minute, along with status updates)
   useEffect(() => {
