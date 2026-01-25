@@ -20,6 +20,33 @@ import { getGongSound, getGongUri } from '../data/audioAssets';
 import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
 import { addExtraPracticeMinutes } from '../services/storage';
 
+// Wake Lock to keep screen awake on web/PWA during timer
+let wakeLock: WakeLockSentinel | null = null;
+
+const requestWakeLock = async () => {
+  if (Platform.OS !== 'web') return;
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await (navigator as any).wakeLock.request('screen');
+      console.log('Wake Lock acquired');
+    }
+  } catch (err) {
+    console.log('Wake Lock error:', err);
+  }
+};
+
+const releaseWakeLock = async () => {
+  if (wakeLock) {
+    try {
+      await wakeLock.release();
+      wakeLock = null;
+      console.log('Wake Lock released');
+    } catch (err) {
+      console.log('Wake Lock release error:', err);
+    }
+  }
+};
+
 export const SimpleTimerScreen: React.FC = () => {
   const navigation = useNavigation();
   const [duration, setDuration] = useState(10); // minutes
@@ -87,6 +114,7 @@ export const SimpleTimerScreen: React.FC = () => {
             playGongSound();
           }
           cancelCompletionNotification();
+          releaseWakeLock();
           setIsRunning(false);
           setShowComplete(true);
           setTimeRemaining(0);
@@ -143,6 +171,8 @@ export const SimpleTimerScreen: React.FC = () => {
         if (newTimeRemaining <= 0) {
           // Cancel notification to avoid duplicate sounds
           cancelCompletionNotification();
+          // Release wake lock - timer is done
+          releaseWakeLock();
           // Play gong before stopping
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
@@ -183,6 +213,8 @@ export const SimpleTimerScreen: React.FC = () => {
     endTimeRef.current = Date.now() + startingTime * 1000;
     // Schedule notification for completion (plays gong on native Android/iOS)
     scheduleCompletionNotification(startingTime);
+    // Keep screen awake on web/PWA so timer and gong work
+    requestWakeLock();
     setIsRunning(true);
     setIsPaused(false);
   };
@@ -193,6 +225,7 @@ export const SimpleTimerScreen: React.FC = () => {
     startTimeRef.current = null;
     endTimeRef.current = null;
     cancelCompletionNotification();
+    releaseWakeLock();
     setIsRunning(false);
     setIsPaused(true);
   };
@@ -204,12 +237,15 @@ export const SimpleTimerScreen: React.FC = () => {
     endTimeRef.current = Date.now() + timeRemaining * 1000;
     // Schedule notification for remaining time
     scheduleCompletionNotification(timeRemaining);
+    // Re-acquire wake lock
+    requestWakeLock();
     setIsRunning(true);
     setIsPaused(false);
   };
 
   const handleReset = () => {
     cancelCompletionNotification();
+    releaseWakeLock();
     setIsRunning(false);
     setIsPaused(false);
     setShowComplete(false);
