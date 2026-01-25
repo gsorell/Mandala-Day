@@ -18,7 +18,7 @@ import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
-import { getSessionAudioFile, getSessionAudioUri } from '../data/audioAssets';
+import { getSessionAudioFile, getSessionAudioUri, getGongSound, getGongUri } from '../data/audioAssets';
 import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
@@ -74,10 +74,36 @@ export const SessionPlayerScreen: React.FC = () => {
         if (now >= endTimeRef.current) {
           // Timer should have completed while in background
           setIsPlaying(false);
-          setShowDedication(true);
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
+          
+          // Play gong sound if it was a silent practice
+          if (isSilentMode) {
+            try {
+              let gongSource: number | { uri: string } = getGongSound();
+              if (Platform.OS === 'web') {
+                const uri = await getGongUri();
+                if (uri) {
+                  gongSource = { uri };
+                }
+              }
+              await audioService.loadAndPlay(gongSource, {
+                onComplete: () => {
+                  setShowDedication(true);
+                },
+                onError: (error) => {
+                  console.error('Error playing gong:', error);
+                  setShowDedication(true);
+                },
+              });
+            } catch (error) {
+              console.error('Failed to play gong:', error);
+              setShowDedication(true);
+            }
+          } else {
+            setShowDedication(true);
+          }
         } else {
           // App returned from background but timer not complete
           // Audio was likely interrupted (phone call, etc.) - pause the session
@@ -128,7 +154,7 @@ export const SessionPlayerScreen: React.FC = () => {
         pausedTimeRemainingRef.current = timeRemaining;
       }
 
-      timerRef.current = setInterval(() => {
+      timerRef.current = setInterval(async () => {
         // Calculate remaining time based on actual elapsed wall-clock time
         const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
@@ -138,10 +164,32 @@ export const SessionPlayerScreen: React.FC = () => {
         if (newTimeRemaining <= 0 && isSilentMode) {
           clearInterval(timerRef.current!);
           setIsPlaying(false);
-          setShowDedication(true);
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
+          
+          // Play gong sound to signal completion in silent mode
+          try {
+            let gongSource: number | { uri: string } = getGongSound();
+            if (Platform.OS === 'web') {
+              const uri = await getGongUri();
+              if (uri) {
+                gongSource = { uri };
+              }
+            }
+            await audioService.loadAndPlay(gongSource, {
+              onComplete: () => {
+                setShowDedication(true);
+              },
+              onError: (error) => {
+                console.error('Error playing gong:', error);
+                setShowDedication(true);
+              },
+            });
+          } catch (error) {
+            console.error('Failed to play gong:', error);
+            setShowDedication(true);
+          }
         } else {
           setTimeRemaining(newTimeRemaining);
         }
