@@ -19,6 +19,28 @@ import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
 import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
 import { addExtraPracticeMinutes } from '../services/storage';
+import {
+  areWebNotificationsSupported,
+  getNotificationPermission,
+} from '../services/webNotifications';
+
+// Show web notification for timer completion
+const showTimerCompleteWebNotification = () => {
+  if (Platform.OS !== 'web') return;
+  if (!areWebNotificationsSupported()) return;
+  if (getNotificationPermission() !== 'granted') return;
+
+  try {
+    new Notification('Timer Complete', {
+      body: 'Your meditation timer has finished',
+      icon: '/icon-192.png',
+      tag: 'timer-complete',
+      requireInteraction: true,
+    });
+  } catch (error) {
+    console.error('Error showing web notification:', error);
+  }
+};
 
 // Wake Lock to keep screen awake on web/PWA during timer
 let wakeLock: WakeLockSentinel | null = null;
@@ -112,6 +134,7 @@ export const SimpleTimerScreen: React.FC = () => {
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
             playGongSound();
+            showTimerCompleteWebNotification();
           }
           cancelCompletionNotification();
           releaseWakeLock();
@@ -173,10 +196,11 @@ export const SimpleTimerScreen: React.FC = () => {
           cancelCompletionNotification();
           // Release wake lock - timer is done
           releaseWakeLock();
-          // Play gong before stopping
+          // Play gong and show notification
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
             playGongSound();
+            showTimerCompleteWebNotification();
           }
           setIsRunning(false);
           setShowComplete(true);
