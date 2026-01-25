@@ -118,7 +118,10 @@ export const HistoryScreen: React.FC = () => {
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Recent Days</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Days</Text>
+          <Text style={styles.sectionHint}>Tap session numbers or ❁ to share</Text>
+        </View>
 
         {historyData.map((day) => {
           const dateObj = parseISO(day.date);
@@ -129,54 +132,55 @@ export const HistoryScreen: React.FC = () => {
           return (
             <View key={day.date} style={[styles.dayCard, isFullMandala && styles.dayCardComplete]}>
               <View style={styles.dayHeader}>
-                <View style={styles.dayLabelRow}>
-                  <Text style={styles.dayLabel}>{dayLabel}</Text>
-                  {isFullMandala && (
-                    <TouchableOpacity
-                      style={styles.charmBadge}
-                      onPress={() => navigation.navigate('MandalaComplete', { date: day.date })}
-                    >
-                      <Text style={styles.charmSymbol}>❁</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                <Text style={[styles.dayCount, isFullMandala && styles.dayCountComplete]}>
-                  {day.completedCount} / {day.totalCount}
-                </Text>
+                <Text style={styles.dayLabel}>{dayLabel}</Text>
+                {isFullMandala && (
+                  <TouchableOpacity
+                    style={styles.charmBadge}
+                    onPress={() => navigation.navigate('MandalaComplete', { date: day.date })}
+                  >
+                    <Text style={styles.charmSymbol}>❁</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
-              <View style={styles.sessionDots}>
-                {day.instances.map((instance) => {
-                  const session = getSessionById(instance.templateId);
-                  const isCompleted = instance.status === SessionStatus.COMPLETED;
+              <View style={styles.sessionsRow}>
+                <View style={styles.sessionDots}>
+                  {day.instances.map((instance) => {
+                    const session = getSessionById(instance.templateId);
+                    const isCompleted = instance.status === SessionStatus.COMPLETED;
 
-                  if (isCompleted) {
+                    if (isCompleted) {
+                      return (
+                        <TouchableOpacity
+                          key={instance.id}
+                          style={[
+                            styles.sessionDot,
+                            { backgroundColor: getStatusColor(instance.status) },
+                          ]}
+                          onPress={() => handleShareSession(instance)}
+                        >
+                          <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
+                        </TouchableOpacity>
+                      );
+                    }
+
                     return (
-                      <TouchableOpacity
+                      <View
                         key={instance.id}
                         style={[
                           styles.sessionDot,
                           { backgroundColor: getStatusColor(instance.status) },
                         ]}
-                        onPress={() => handleShareSession(instance)}
                       >
                         <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
-                      </TouchableOpacity>
+                      </View>
                     );
-                  }
-
-                  return (
-                    <View
-                      key={instance.id}
-                      style={[
-                        styles.sessionDot,
-                        { backgroundColor: getStatusColor(instance.status) },
-                      ]}
-                    >
-                      <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
-                    </View>
-                  );
-                })}
+                  })}
+                </View>
+                
+                <Text style={[styles.dayCount, isFullMandala && styles.dayCountComplete]}>
+                  {day.completedCount} / {day.totalCount}
+                </Text>
               </View>
             </View>
           );
@@ -253,13 +257,20 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: spacing.md,
   },
+  sectionHeader: {
+    marginBottom: spacing.md,
+  },
   sectionTitle: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.medium,
     textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: spacing.md,
+  },
+  sectionHint: {
+    color: colors.textMuted,
+    fontSize: typography.fontSizes.xs,
+    marginTop: spacing.xs,
   },
   dayCard: {
     backgroundColor: colors.surface,
@@ -277,11 +288,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
-  dayLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
   dayLabel: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.md,
@@ -294,16 +300,21 @@ const styles = StyleSheet.create({
   dayCountComplete: {
     color: colors.completeMandala,
   },
+  sessionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   charmBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   charmSymbol: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.completeMandala,
   },
   sessionDots: {

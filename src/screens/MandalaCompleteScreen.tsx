@@ -124,7 +124,7 @@ export const MandalaCompleteScreen: React.FC = () => {
 
             <Text style={styles.completedLabel}>Mandala Complete</Text>
 
-            <Text style={styles.mainTitle}>All Six Sessions Complete</Text>
+            <Text style={styles.mainTitle}>Six Sessions to Honor the Day</Text>
 
             {/* Decorative divider */}
             <View style={styles.divider}>
