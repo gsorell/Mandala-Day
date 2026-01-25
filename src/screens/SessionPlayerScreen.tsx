@@ -66,9 +66,9 @@ export const SessionPlayerScreen: React.FC = () => {
     };
   }, []);
 
-  // Check if meditation should have completed while app was in background
+  // Handle app state changes (background/foreground) for audio interruptions
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
         const now = Date.now();
         if (now >= endTimeRef.current) {
@@ -78,6 +78,25 @@ export const SessionPlayerScreen: React.FC = () => {
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
+        } else {
+          // App returned from background but timer not complete
+          // Audio was likely interrupted (phone call, etc.) - pause the session
+          pausedTimeRemainingRef.current = Math.max(0, Math.floor((endTimeRef.current - now) / 1000));
+          setTimeRemaining(pausedTimeRemainingRef.current);
+          startTimeRef.current = null;
+          endTimeRef.current = null;
+          setIsPlaying(false);
+          setIsPaused(true);
+          if (!isSilentMode) {
+            await audioService.pause();
+          }
+        }
+      } else if (nextAppState === 'background' && isPlaying) {
+        // App going to background - pause audio to handle gracefully
+        // The audio will be paused by OS anyway, this ensures our state is correct
+        pausedTimeRemainingRef.current = timeRemaining;
+        if (!isSilentMode) {
+          await audioService.pause();
         }
       }
     });
@@ -85,7 +104,7 @@ export const SessionPlayerScreen: React.FC = () => {
     return () => {
       subscription.remove();
     };
-  }, [isPlaying]);
+  }, [isPlaying, isSilentMode, timeRemaining]);
 
   // Handle countdown timer
   useEffect(() => {
