@@ -104,33 +104,32 @@ export const SessionPlayerScreen: React.FC = () => {
           } else {
             setShowDedication(true);
           }
-        } else {
+        } else if (!isSilentMode) {
           // App returned from background but timer not complete
-          // Audio was likely interrupted (phone call, etc.) - pause the session
-          pausedTimeRemainingRef.current = Math.max(0, Math.floor((endTimeRef.current - now) / 1000));
-          setTimeRemaining(pausedTimeRemainingRef.current);
-          startTimeRef.current = null;
-          endTimeRef.current = null;
-          setIsPlaying(false);
-          setIsPaused(true);
-          if (!isSilentMode) {
-            await audioService.pause();
+          // Check if audio was actually interrupted (phone call, etc.)
+          // vs just the screen sleeping (audio continues in background)
+          const actualStatus = await audioService.getActualStatus();
+          if (actualStatus && !actualStatus.isPlaying) {
+            // Audio was interrupted - pause the session and show resume button
+            pausedTimeRemainingRef.current = Math.max(0, Math.floor((endTimeRef.current - now) / 1000));
+            setTimeRemaining(pausedTimeRemainingRef.current);
+            startTimeRef.current = null;
+            endTimeRef.current = null;
+            setIsPlaying(false);
+            setIsPaused(true);
           }
+          // If audio is still playing, just continue - nothing to do
         }
-      } else if (nextAppState === 'background' && isPlaying) {
-        // App going to background - pause audio to handle gracefully
-        // The audio will be paused by OS anyway, this ensures our state is correct
-        pausedTimeRemainingRef.current = timeRemaining;
-        if (!isSilentMode) {
-          await audioService.pause();
-        }
+        // For silent mode, timer continues automatically via wall-clock calculation
       }
+      // Don't pause when going to background - let audio continue playing
+      // The audio service is configured with staysActiveInBackground: true
     });
 
     return () => {
       subscription.remove();
     };
-  }, [isPlaying, isSilentMode, timeRemaining]);
+  }, [isPlaying, isSilentMode]);
 
   // Handle countdown timer
   useEffect(() => {

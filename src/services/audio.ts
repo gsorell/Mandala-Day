@@ -197,6 +197,30 @@ class AudioService {
   isLoaded(): boolean {
     return this.sound !== null;
   }
+
+  /**
+   * Get the actual playback status from the underlying Sound object.
+   * This queries the real OS state, useful for detecting if audio was
+   * interrupted by a phone call while app was in background.
+   */
+  async getActualStatus(): Promise<{ isPlaying: boolean; positionMs: number } | null> {
+    if (!this.sound) {
+      return null;
+    }
+    try {
+      const status = await this.sound.getStatusAsync();
+      if (status.isLoaded) {
+        return {
+          isPlaying: status.isPlaying,
+          positionMs: status.positionMillis,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('[AudioService] Error getting status:', error);
+      return null;
+    }
+  }
 }
 
 export const audioService = new AudioService();
