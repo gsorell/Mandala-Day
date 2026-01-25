@@ -35,6 +35,8 @@ class AudioService {
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
           shouldDuckAndroid: true,
+          interruptionModeAndroid: 1, // INTERRUPTION_MODE_ANDROID_DO_NOT_MIX
+          interruptionModeIOS: 0, // INTERRUPTION_MODE_IOS_DO_NOT_MIX
         });
       }
 
@@ -75,6 +77,8 @@ class AudioService {
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
           shouldDuckAndroid: true,
+          interruptionModeAndroid: 1, // INTERRUPTION_MODE_ANDROID_DO_NOT_MIX
+          interruptionModeIOS: 0, // INTERRUPTION_MODE_IOS_DO_NOT_MIX
         });
       }
 

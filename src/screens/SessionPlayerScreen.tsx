@@ -77,7 +77,7 @@ export const SessionPlayerScreen: React.FC = () => {
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
-          
+
           // Play gong sound if it was a silent practice
           if (isSilentMode) {
             try {
@@ -154,7 +154,7 @@ export const SessionPlayerScreen: React.FC = () => {
         pausedTimeRemainingRef.current = timeRemaining;
       }
 
-      timerRef.current = setInterval(async () => {
+      timerRef.current = setInterval(() => {
         // Calculate remaining time based on actual elapsed wall-clock time
         const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
@@ -167,29 +167,31 @@ export const SessionPlayerScreen: React.FC = () => {
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
-          
+
           // Play gong sound to signal completion in silent mode
-          try {
-            let gongSource: number | { uri: string } = getGongSound();
-            if (Platform.OS === 'web') {
-              const uri = await getGongUri();
-              if (uri) {
-                gongSource = { uri };
+          (async () => {
+            try {
+              let gongSource: number | { uri: string } = getGongSound();
+              if (Platform.OS === 'web') {
+                const uri = await getGongUri();
+                if (uri) {
+                  gongSource = { uri };
+                }
               }
+              await audioService.loadAndPlay(gongSource, {
+                onComplete: () => {
+                  setShowDedication(true);
+                },
+                onError: (error) => {
+                  console.error('Error playing gong:', error);
+                  setShowDedication(true);
+                },
+              });
+            } catch (error) {
+              console.error('Failed to play gong:', error);
+              setShowDedication(true);
             }
-            await audioService.loadAndPlay(gongSource, {
-              onComplete: () => {
-                setShowDedication(true);
-              },
-              onError: (error) => {
-                console.error('Error playing gong:', error);
-                setShowDedication(true);
-              },
-            });
-          } catch (error) {
-            console.error('Failed to play gong:', error);
-            setShowDedication(true);
-          }
+          })();
         } else {
           setTimeRemaining(newTimeRemaining);
         }
