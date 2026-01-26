@@ -77,7 +77,7 @@ export const SettingsScreen: React.FC = () => {
     
     if (!value && Platform.OS === 'web') {
       // Clear scheduled notifications when disabling
-      clearWebNotifications();
+      void clearWebNotifications();
     }
     
     updateAppSettings({ notificationsEnabled: value });

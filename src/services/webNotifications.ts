@@ -1,5 +1,6 @@
 // Web Notifications Service for PWA
 // Handles notification permissions and scheduling for web/PWA
+// Uses Service Worker for background notification delivery
 
 import { DailySessionInstance, UserSchedule } from '../types';
 import { getSessionById } from '../data/sessions';
@@ -17,6 +18,62 @@ interface ScheduledNotification {
   scheduledTime: number; // timestamp
   shown: boolean;
 }
+
+// Send notifications to service worker for background delivery
+const sendNotificationsToServiceWorker = async (notifications: ScheduledNotification[]): Promise<boolean> => {
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[WebNotifications] Service Worker not supported');
+    return false;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.active) {
+      registration.active.postMessage({
+        type: 'SCHEDULE_NOTIFICATIONS',
+        notifications: notifications,
+      });
+      console.log('[WebNotifications] Sent', notifications.length, 'notifications to Service Worker');
+      return true;
+    }
+  } catch (error) {
+    console.error('[WebNotifications] Error sending to Service Worker:', error);
+  }
+  return false;
+};
+
+// Cancel all notifications in service worker
+const cancelServiceWorkerNotifications = async (): Promise<void> => {
+  if (!('serviceWorker' in navigator)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.active) {
+      registration.active.postMessage({
+        type: 'CANCEL_NOTIFICATIONS',
+      });
+      console.log('[WebNotifications] Cancelled Service Worker notifications');
+    }
+  } catch (error) {
+    console.error('[WebNotifications] Error cancelling SW notifications:', error);
+  }
+};
+
+// Trigger a manual check in the service worker
+export const triggerServiceWorkerCheck = async (): Promise<void> => {
+  if (!('serviceWorker' in navigator)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.active) {
+      registration.active.postMessage({
+        type: 'CHECK_NOTIFICATIONS',
+      });
+    }
+  } catch (error) {
+    console.error('[WebNotifications] Error triggering SW check:', error);
+  }
+};
 
 // Check if web notifications are supported
 export const areWebNotificationsSupported = (): boolean => {
@@ -70,11 +127,12 @@ const loadScheduledNotifications = (): ScheduledNotification[] => {
 };
 
 // Clear all scheduled notifications
-export const clearWebNotifications = (): void => {
+export const clearWebNotifications = async (): Promise<void> => {
   try {
     localStorage.removeItem(SCHEDULED_NOTIFICATIONS_KEY);
+    await cancelServiceWorkerNotifications();
   } catch (error) {
-    console.error('Error clearing notifications:', error);
+    console.error('[WebNotifications] Error clearing notifications:', error);
   }
 };
 
@@ -132,24 +190,24 @@ const scheduleWebNotification = (
 };
 
 // Schedule all notifications for today's sessions
-export const scheduleAllWebNotifications = (
+export const scheduleAllWebNotifications = async (
   instances: DailySessionInstance[],
   schedule: UserSchedule
-): void => {
+): Promise<void> => {
   if (!areWebNotificationsSupported()) {
-    console.warn('Web notifications not supported');
+    console.warn('[WebNotifications] Web notifications not supported');
     return;
   }
 
   if (getNotificationPermission() !== 'granted') {
-    console.warn('Notification permission not granted');
+    console.warn('[WebNotifications] Notification permission not granted');
     return;
   }
 
-  console.log(`Scheduling web notifications for ${instances.length} sessions...`);
+  console.log(`[WebNotifications] Scheduling notifications for ${instances.length} sessions...`);
 
   const notifications: ScheduledNotification[] = [];
-  
+
   for (const instance of instances) {
     const notification = scheduleWebNotification(instance, schedule);
     if (notification) {
@@ -157,8 +215,13 @@ export const scheduleAllWebNotifications = (
     }
   }
 
+  // Save to localStorage as fallback
   saveScheduledNotifications(notifications);
-  console.log(`Scheduled ${notifications.length} web notifications`);
+
+  // Send to Service Worker for background delivery
+  const sentToSW = await sendNotificationsToServiceWorker(notifications);
+
+  console.log(`[WebNotifications] Scheduled ${notifications.length} notifications (SW: ${sentToSW})`);
 };
 
 // Show a notification

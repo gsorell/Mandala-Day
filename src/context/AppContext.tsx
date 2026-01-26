@@ -159,7 +159,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (Platform.OS === 'web' && appSettings?.notificationsEnabled && userSchedule && todayInstances.length > 0) {
       // Check if notifications are supported and permission is granted
       if (areWebNotificationsSupported() && getNotificationPermission() === 'granted') {
-        scheduleAllWebNotifications(todayInstances, userSchedule);
+        // Send to service worker for background delivery, keep polling as fallback
+        void scheduleAllWebNotifications(todayInstances, userSchedule);
         startWebNotificationCheck();
       }
     }
