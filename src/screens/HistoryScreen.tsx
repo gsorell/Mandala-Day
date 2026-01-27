@@ -341,7 +341,6 @@ const styles = StyleSheet.create({
   aboutIcon: {
     width: 80,
     height: 80,
-    resizeMode: 'contain',
     marginBottom: spacing.md,
     opacity: 0.8,
   },

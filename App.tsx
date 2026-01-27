@@ -98,11 +98,16 @@ const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused
   const color = focused ? colors.primary : colors.textTertiary;
   
   // Use Ionicons instead of Unicode characters for consistent sizing
-  const iconName = label === 'Today' ? 'today' : label === 'History' ? 'time' : 'settings-sharp';
+  let iconName: keyof typeof Ionicons.glyphMap = 'radio-button-on';
+  if (label === 'History') {
+    iconName = 'calendar-outline';
+  } else if (label === 'Settings') {
+    iconName = 'settings-sharp';
+  }
   
   return (
     <Ionicons 
-      name={iconName as any} 
+      name={iconName} 
       size={iconSize} 
       color={color}
     />

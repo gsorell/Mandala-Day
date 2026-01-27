@@ -71,6 +71,7 @@ export const TodayScreen: React.FC = () => {
         <Image
           source={require('../../assets/mandala-logo.png')}
           style={styles.logo}
+          resizeMode="contain"
         />
         
         {allSessionsComplete && (
@@ -138,7 +139,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 600,
     height: 180,
-    resizeMode: 'contain',
     alignSelf: 'center',
     marginBottom: spacing.md,
     opacity: 0.9,

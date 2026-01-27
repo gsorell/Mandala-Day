@@ -97,6 +97,7 @@ export const OnboardingScreen: React.FC = () => {
         <Image
           source={require('../../assets/mandala-logo.png')}
           style={styles.logoImage}
+          resizeMode="contain"
         />
         <Text style={styles.welcomeSubtitle}>
           Six daily moments of recognition
@@ -315,7 +316,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 280,
     height: 280,
-    resizeMode: 'contain',
     alignSelf: 'center',
     marginBottom: spacing.md,
   },

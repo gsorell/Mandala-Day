@@ -143,6 +143,7 @@ export const SessionCompleteScreen: React.FC = () => {
           <Image
             source={require('../../assets/mandala-icon-display.png')}
             style={styles.watermark}
+            resizeMode="contain"
           />
 
           {/* Content overlay */}

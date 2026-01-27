@@ -116,6 +116,7 @@ export const MandalaCompleteScreen: React.FC = () => {
           <Image
             source={require('../../assets/mandala-icon-display.png')}
             style={styles.watermark}
+            resizeMode="contain"
           />
 
           <View style={styles.cardContent}>
@@ -199,7 +200,6 @@ const styles = StyleSheet.create({
     top: '-10%',
     left: '-10%',
     opacity: 0.1,
-    resizeMode: 'contain',
   },
   cardContent: {
     flex: 1,
