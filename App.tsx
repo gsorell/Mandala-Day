@@ -6,6 +6,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
+import { Ionicons } from '@expo/vector-icons';
 
 import { AppProvider, useApp } from './src/context/AppContext';
 import { TodayScreen } from './src/screens/TodayScreen';
@@ -93,17 +94,18 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigatio
 };
 
 const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused }) => {
-  // On native, Today/History icons need to be larger to match Settings visual size
-  const iconSize = Platform.OS === 'web' ? 22 : (label === 'Settings' ? 22 : 26);
+  const iconSize = 24;
+  const color = focused ? colors.primary : colors.textTertiary;
+  
+  // Use Ionicons instead of Unicode characters for consistent sizing
+  const iconName = label === 'Today' ? 'today' : label === 'History' ? 'time' : 'settings-sharp';
+  
   return (
-    <Text
-      style={[
-        styles.tabIcon,
-        { color: focused ? colors.primary : colors.textTertiary, fontSize: iconSize },
-      ]}
-    >
-      {label === 'Today' ? '◉' : label === 'History' ? '◉' : '⚙'}
-    </Text>
+    <Ionicons 
+      name={iconName as any} 
+      size={iconSize} 
+      color={color}
+    />
   );
 };
 
