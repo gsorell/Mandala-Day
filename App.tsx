@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
 import { AppProvider, useApp } from './src/context/AppContext';
@@ -33,6 +34,7 @@ const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigationRef }) => {
   const { getNextDueSession } = useApp();
   const nextSession = getNextDueSession();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (navigationRef) {
@@ -41,7 +43,7 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigatio
   }, [navigation, navigationRef]);
 
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
       {nextSession && (
         <TouchableOpacity
           style={styles.nextSessionButtonFooter}
@@ -90,16 +92,20 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigatio
   );
 };
 
-const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused }) => (
-  <Text
-    style={[
-      styles.tabIcon,
-      { color: focused ? colors.primary : colors.textTertiary },
-    ]}
-  >
-    {label === 'Today' ? '◉' : label === 'History' ? '◉' : '⚙'}
-  </Text>
-);
+const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused }) => {
+  // On native, Today/History icons need to be larger to match Settings visual size
+  const iconSize = Platform.OS === 'web' ? 22 : (label === 'Settings' ? 22 : 26);
+  return (
+    <Text
+      style={[
+        styles.tabIcon,
+        { color: focused ? colors.primary : colors.textTertiary, fontSize: iconSize },
+      ]}
+    >
+      {label === 'Today' ? '◉' : label === 'History' ? '◉' : '⚙'}
+    </Text>
+  );
+};
 
 const MainTabs: React.FC = () => {
   const navigationRef = useRef<any>(null);
@@ -166,9 +172,23 @@ const AppNavigator: React.FC = () => {
     if (Platform.OS === 'web') return; // Skip notifications on web
 
     const setupNotifications = async () => {
+      console.log('Setting up notifications...');
+      console.log('appSettings.notificationsEnabled:', appSettings?.notificationsEnabled);
+      console.log('todayInstances.length:', todayInstances.length);
+      console.log('userSchedule exists:', !!userSchedule);
+      
       const available = await areNotificationsAvailable();
+      console.log('Notifications available:', available);
+      
       if (available && appSettings?.notificationsEnabled && userSchedule && todayInstances.length > 0) {
+        console.log('All conditions met, scheduling notifications...');
         await scheduleAllSessionNotifications(todayInstances, userSchedule);
+        
+        // Log pending notifications for debugging
+        const pending = await Notifications.getAllScheduledNotificationsAsync();
+        console.log('Pending notifications count:', pending.length);
+      } else {
+        console.log('Notification conditions not met');
       }
     };
 
@@ -342,7 +362,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 70,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 25 : 15,
+    paddingBottom: 15,
     backgroundColor: colors.ritualSurface,
   },
   tabBarItemCustom: {

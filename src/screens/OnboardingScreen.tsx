@@ -10,6 +10,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
@@ -19,6 +20,7 @@ type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing';
 
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [tempHour, setTempHour] = useState(7);
@@ -90,7 +92,7 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   const renderWelcome = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
       <View style={styles.centerContent}>
         <Image
           source={require('../../assets/mandala-logo.png')}
@@ -117,7 +119,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   const renderSchedule = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
       <View style={styles.topContent}>
         <Text style={styles.stepTitle}>Your Daily Mandala</Text>
         <Text style={styles.stepDescription}>
@@ -158,7 +160,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   const renderNotifications = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
       <View style={styles.centerContent}>
         <Text style={styles.stepTitle}>Gentle Reminders</Text>
         <Text style={styles.stepDescription}>
@@ -187,7 +189,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   const renderFraming = () => (
-    <View style={styles.stepContainer}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
       <View style={styles.centerContent}>
         <Text style={styles.framingTitle}>Practice as Life</Text>
 
@@ -207,7 +209,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {step === 'welcome' && renderWelcome()}
       {step === 'schedule' && renderSchedule()}
       {step === 'notifications' && renderNotifications()}
@@ -281,7 +283,7 @@ export const OnboardingScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

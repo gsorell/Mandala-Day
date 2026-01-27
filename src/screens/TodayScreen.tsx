@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  RefreshControl,
   SafeAreaView,
   Image,
 } from 'react-native';
@@ -31,14 +30,6 @@ export const TodayScreen: React.FC = () => {
     skipSession,
     snoozeSession,
   } = useApp();
-
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    await refreshTodayInstances();
-    setRefreshing(false);
-  }, [refreshTodayInstances]);
 
   const handleStart = (instanceId: string) => {
     navigation.navigate('SessionPlayer', { instanceId });
@@ -76,13 +67,6 @@ export const TodayScreen: React.FC = () => {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primaryLight}
-          />
-        }
       >
         <Image
           source={require('../../assets/mandala-logo.png')}
