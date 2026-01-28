@@ -63,6 +63,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const currentDateRef = useRef<string>(format(new Date(), 'yyyy-MM-dd'));
   const appState = useRef(AppState.currentState);
+  const todayInstancesRef = useRef<DailySessionInstance[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    todayInstancesRef.current = todayInstances;
+  }, [todayInstances]);
 
   // Helper function to load/generate instances for a given date
   const loadInstancesForDate = useCallback(async (date: string, schedule: UserSchedule | null) => {
@@ -176,14 +182,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Update session statuses based on time
   useEffect(() => {
     // Don't run until initial data is loaded
-    if (isLoading || !userSchedule || todayInstances.length === 0) return;
+    if (isLoading || !userSchedule) return;
 
     const updateStatuses = async () => {
+      const currentInstances = todayInstancesRef.current;
+      if (currentInstances.length === 0) return;
+
       const now = new Date();
       const changedInstances: DailySessionInstance[] = [];
 
       // Sort instances by scheduled time to find previous session
-      const sortedInstances = [...todayInstances].sort(
+      const sortedInstances = [...currentInstances].sort(
         (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
       );
 
@@ -248,10 +257,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     const interval = setInterval(updateStatuses, 60000); // Check every minute
-    updateStatuses(); // Run immediately
+    updateStatuses(); // Run immediately on mount
 
     return () => clearInterval(interval);
-  }, [isLoading, todayInstances, userSchedule]);
+  }, [isLoading, userSchedule]);
 
   const refreshTodayInstances = useCallback(async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -293,16 +302,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return;
       }
 
-      const updatedInstance: DailySessionInstance = {
-        ...instance,
-        status: SessionStatus.DUE,
-        startedAt: new Date().toISOString(),
-      };
-
-      setTodayInstances((prev) =>
-        prev.map((i) => (i.id === instanceId ? updatedInstance : i))
-      );
-      await updateSessionInstance(updatedInstance);
+      // Don't update status here - keep the current status
+      // Only log the start event
       await logEvent({
         timestamp: new Date().toISOString(),
         eventType: EventType.START,

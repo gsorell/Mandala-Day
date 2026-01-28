@@ -56,7 +56,7 @@ const getStatusLabel = (status: SessionStatus): string => {
   }
 };
 
-export const SessionCard: React.FC<SessionCardProps> = ({
+export const SessionCard: React.FC<SessionCardProps> = React.memo(({
   instance,
   onStart,
   onSkip,
@@ -181,7 +181,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

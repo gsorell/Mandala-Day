@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -31,19 +31,19 @@ export const TodayScreen: React.FC = () => {
     snoozeSession,
   } = useApp();
 
-  const handleStart = (instanceId: string) => {
+  const handleStart = useCallback((instanceId: string) => {
     navigation.navigate('SessionPlayer', { instanceId });
-  };
+  }, [navigation]);
 
-  const handleSkip = async (instanceId: string) => {
+  const handleSkip = useCallback(async (instanceId: string) => {
     await skipSession(instanceId);
-  };
+  }, [skipSession]);
 
-  const handleSnooze = async (instanceId: string, minutes: number) => {
+  const handleSnooze = useCallback(async (instanceId: string, minutes: number) => {
     await snoozeSession(instanceId, minutes);
-  };
+  }, [snoozeSession]);
 
-  const handleShare = (instanceId: string, templateId: string, endedAt?: string) => {
+  const handleShare = useCallback((instanceId: string, templateId: string, endedAt?: string) => {
     const session = getSessionById(templateId);
     if (session) {
       navigation.navigate('SessionComplete', {
@@ -53,7 +53,7 @@ export const TodayScreen: React.FC = () => {
         completedAt: endedAt,
       });
     }
-  };
+  }, [navigation]);
 
   const today = format(new Date(), 'EEEE, MMMM d');
 

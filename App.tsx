@@ -271,7 +271,7 @@ const AppNavigator: React.FC = () => {
               component={SessionPlayerScreen}
               options={{
                 presentation: 'fullScreenModal',
-                animation: 'fade',
+                animation: 'none',
               }}
             />
             <Stack.Screen
