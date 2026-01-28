@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  SafeAreaView,
   Modal,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';

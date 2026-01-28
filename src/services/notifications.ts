@@ -31,14 +31,27 @@ export const areNotificationsAvailable = async (): Promise<boolean> => {
       lightColor: '#6B5B95',
     });
 
+    // Delete old cached channel (Android caches channel settings permanently)
+    try {
+      await Notifications.deleteNotificationChannelAsync('timer-gong');
+    } catch (_) {
+      // Channel may not exist, ignore
+    }
+
     // Timer completion channel with gong sound
-    // Using unique channel ID because Android caches channel settings
-    await Notifications.setNotificationChannelAsync('timer-gong', {
+    // Uses alarm audio attributes so Android treats it like an alarm (bypasses Doze)
+    await Notifications.setNotificationChannelAsync('timer-gong-v2', {
       name: 'Timer Completion',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#6B5B95',
       sound: 'gong.mp3',
+      bypassDnd: true,
+      enableVibrate: true,
+      audioAttributes: {
+        usage: Notifications.AndroidAudioUsage.ALARM,
+        contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+      },
     });
   }
 

@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  SafeAreaView,
   Alert,
   Platform,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format } from 'date-fns';

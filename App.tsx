@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -327,10 +327,12 @@ const AppNavigator: React.FC = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <StatusBar style="light" />
-      <AppNavigator />
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <StatusBar style="light" />
+        <AppNavigator />
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }
 

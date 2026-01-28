@@ -5,12 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Platform,
   Alert,
   AppState,
   AppStateStatus,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
@@ -27,6 +27,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const SessionPlayerScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
+  const insets = useSafeAreaInsets();
   const { instanceId } = route.params;
   const { todayInstances, startSession, completeSession } = useApp();
 
@@ -361,7 +362,7 @@ export const SessionPlayerScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.meditationView}>
           <TouchableOpacity
-            style={styles.endButtonFloating}
+            style={[styles.endButtonFloating, { top: insets.top + spacing.sm }]}
             onPress={handleEndEarly}
           >
             <Text style={styles.endButtonText}>End</Text>
@@ -389,7 +390,7 @@ export const SessionPlayerScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.meditationView}>
           <TouchableOpacity
-            style={styles.endButtonFloating}
+            style={[styles.endButtonFloating, { top: insets.top + spacing.sm }]}
             onPress={handleEndEarly}
           >
             <Text style={styles.endButtonText}>End</Text>

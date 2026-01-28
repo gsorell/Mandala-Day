@@ -4,13 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
   Platform,
   Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
@@ -71,6 +71,7 @@ const releaseWakeLock = async () => {
 
 export const SimpleTimerScreen: React.FC = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [duration, setDuration] = useState(10); // minutes
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -95,9 +96,11 @@ export const SimpleTimerScreen: React.FC = () => {
         content: {
           title: 'Timer Complete',
           body: 'Your meditation timer has finished',
-          // Use gong.mp3 for both platforms - expo-notifications handles the path
           sound: 'gong.mp3',
-          ...(Platform.OS === 'android' && { channelId: 'timer-gong' }),
+          ...(Platform.OS === 'android' && {
+            channelId: 'timer-gong-v2',
+            priority: Notifications.AndroidNotificationPriority.MAX,
+          }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -360,7 +363,7 @@ export const SimpleTimerScreen: React.FC = () => {
   if (isPaused) {
     return (
       <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.endButton} onPress={handleEnd}>
+        <TouchableOpacity style={[styles.endButton, { top: insets.top + spacing.sm }]} onPress={handleEnd}>
           <Text style={styles.endButtonText}>End</Text>
         </TouchableOpacity>
 
@@ -381,7 +384,7 @@ export const SimpleTimerScreen: React.FC = () => {
   if (isRunning) {
     return (
       <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.endButton} onPress={handleEnd}>
+        <TouchableOpacity style={[styles.endButton, { top: insets.top + spacing.sm }]} onPress={handleEnd}>
           <Text style={styles.endButtonText}>End</Text>
         </TouchableOpacity>
 

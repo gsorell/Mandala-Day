@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Platform,
   Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVPlaybackStatus } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
@@ -25,6 +25,7 @@ const getVipassanaAudio = () => require('../../assets/audio/vipassana.mp3');
 
 export const VipassanaScreen: React.FC = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
@@ -165,7 +166,7 @@ export const VipassanaScreen: React.FC = () => {
   if (isPaused) {
     return (
       <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.endButton} onPress={handleEnd}>
+        <TouchableOpacity style={[styles.endButton, { top: insets.top + spacing.sm }]} onPress={handleEnd}>
           <Text style={styles.endButtonText}>End</Text>
         </TouchableOpacity>
 
@@ -187,7 +188,7 @@ export const VipassanaScreen: React.FC = () => {
   if (isPlaying) {
     return (
       <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.endButton} onPress={handleEnd}>
+        <TouchableOpacity style={[styles.endButton, { top: insets.top + spacing.sm }]} onPress={handleEnd}>
           <Text style={styles.endButtonText}>End</Text>
         </TouchableOpacity>
 
