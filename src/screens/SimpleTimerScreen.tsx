@@ -12,12 +12,14 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
 import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
+import { backgroundTimer } from '../services/backgroundTimer';
 import { addExtraPracticeMinutes } from '../services/storage';
 import {
   areWebNotificationsSupported,
@@ -87,30 +89,41 @@ export const SimpleTimerScreen: React.FC = () => {
   // Track notification ID for cancellation
   const notificationIdRef = useRef<string | null>(null);
 
-  // Schedule notification for timer completion with gong sound
-  const scheduleCompletionNotification = async (seconds: number) => {
-    if (Platform.OS === 'web') return; // Skip on web
+  // Ensure the timer-gong notification channel exists on Android
+  const ensureNotificationChannel = async () => {
+    if (Platform.OS !== 'android') return;
 
     try {
-      const identifier = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Timer Complete',
-          body: 'Your meditation timer has finished',
-          sound: 'gong.mp3',
-          ...(Platform.OS === 'android' && {
-            channelId: 'timer-gong-v2',
-            priority: Notifications.AndroidNotificationPriority.MAX,
-          }),
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds,
+      // Delete old cached channel if it exists
+      try {
+        await Notifications.deleteNotificationChannelAsync('timer-gong');
+      } catch (_) {
+        // Channel may not exist, ignore
+      }
+
+      // Create/ensure the timer-gong-v3 channel exists
+      await Notifications.setNotificationChannelAsync('timer-gong-v3', {
+        name: 'Timer Completion',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0],
+        lightColor: '#6B5B95',
+        sound: 'gong',
+        bypassDnd: true,
+        enableVibrate: false,
+        audioAttributes: {
+          usage: Notifications.AndroidAudioUsage.ALARM,
+          contentType: Notifications.AndroidAudioContentType.SONIFICATION,
         },
       });
-      notificationIdRef.current = identifier;
     } catch (error) {
-      console.error('Error scheduling completion notification:', error);
+      console.error('Error ensuring notification channel:', error);
     }
+  };
+
+  // No longer scheduling notifications - gong will only play in-app
+  const scheduleCompletionNotification = async (seconds: number) => {
+    // Notification removed per user request
+    // Gong will play when timer completes if app is in foreground
   };
 
   // Cancel the completion notification
@@ -125,14 +138,27 @@ export const SimpleTimerScreen: React.FC = () => {
     }
   };
 
-  // Check if timer should have completed while app was in background
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      backgroundTimer.stop();
+      // Release keep awake on unmount
+      if (Platform.OS === 'android') {
+        deactivateKeepAwake('meditation-timer');
+      }
+      releaseWakeLock();
+    };
+  }, []);
+
+  // Check if timer should have completed while app was in background (web/fallback)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active' && isRunning && endTimeRef.current) {
+      // On Android with foreground service, the service handles completion
+      // This is mainly for web/PWA fallback
+      if (Platform.OS !== 'android' && nextAppState === 'active' && isRunning && endTimeRef.current) {
         const now = Date.now();
         if (now >= endTimeRef.current) {
           // Timer completed while in background
-          // On native, notification with gong should have played
           // On web/PWA, we play gong now when user returns
           if (!hasPlayedGong.current) {
             hasPlayedGong.current = true;
@@ -182,6 +208,11 @@ export const SimpleTimerScreen: React.FC = () => {
   };
 
   useEffect(() => {
+    // On Android, the foreground service handles the timer - skip local interval
+    if (Platform.OS === 'android' && backgroundTimer.isRunning()) {
+      return;
+    }
+
     if (isRunning && timeRemaining > 0) {
       // Set start time when timer begins (using wall-clock time)
       if (startTimeRef.current === null) {
@@ -198,6 +229,9 @@ export const SimpleTimerScreen: React.FC = () => {
           // Cancel notification to avoid duplicate sounds
           cancelCompletionNotification();
           // Release wake lock - timer is done
+          if (Platform.OS === 'android') {
+            deactivateKeepAwake('meditation-timer');
+          }
           releaseWakeLock();
           // Play gong and show notification
           if (!hasPlayedGong.current) {
@@ -229,7 +263,7 @@ export const SimpleTimerScreen: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const startingTime = timeRemaining === 0 ? duration * 60 : timeRemaining;
     if (timeRemaining === 0) {
       setTimeRemaining(duration * 60);
@@ -238,40 +272,69 @@ export const SimpleTimerScreen: React.FC = () => {
     trackSimpleTimerStart(duration);
     // Set the expected end time for background completion detection
     endTimeRef.current = Date.now() + startingTime * 1000;
-    // Schedule notification for completion (plays gong on native Android/iOS)
-    scheduleCompletionNotification(startingTime);
+
+    // Keep screen awake during meditation (Android native)
+    if (Platform.OS === 'android') {
+      try {
+        await activateKeepAwakeAsync('meditation-timer');
+        console.log('Screen keep awake activated');
+      } catch (err) {
+        console.log('Keep awake error:', err);
+      }
+    }
+
     // Keep screen awake on web/PWA so timer and gong work
     requestWakeLock();
     setIsRunning(true);
     setIsPaused(false);
   };
 
-  const handlePause = () => {
+  const handlePause = async () => {
     // Save the current time remaining when pausing
     pausedTimeRemainingRef.current = timeRemaining;
     startTimeRef.current = null;
     endTimeRef.current = null;
     cancelCompletionNotification();
+    // Stop the foreground service on Android
+    await backgroundTimer.stop();
+    // Release screen wake lock
+    if (Platform.OS === 'android') {
+      deactivateKeepAwake('meditation-timer');
+    }
     releaseWakeLock();
     setIsRunning(false);
     setIsPaused(true);
   };
 
-  const handleResume = () => {
+  const handleResume = async () => {
     // Reset start time - it will be set fresh when useEffect runs
     startTimeRef.current = null;
     // Set expected end time for background completion detection
     endTimeRef.current = Date.now() + timeRemaining * 1000;
-    // Schedule notification for remaining time
-    scheduleCompletionNotification(timeRemaining);
-    // Re-acquire wake lock
+
+    // Re-activate screen wake lock on Android
+    if (Platform.OS === 'android') {
+      try {
+        await activateKeepAwakeAsync('meditation-timer');
+      } catch (err) {
+        console.log('Keep awake error:', err);
+      }
+    }
+
+    // Re-acquire wake lock for web/fallback
     requestWakeLock();
     setIsRunning(true);
     setIsPaused(false);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     cancelCompletionNotification();
+    // Stop the foreground service on Android
+    await backgroundTimer.stop();
+    // Release screen wake lock
+    if (Platform.OS === 'android') {
+      deactivateKeepAwake('meditation-timer');
+    }
     releaseWakeLock();
     setIsRunning(false);
     setIsPaused(false);
@@ -299,8 +362,8 @@ export const SimpleTimerScreen: React.FC = () => {
           {
             text: 'Continue in Background',
             onPress: () => {
-              // Keep notification scheduled - it will play gong when timer completes
-              // Clear local state but let notification handle completion
+              // On Android with foreground service, keep it running - it will play gong
+              // Clear local interval but let foreground service handle completion
               if (timerRef.current) {
                 clearInterval(timerRef.current);
               }

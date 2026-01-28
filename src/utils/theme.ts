@@ -28,7 +28,7 @@ export const colors = {
   upcoming: '#4a5a6a', // Soft blue-gray
   complete: '#6a7a6a', // Muted sage (not "success" green)
   completeMandala: '#D4AF37', // Golden radiance for full mandala completion
-  
+
   // Geometry colors (for sacred shapes)
   geometryPrimary: '#B8945F', // Aged brass
   geometrySecondary: '#3a3a4a', // Charcoal
@@ -37,7 +37,7 @@ export const colors = {
   // Overlays and veils
   veil: 'rgba(15, 15, 26, 0.85)', // Ritual night veil
   threshold: 'rgba(45, 45, 66, 0.6)', // Liminal overlay
-  
+
   // Legacy/compatibility
   primary: '#6B5B95',
   accent: '#B8945F',
@@ -45,6 +45,20 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
+
+  // Legacy aliases (for backward compatibility with existing components)
+  cardBackground: '#252535', // = ritualSurface
+  surface: '#252535', // = ritualSurface
+  surfaceLight: '#2d2d42', // = ritualThreshold
+  primaryLight: '#B8945F', // = agedBrass
+  textMuted: '#8B8985', // = textTertiary
+  buttonPrimary: '#B8945F', // = agedBrass
+  buttonSecondary: '#3a3a4a', // = charcoal
+  due: '#4a5a6a', // = upcoming
+  completed: '#6a7a6a', // = complete
+  skipped: '#5a5a6a', // = passed
+  missed: '#5a5a6a', // = passed
+  overlay: 'rgba(15, 15, 26, 0.85)', // = veil
 };
 
 // RITUAL TYPOGRAPHY - slow, deliberate, monumental
@@ -177,6 +191,19 @@ export const shadows = {
     boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.15)',
     elevation: 4,
   },
+  // Legacy aliases
+  sm: {
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
+    elevation: 1,
+  },
+  md: {
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  lg: {
+    boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.15)',
+    elevation: 4,
+  },
 };
 
 // Default schedule times
@@ -224,20 +251,3 @@ export const borderRadius = {
   full: geometry.corners.full,
 };
 
-// Add legacy color aliases for existing components
-colors.cardBackground = colors.ritualSurface;
-colors.surface = colors.ritualSurface;
-colors.surfaceLight = colors.ritualThreshold;
-colors.primaryLight = colors.agedBrass;
-colors.textMuted = colors.textTertiary;
-colors.buttonPrimary = colors.agedBrass;
-colors.buttonSecondary = colors.charcoal;
-colors.due = colors.upcoming;
-colors.completed = colors.complete;
-colors.skipped = colors.passed;
-colors.missed = colors.passed;
-
-// Map old shadow names to new ones
-shadows.sm = shadows.whisper;
-shadows.md = shadows.presence;
-shadows.lg = shadows.depth;

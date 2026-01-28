@@ -13,6 +13,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as Notifications from 'expo-notifications';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useApp } from '../context/AppContext';
 import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
@@ -20,6 +22,7 @@ import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
 import { getSessionAudioFile, getSessionAudioUri, getGongSound, getGongUri } from '../data/audioAssets';
 import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
+import { backgroundTimer } from '../services/backgroundTimer';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -52,6 +55,41 @@ export const SessionPlayerScreen: React.FC = () => {
   const pausedTimeRemainingRef = useRef<number>(session?.durationSec || 600);
   // Track the expected end time for background completion detection
   const endTimeRef = useRef<number | null>(null);
+  // Track notification ID for cancellation (silent mode)
+  const notificationIdRef = useRef<string | null>(null);
+
+  // Ensure the timer-gong notification channel exists on Android
+  const ensureNotificationChannel = async () => {
+    if (Platform.OS !== 'android') return;
+
+    try {
+      await Notifications.setNotificationChannelAsync('timer-gong-v3', {
+        name: 'Timer Completion',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0],
+        lightColor: '#6B5B95',
+        sound: 'gong',
+        bypassDnd: true,
+        enableVibrate: false,
+        audioAttributes: {
+          usage: Notifications.AndroidAudioUsage.ALARM,
+          contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+        },
+      });
+    } catch (error) {
+      console.error('Error ensuring notification channel:', error);
+    }
+  };
+
+  // No longer scheduling notifications - gong will only play in-app
+  const scheduleCompletionNotification = async (seconds: number) => {
+    // Notification removed per user request
+  };
+
+  // Cancel the completion notification
+  const cancelCompletionNotification = async () => {
+    // No-op since we're not scheduling notifications
+  };
 
   useEffect(() => {
     if (!hasStartedRef.current && instance) {
@@ -60,16 +98,27 @@ export const SessionPlayerScreen: React.FC = () => {
     }
   }, [instanceId, instance, startSession]);
 
-  // Cleanup audio on unmount
+  // Cleanup audio, notification, and background timer on unmount
   useEffect(() => {
     return () => {
       audioService.stop();
+      cancelCompletionNotification();
+      backgroundTimer.stop();
+      // Release keep awake on unmount (for silent mode)
+      if (Platform.OS === 'android') {
+        deactivateKeepAwake('silent-meditation');
+      }
     };
   }, []);
 
   // Handle app state changes (background/foreground) for audio interruptions
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      // On Android with silent mode and foreground service, the service handles completion
+      if (Platform.OS === 'android' && isSilentMode && backgroundTimer.isRunning()) {
+        return;
+      }
+
       if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
         const now = Date.now();
         if (now >= endTimeRef.current) {
@@ -79,7 +128,10 @@ export const SessionPlayerScreen: React.FC = () => {
           startTimeRef.current = null;
           endTimeRef.current = null;
 
-          // Play gong sound if it was a silent practice
+          // Cancel notification (it may have already played the gong, or we'll play it now)
+          await cancelCompletionNotification();
+
+          // Play gong sound if it was a silent practice (web/fallback)
           if (isSilentMode) {
             try {
               let gongSource: number | { uri: string } = getGongSound();
@@ -147,6 +199,11 @@ export const SessionPlayerScreen: React.FC = () => {
   }, [countdown]);
 
   useEffect(() => {
+    // On Android with silent mode, the foreground service handles the timer
+    if (Platform.OS === 'android' && isSilentMode && backgroundTimer.isRunning()) {
+      return;
+    }
+
     if (isPlaying && timeRemaining > 0) {
       // Set start time when timer begins (using wall-clock time)
       if (startTimeRef.current === null) {
@@ -168,7 +225,15 @@ export const SessionPlayerScreen: React.FC = () => {
           startTimeRef.current = null;
           endTimeRef.current = null;
 
-          // Play gong sound to signal completion in silent mode
+          // Release keep awake - silent meditation is done
+          if (Platform.OS === 'android') {
+            deactivateKeepAwake('silent-meditation');
+          }
+
+          // Cancel notification to avoid double gong (notification handles it when phone is asleep)
+          cancelCompletionNotification();
+
+          // Play gong sound to signal completion in silent mode (when app is in foreground)
           (async () => {
             try {
               let gongSource: number | { uri: string } = getGongSound();
@@ -230,15 +295,29 @@ export const SessionPlayerScreen: React.FC = () => {
 
   // Play the pre-loaded audio after countdown finishes
   const playPreloadedAudio = async () => {
-    setIsPlaying(true);
     // Track meditation start
     if (session) {
       trackMeditationStart(session.title, session.practiceType);
     }
     // Set the expected end time for background completion detection
     endTimeRef.current = Date.now() + timeRemaining * 1000;
-    if (!isSilentMode && audioService.isLoaded()) {
+
+    if (isSilentMode) {
+      // Keep screen awake during silent meditation (Android native)
+      if (Platform.OS === 'android') {
+        try {
+          await activateKeepAwakeAsync('silent-meditation');
+          console.log('Screen keep awake activated for silent meditation');
+        } catch (err) {
+          console.log('Keep awake error:', err);
+        }
+      }
+      setIsPlaying(true);
+    } else if (audioService.isLoaded()) {
+      setIsPlaying(true);
       await audioService.play();
+    } else {
+      setIsPlaying(true);
     }
   };
 
@@ -282,7 +361,15 @@ export const SessionPlayerScreen: React.FC = () => {
       endTimeRef.current = null;
       setIsPlaying(false);
       setIsPaused(true);
-      if (!isSilentMode) {
+      if (isSilentMode) {
+        await cancelCompletionNotification();
+        // Stop the foreground service on Android
+        await backgroundTimer.stop();
+        // Release screen wake lock
+        if (Platform.OS === 'android') {
+          deactivateKeepAwake('silent-meditation');
+        }
+      } else {
         await audioService.pause();
       }
     }
@@ -293,10 +380,25 @@ export const SessionPlayerScreen: React.FC = () => {
     startTimeRef.current = null;
     // Set the expected end time for background completion detection
     endTimeRef.current = Date.now() + timeRemaining * 1000;
-    setIsPlaying(true);
-    setIsPaused(false);
-    if (!isSilentMode && audioService.isLoaded()) {
+
+    if (isSilentMode) {
+      // Re-activate screen wake lock on Android for silent mode
+      if (Platform.OS === 'android') {
+        try {
+          await activateKeepAwakeAsync('silent-meditation');
+        } catch (err) {
+          console.log('Keep awake error:', err);
+        }
+      }
+      setIsPlaying(true);
+      setIsPaused(false);
+    } else if (audioService.isLoaded()) {
+      setIsPlaying(true);
+      setIsPaused(false);
       await audioService.play();
+    } else {
+      setIsPlaying(true);
+      setIsPaused(false);
     }
   };
 
@@ -308,6 +410,13 @@ export const SessionPlayerScreen: React.FC = () => {
         trackMeditationEndEarly(session.title, session.practiceType, elapsedSeconds);
       }
       await audioService.stop();
+      await cancelCompletionNotification();
+      // Stop the foreground service on Android
+      await backgroundTimer.stop();
+      // Release keep awake for silent mode
+      if (Platform.OS === 'android' && isSilentMode) {
+        deactivateKeepAwake('silent-meditation');
+      }
       endTimeRef.current = null;
       setIsPlaying(false);
       setIsPaused(false);
