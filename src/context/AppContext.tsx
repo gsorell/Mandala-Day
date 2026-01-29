@@ -316,7 +316,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const completeSession = useCallback(
     async (instanceId: string) => {
       const instance = todayInstances.find((i) => i.id === instanceId);
-      if (!instance) return;
+      if (!instance) {
+        return;
+      }
 
       const updatedInstance: DailySessionInstance = {
         ...instance,

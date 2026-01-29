@@ -107,7 +107,12 @@ export const SessionPlayerScreen: React.FC = () => {
       cancelCompletionNotification();
       backgroundTimer.stop();
       // Release keep awake on unmount (for silent mode)
-      deactivateKeepAwake('silent-meditation');
+      // Use Promise.resolve to handle both sync and async errors
+      Promise.resolve()
+        .then(() => deactivateKeepAwake('silent-meditation'))
+        .catch(() => {
+          // Wake lock was never activated, ignore
+        });
     };
   }, []);
 
@@ -131,6 +136,9 @@ export const SessionPlayerScreen: React.FC = () => {
           // Cancel notification (it may have already played the gong, or we'll play it now)
           await cancelCompletionNotification();
 
+          // Navigate to completion screen immediately
+          setShowDedication(true);
+
           // Play gong sound if it was a silent practice (web/fallback)
           if (isSilentMode) {
             try {
@@ -141,21 +149,10 @@ export const SessionPlayerScreen: React.FC = () => {
                   gongSource = { uri };
                 }
               }
-              await audioService.loadAndPlay(gongSource, {
-                onComplete: () => {
-                  setShowDedication(true);
-                },
-                onError: (error) => {
-                  console.error('Error playing gong:', error);
-                  setShowDedication(true);
-                },
-              });
+              await audioService.loadAndPlay(gongSource);
             } catch (error) {
               console.error('Failed to play gong:', error);
-              setShowDedication(true);
             }
-          } else {
-            setShowDedication(true);
           }
         } else if (!isSilentMode) {
           // App returned from background but timer not complete
@@ -231,7 +228,11 @@ export const SessionPlayerScreen: React.FC = () => {
           // Cancel notification to avoid double gong (notification handles it when phone is asleep)
           cancelCompletionNotification();
 
-          // Play gong sound to signal completion in silent mode (when app is in foreground)
+          // Navigate to completion screen immediately - gong will continue playing
+          // User can stop gong by interacting with completion screen (Return/Share)
+          setShowDedication(true);
+
+          // Play gong sound to signal completion in silent mode
           (async () => {
             try {
               let gongSource: number | { uri: string } = getGongSound();
@@ -241,18 +242,9 @@ export const SessionPlayerScreen: React.FC = () => {
                   gongSource = { uri };
                 }
               }
-              await audioService.loadAndPlay(gongSource, {
-                onComplete: () => {
-                  setShowDedication(true);
-                },
-                onError: (error) => {
-                  console.error('Error playing gong:', error);
-                  setShowDedication(true);
-                },
-              });
+              await audioService.loadAndPlay(gongSource);
             } catch (error) {
               console.error('Failed to play gong:', error);
-              setShowDedication(true);
             }
           })();
         } else {

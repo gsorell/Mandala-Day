@@ -49,12 +49,13 @@ export const SettingsScreen: React.FC = () => {
   );
 
   // Calculate today's meditation minutes from completed mandala sessions
+  // Using Math.ceil so any partial minute counts (e.g., 30 sec = 1 min)
   const mandalaMinutes = useMemo(() => {
     return todayInstances
       .filter((instance) => instance.status === SessionStatus.COMPLETED)
       .reduce((total, instance) => {
         const session = getSessionById(instance.templateId);
-        return total + (session ? Math.floor(session.durationSec / 60) : 0);
+        return total + (session ? Math.ceil(session.durationSec / 60) : 0);
       }, 0);
   }, [todayInstances]);
 
