@@ -311,6 +311,26 @@ export const SessionPlayerScreen: React.FC = () => {
         } catch (err) {
           console.log('Keep awake error:', err);
         }
+
+        // Start the foreground service timer for reliable background completion
+        const started = await backgroundTimer.start(
+          timeRemaining,
+          (remaining) => {
+            // Update UI with remaining time from background service
+            setTimeRemaining(remaining);
+          },
+          () => {
+            // Timer completed - the background service already played the gong
+            setIsPlaying(false);
+            setTimeRemaining(0);
+            startTimeRef.current = null;
+            endTimeRef.current = null;
+            deactivateKeepAwake('silent-meditation');
+            // Trigger completion flow
+            setShowDedication(true);
+          }
+        );
+        console.log('Background timer started:', started);
       }
       setIsPlaying(true);
     } else if (audioService.isLoaded()) {
@@ -389,6 +409,22 @@ export const SessionPlayerScreen: React.FC = () => {
         } catch (err) {
           console.log('Keep awake error:', err);
         }
+
+        // Restart the foreground service timer
+        await backgroundTimer.start(
+          timeRemaining,
+          (remaining) => {
+            setTimeRemaining(remaining);
+          },
+          () => {
+            setIsPlaying(false);
+            setTimeRemaining(0);
+            startTimeRef.current = null;
+            endTimeRef.current = null;
+            deactivateKeepAwake('silent-meditation');
+            setShowDedication(true);
+          }
+        );
       }
       setIsPlaying(true);
       setIsPaused(false);
