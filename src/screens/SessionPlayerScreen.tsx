@@ -105,9 +105,7 @@ export const SessionPlayerScreen: React.FC = () => {
       cancelCompletionNotification();
       backgroundTimer.stop();
       // Release keep awake on unmount (for silent mode)
-      if (Platform.OS === 'android') {
-        deactivateKeepAwake('silent-meditation');
-      }
+      deactivateKeepAwake('silent-meditation');
     };
   }, []);
 
@@ -226,9 +224,7 @@ export const SessionPlayerScreen: React.FC = () => {
           endTimeRef.current = null;
 
           // Release keep awake - silent meditation is done
-          if (Platform.OS === 'android') {
-            deactivateKeepAwake('silent-meditation');
-          }
+          deactivateKeepAwake('silent-meditation');
 
           // Cancel notification to avoid double gong (notification handles it when phone is asleep)
           cancelCompletionNotification();
@@ -303,16 +299,16 @@ export const SessionPlayerScreen: React.FC = () => {
     endTimeRef.current = Date.now() + timeRemaining * 1000;
 
     if (isSilentMode) {
-      // Keep screen awake during silent meditation (Android native)
-      if (Platform.OS === 'android') {
-        try {
-          await activateKeepAwakeAsync('silent-meditation');
-          console.log('Screen keep awake activated for silent meditation');
-        } catch (err) {
-          console.log('Keep awake error:', err);
-        }
+      // Keep screen awake during silent meditation (all platforms)
+      try {
+        await activateKeepAwakeAsync('silent-meditation');
+        console.log('Screen keep awake activated for silent meditation');
+      } catch (err) {
+        console.log('Keep awake error:', err);
+      }
 
-        // Start the foreground service timer for reliable background completion
+      // On Android, start the foreground service timer for reliable background completion
+      if (Platform.OS === 'android') {
         const started = await backgroundTimer.start(
           timeRemaining,
           (remaining) => {
@@ -386,9 +382,7 @@ export const SessionPlayerScreen: React.FC = () => {
         // Stop the foreground service on Android
         await backgroundTimer.stop();
         // Release screen wake lock
-        if (Platform.OS === 'android') {
-          deactivateKeepAwake('silent-meditation');
-        }
+        deactivateKeepAwake('silent-meditation');
       } else {
         await audioService.pause();
       }
@@ -402,15 +396,15 @@ export const SessionPlayerScreen: React.FC = () => {
     endTimeRef.current = Date.now() + timeRemaining * 1000;
 
     if (isSilentMode) {
-      // Re-activate screen wake lock on Android for silent mode
-      if (Platform.OS === 'android') {
-        try {
-          await activateKeepAwakeAsync('silent-meditation');
-        } catch (err) {
-          console.log('Keep awake error:', err);
-        }
+      // Re-activate screen wake lock for silent mode (all platforms)
+      try {
+        await activateKeepAwakeAsync('silent-meditation');
+      } catch (err) {
+        console.log('Keep awake error:', err);
+      }
 
-        // Restart the foreground service timer
+      // On Android, restart the foreground service timer
+      if (Platform.OS === 'android') {
         await backgroundTimer.start(
           timeRemaining,
           (remaining) => {
@@ -450,7 +444,7 @@ export const SessionPlayerScreen: React.FC = () => {
       // Stop the foreground service on Android
       await backgroundTimer.stop();
       // Release keep awake for silent mode
-      if (Platform.OS === 'android' && isSilentMode) {
+      if (isSilentMode) {
         deactivateKeepAwake('silent-meditation');
       }
       endTimeRef.current = null;
