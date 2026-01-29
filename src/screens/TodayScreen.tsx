@@ -62,6 +62,13 @@ export const TodayScreen: React.FC = () => {
     todayInstances.length > 0 &&
     todayInstances.every((instance) => instance.status === SessionStatus.COMPLETED);
 
+  // Find the next scheduled session (first DUE or UPCOMING session)
+  const nextSessionId = todayInstances.find(
+    (instance) =>
+      instance.status === SessionStatus.DUE ||
+      instance.status === SessionStatus.UPCOMING
+  )?.id;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -104,6 +111,7 @@ export const TodayScreen: React.FC = () => {
             <SessionCard
               key={instance.id}
               instance={instance}
+              isNextSession={instance.id === nextSessionId}
               onStart={() => handleStart(instance.id)}
               onSkip={() => handleSkip(instance.id)}
               onSnooze={(minutes) => handleSnooze(instance.id, minutes)}

@@ -188,10 +188,10 @@ export const HistoryScreen: React.FC = () => {
 
         <View style={styles.aboutSection}>
           <Image
-            source={require('../../assets/mandala-icon-display.png')}
-            style={styles.aboutIcon}
+            source={require('../../assets/mandala-logo.png')}
+            style={styles.aboutLogo}
+            resizeMode="contain"
           />
-          <Text style={styles.aboutTitle}>Mandala Day</Text>
           <Text style={styles.aboutText}>
             Six daily sessions for awareness and compassion.
           </Text>
@@ -338,17 +338,11 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     marginTop: spacing.lg,
   },
-  aboutIcon: {
-    width: 80,
-    height: 80,
+  aboutLogo: {
+    width: 500,
+    height: 150,
     marginBottom: spacing.md,
-    opacity: 0.8,
-  },
-  aboutTitle: {
-    color: colors.textPrimary,
-    fontSize: typography.fontSizes.xl,
-    fontWeight: typography.fontWeights.semibold,
-    marginBottom: spacing.xs,
+    opacity: 0.9,
   },
   aboutText: {
     color: colors.textSecondary,

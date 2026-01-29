@@ -14,6 +14,7 @@ import { getPracticeTypeInfo } from '../data/philosophy';
 
 interface SessionCardProps {
   instance: DailySessionInstance;
+  isNextSession: boolean;
   onStart: () => void;
   onSkip: () => void;
   onSnooze: (minutes: number) => void;
@@ -58,6 +59,7 @@ const getStatusLabel = (status: SessionStatus): string => {
 
 export const SessionCard: React.FC<SessionCardProps> = React.memo(({
   instance,
+  isNextSession,
   onStart,
   onSkip,
   onSnooze,
@@ -127,7 +129,7 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
         </View>
       )}
 
-      {isActive && (
+      {isActive && isNextSession && (
         <View style={styles.actions}>
           <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
             <Text style={styles.skipText}>Skip</Text>
@@ -155,6 +157,14 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
               <Text style={styles.buttonTextPrimary}>Begin</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      )}
+
+      {isActive && !isNextSession && (
+        <View style={styles.earlyActions}>
+          <TouchableOpacity style={styles.repeatButton} onPress={onStart}>
+            <Text style={styles.repeatText}>Practice Early</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -359,6 +369,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  earlyActions: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   missedText: {

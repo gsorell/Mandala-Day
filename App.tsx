@@ -174,32 +174,103 @@ const AppNavigator: React.FC = () => {
   const navigationRef = useRef<any>(null);
   const notificationListener = useRef<Notifications.Subscription | null>(null);
 
+  // Notification scheduling state to prevent race conditions and duplicates
+  const schedulingLock = useRef<boolean>(false);
+  const schedulingVersion = useRef<number>(0);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScheduledHash = useRef<string>('');
+
   // Set up notifications (only on native platforms)
   useEffect(() => {
     if (Platform.OS === 'web') return; // Skip notifications on web
 
-    const setupNotifications = async () => {
-      console.log('Setting up notifications...');
-      console.log('appSettings.notificationsEnabled:', appSettings?.notificationsEnabled);
-      console.log('todayInstances.length:', todayInstances.length);
-      console.log('userSchedule exists:', !!userSchedule);
-      
+    // Clear any pending debounce timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Debounce scheduling to batch rapid state changes (e.g., during app startup)
+    debounceTimer.current = setTimeout(async () => {
+      // Increment version to track this scheduling attempt
+      const currentVersion = ++schedulingVersion.current;
+
+      console.log(`[Notifications v${currentVersion}] Setting up notifications...`);
+      console.log(`[Notifications v${currentVersion}] appSettings.notificationsEnabled:`, appSettings?.notificationsEnabled);
+      console.log(`[Notifications v${currentVersion}] todayInstances.length:`, todayInstances.length);
+      console.log(`[Notifications v${currentVersion}] userSchedule exists:`, !!userSchedule);
+
+      // Check if all conditions are met
+      if (!appSettings?.notificationsEnabled || !userSchedule || todayInstances.length === 0) {
+        console.log(`[Notifications v${currentVersion}] Conditions not met, skipping`);
+        return;
+      }
+
+      // Create a hash of the notification-relevant data to detect actual changes
+      // Only include scheduledAt times and enabled status - ignore status changes like COMPLETED
+      const instancesHash = todayInstances
+        .filter(i => userSchedule.enabledSessions[i.templateId] !== false)
+        .map(i => `${i.templateId}:${i.scheduledAt}`)
+        .sort()
+        .join('|');
+      const scheduleHash = `${instancesHash}::${JSON.stringify(userSchedule.quietHours)}`;
+
+      // Skip if nothing has actually changed
+      if (scheduleHash === lastScheduledHash.current) {
+        console.log(`[Notifications v${currentVersion}] Schedule unchanged, skipping re-schedule`);
+        return;
+      }
+
+      // Check if another scheduling operation is in progress
+      if (schedulingLock.current) {
+        console.log(`[Notifications v${currentVersion}] Scheduling already in progress, will retry`);
+        // Schedule a retry after a short delay
+        debounceTimer.current = setTimeout(() => {
+          // Force a re-trigger by invalidating the hash
+          lastScheduledHash.current = '';
+        }, 500);
+        return;
+      }
+
       const available = await areNotificationsAvailable();
-      console.log('Notifications available:', available);
-      
-      if (available && appSettings?.notificationsEnabled && userSchedule && todayInstances.length > 0) {
-        console.log('All conditions met, scheduling notifications...');
+      console.log(`[Notifications v${currentVersion}] Notifications available:`, available);
+
+      if (!available) {
+        console.log(`[Notifications v${currentVersion}] Notifications not available`);
+        return;
+      }
+
+      // Check if this version is still current (no newer scheduling attempt started)
+      if (currentVersion !== schedulingVersion.current) {
+        console.log(`[Notifications v${currentVersion}] Outdated version, aborting (current: ${schedulingVersion.current})`);
+        return;
+      }
+
+      // Acquire lock
+      schedulingLock.current = true;
+
+      try {
+        console.log(`[Notifications v${currentVersion}] All conditions met, scheduling notifications...`);
         await scheduleAllSessionNotifications(todayInstances, userSchedule);
-        
+
+        // Update the hash only after successful scheduling
+        lastScheduledHash.current = scheduleHash;
+
         // Log pending notifications for debugging
         const pending = await Notifications.getAllScheduledNotificationsAsync();
-        console.log('Pending notifications count:', pending.length);
-      } else {
-        console.log('Notification conditions not met');
+        console.log(`[Notifications v${currentVersion}] Pending notifications count:`, pending.length);
+      } catch (error) {
+        console.error(`[Notifications v${currentVersion}] Error scheduling:`, error);
+      } finally {
+        // Release lock
+        schedulingLock.current = false;
+      }
+    }, 300); // 300ms debounce to batch rapid changes
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
       }
     };
-
-    setupNotifications();
   }, [appSettings?.notificationsEnabled, todayInstances, userSchedule]);
 
   // Handle notification responses (only on native platforms)
