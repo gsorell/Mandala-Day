@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import { useApp } from '../context/AppContext';
 import { RootStackParamList, SessionStatus } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { sessionSymbols } from '../utils/ritualSymbols';
+import { audioService } from '../services/audio';
+import { backgroundTimer } from '../services/backgroundTimer';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -43,7 +45,18 @@ export const SessionCompleteScreen: React.FC = () => {
   const allSessionsComplete = !isViewingPast && todayInstances.length > 0 &&
     todayInstances.every((instance) => instance.status === SessionStatus.COMPLETED);
 
+  // Stop any playing audio (e.g., gong) when this screen unmounts
+  useEffect(() => {
+    return () => {
+      audioService.stop();
+      backgroundTimer.stopGong();
+    };
+  }, []);
+
   const handleShare = async () => {
+    // Stop any playing audio (e.g., gong) when user interacts
+    audioService.stop();
+    backgroundTimer.stopGong();
     const message = shareMessage || 'Thinking of you';
     const shareText = dedication
       ? `${message} 🙏\n\n${sessionTitle}\n"${dedication}"\n\nJoin me: https://mandaladay.netlify.app`
@@ -115,6 +128,9 @@ export const SessionCompleteScreen: React.FC = () => {
   };
 
   const handleReturn = () => {
+    // Stop any playing audio (e.g., gong) when user navigates away
+    audioService.stop();
+    backgroundTimer.stopGong();
     if (isViewingPast) {
       // Go back to previous screen (History or Today)
       navigation.goBack();

@@ -12,6 +12,9 @@ let onTickCallback: TimerCallback | null = null;
 let onCompleteCallback: CompletionCallback | null = null;
 let shouldStop = false;
 
+// Store reference to gong sound so it can be stopped
+let currentGongSound: Audio.Sound | null = null;
+
 // Sleep helper
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -40,10 +43,15 @@ const timerTask = async (taskData?: { durationSeconds: number }) => {
       try {
         const gongSource = getGongSound();
         const { sound } = await Audio.Sound.createAsync(gongSource);
+        currentGongSound = sound;
         await sound.playAsync();
-        // Wait for gong to finish (roughly 3 seconds)
+        // Wait for gong to finish (roughly 3 seconds), but can be stopped early
         await sleep(3000);
-        await sound.unloadAsync();
+        // Only unload if not already stopped
+        if (currentGongSound === sound) {
+          await sound.unloadAsync();
+          currentGongSound = null;
+        }
       } catch (error) {
         console.error('Error playing gong in background:', error);
       }
@@ -175,5 +183,21 @@ export const backgroundTimer = {
   isRunning: (): boolean => {
     if (Platform.OS !== 'android') return false;
     return BackgroundActions.isRunning();
+  },
+
+  /**
+   * Stop the gong sound if it's currently playing
+   */
+  stopGong: async (): Promise<void> => {
+    if (currentGongSound) {
+      try {
+        await currentGongSound.stopAsync();
+        await currentGongSound.unloadAsync();
+        currentGongSound = null;
+      } catch (error) {
+        // Sound may have already finished, ignore errors
+        currentGongSound = null;
+      }
+    }
   },
 };

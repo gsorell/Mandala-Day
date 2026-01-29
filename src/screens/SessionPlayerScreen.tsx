@@ -57,6 +57,8 @@ export const SessionPlayerScreen: React.FC = () => {
   const endTimeRef = useRef<number | null>(null);
   // Track notification ID for cancellation (silent mode)
   const notificationIdRef = useRef<string | null>(null);
+  // Track if completion has been handled (to avoid duplicate handling)
+  const completionHandledRef = useRef(false);
 
   // Ensure the timer-gong notification channel exists on Android
   const ensureNotificationChannel = async () => {
@@ -309,21 +311,41 @@ export const SessionPlayerScreen: React.FC = () => {
 
       // On Android, start the foreground service timer for reliable background completion
       if (Platform.OS === 'android') {
+        // Reset completion flag for new meditation
+        completionHandledRef.current = false;
+
         const started = await backgroundTimer.start(
           timeRemaining,
           (remaining) => {
             // Update UI with remaining time from background service
             setTimeRemaining(remaining);
+
+            // Handle completion in tick callback since it runs in main JS context
+            // The background service's completion callback may not work reliably
+            // because it runs in a different JS context on Android
+            if (remaining === 0 && !completionHandledRef.current) {
+              completionHandledRef.current = true;
+              // Navigate to completion screen immediately - gong will continue playing
+              // User will stop gong by interacting with completion screen (Return/Share)
+              setIsPlaying(false);
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              deactivateKeepAwake('silent-meditation');
+              setShowDedication(true);
+            }
           },
           () => {
-            // Timer completed - the background service already played the gong
-            setIsPlaying(false);
-            setTimeRemaining(0);
-            startTimeRef.current = null;
-            endTimeRef.current = null;
-            deactivateKeepAwake('silent-meditation');
-            // Trigger completion flow
-            setShowDedication(true);
+            // Completion callback from background service - may not work reliably
+            // Keeping as fallback in case tick callback didn't trigger
+            if (!completionHandledRef.current) {
+              completionHandledRef.current = true;
+              setIsPlaying(false);
+              setTimeRemaining(0);
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              deactivateKeepAwake('silent-meditation');
+              setShowDedication(true);
+            }
           }
         );
         console.log('Background timer started:', started);
@@ -405,18 +427,35 @@ export const SessionPlayerScreen: React.FC = () => {
 
       // On Android, restart the foreground service timer
       if (Platform.OS === 'android') {
+        // Reset completion flag for resumed meditation
+        completionHandledRef.current = false;
+
         await backgroundTimer.start(
           timeRemaining,
           (remaining) => {
             setTimeRemaining(remaining);
+
+            // Handle completion in tick callback (same as initial start)
+            if (remaining === 0 && !completionHandledRef.current) {
+              completionHandledRef.current = true;
+              setIsPlaying(false);
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              deactivateKeepAwake('silent-meditation');
+              setShowDedication(true);
+            }
           },
           () => {
-            setIsPlaying(false);
-            setTimeRemaining(0);
-            startTimeRef.current = null;
-            endTimeRef.current = null;
-            deactivateKeepAwake('silent-meditation');
-            setShowDedication(true);
+            // Fallback completion callback
+            if (!completionHandledRef.current) {
+              completionHandledRef.current = true;
+              setIsPlaying(false);
+              setTimeRemaining(0);
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              deactivateKeepAwake('silent-meditation');
+              setShowDedication(true);
+            }
           }
         );
       }
