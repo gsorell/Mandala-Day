@@ -104,10 +104,7 @@ export const OnboardingScreen: React.FC = () => {
 
         <View style={styles.welcomeDescription}>
           <Text style={styles.descriptionText}>
-            This app offers a gentle structure for awareness practice throughout your day.
-          </Text>
-          <Text style={styles.descriptionText}>
-            Six short sessions, from waking to rest, each inviting a return to presence.
+            A simple structure for daily practice.
           </Text>
         </View>
       </View>
@@ -194,7 +191,7 @@ export const OnboardingScreen: React.FC = () => {
         <Text style={styles.framingTitle}>Practice as Life</Text>
 
         <Text style={styles.framingParagraph}>
-          Six invitations throughout the day to recognize what's already present. This is practice woven into life itself, not separate from it. Each moment becomes a doorway to presence.
+          Six moments to return to what's already here.
         </Text>
 
         <Text style={styles.framingQuote}>

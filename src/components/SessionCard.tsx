@@ -169,8 +169,7 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
       )}
 
       {instance.status === SessionStatus.COMPLETED && (
-        <View style={styles.completedActions}>
-          <Text style={styles.completedText}>Completed with presence</Text>
+        <View style={styles.earlyActions}>
           <TouchableOpacity style={styles.repeatButton} onPress={onStart}>
             <Text style={styles.repeatText}>Practice Again</Text>
           </TouchableOpacity>
