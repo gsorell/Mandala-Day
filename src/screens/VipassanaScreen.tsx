@@ -32,6 +32,7 @@ export const VipassanaScreen: React.FC = () => {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [duration, setDuration] = useState(VIPASSANA_DURATION_SEC * 1000);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
 
   // Handle app state changes (background/foreground)
@@ -62,9 +63,12 @@ export const VipassanaScreen: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Countdown finished, start playing the pre-loaded audio
+      // Countdown finished, start playing
+      // Set isPlaying FIRST to avoid flash of "Begin" screen,
+      // then clear countdown and start the actual playback
+      setIsPlaying(true);
       setCountdown(null);
-      playPreloadedAudio();
+      playAudio();
     }
   }, [countdown]);
 
@@ -84,21 +88,17 @@ export const VipassanaScreen: React.FC = () => {
     }
   };
 
-  // Play the pre-loaded audio after countdown finishes
-  const playPreloadedAudio = async () => {
+  // Play audio after countdown finishes
+  const playAudio = async () => {
     hasStarted.current = true;
     setIsPlaying(true);
     setIsPaused(false);
-    if (audioService.isLoaded()) {
-      await audioService.play();
-    }
-  };
 
-  const handleStart = async () => {
-    // Pre-load audio during user gesture (required for iOS Safari)
-    // Then start countdown
-    try {
-      await audioService.preload(getVipassanaAudio(), {
+    // On web, audio was preloaded; on native, load and play now
+    if (Platform.OS === 'web' && audioService.isLoaded()) {
+      await audioService.play();
+    } else {
+      await audioService.loadAndPlay(getVipassanaAudio(), {
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -109,10 +109,31 @@ export const VipassanaScreen: React.FC = () => {
           setIsPlaying(false);
         },
       });
-    } catch (error) {
-      console.error('Failed to pre-load Vipassana audio:', error);
     }
-    // Start countdown (audio will play when countdown reaches 0)
+  };
+
+  const handleStart = async () => {
+    if (Platform.OS === 'web') {
+      // Web/Safari requires preload during user gesture
+      setIsLoading(true);
+      try {
+        await audioService.preload(getVipassanaAudio(), {
+          onPlaybackStatusUpdate: handlePlaybackStatus,
+          onComplete: () => {
+            setIsPlaying(false);
+            setShowComplete(true);
+          },
+          onError: (error) => {
+            console.error('Vipassana playback error:', error);
+            setIsPlaying(false);
+          },
+        });
+      } catch (error) {
+        console.error('Failed to pre-load Vipassana audio:', error);
+      }
+      setIsLoading(false);
+    }
+    // Start countdown (audio will load and play when countdown reaches 0)
     setCountdown(5);
   };
 
