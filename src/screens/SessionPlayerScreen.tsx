@@ -189,7 +189,10 @@ export const SessionPlayerScreen: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Countdown finished, start playing the pre-loaded audio
+      // Countdown finished, start playing
+      // Set isPlaying FIRST to avoid flash of "Begin" screen,
+      // then clear countdown and start the actual playback
+      setIsPlaying(true);
       setCountdown(null);
       playPreloadedAudio();
     }
@@ -601,6 +604,9 @@ export const SessionPlayerScreen: React.FC = () => {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scriptContent}
+        pinchGestureEnabled={false}
+        maximumZoomScale={1}
+        minimumZoomScale={1}
       >
         <View style={styles.preSessionView}>
           {countdown !== null ? (

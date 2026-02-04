@@ -41,6 +41,13 @@ const timerTask = async (taskData?: { durationSeconds: number }) => {
     if (remainingMs <= 0) {
       // Play the gong sound
       try {
+        // Configure audio mode for playback
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: false,
+        });
+        
         const gongSource = getGongSound();
         const { sound } = await Audio.Sound.createAsync(gongSource);
         currentGongSound = sound;

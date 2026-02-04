@@ -74,6 +74,9 @@ export const TodayScreen: React.FC = () => {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        pinchGestureEnabled={false}
+        maximumZoomScale={1}
+        minimumZoomScale={1}
       >
         <Image
           source={require('../../assets/mandala-logo.png')}
