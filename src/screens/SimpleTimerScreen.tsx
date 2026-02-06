@@ -88,6 +88,8 @@ export const SimpleTimerScreen: React.FC = () => {
   const endTimeRef = useRef<number | null>(null);
   // Track notification ID for cancellation
   const notificationIdRef = useRef<string | null>(null);
+  // Track when meditation was actually completed (not when user presses Return)
+  const completionTimeRef = useRef<Date | null>(null);
 
   // Ensure the timer-gong notification channel exists on Android
   const ensureNotificationChannel = async () => {
@@ -168,6 +170,8 @@ export const SimpleTimerScreen: React.FC = () => {
           cancelCompletionNotification();
           releaseWakeLock();
           setIsRunning(false);
+          // Record completion time when timer actually finished (use endTimeRef as that's when it completed)
+          completionTimeRef.current = new Date(endTimeRef.current!);
           setShowComplete(true);
           setTimeRemaining(0);
           startTimeRef.current = null;
@@ -240,6 +244,8 @@ export const SimpleTimerScreen: React.FC = () => {
             showTimerCompleteWebNotification();
           }
           setIsRunning(false);
+          // Record completion time now, not when user presses Return
+          completionTimeRef.current = new Date();
           setShowComplete(true);
           setTimeRemaining(0);
           startTimeRef.current = null;
@@ -344,6 +350,7 @@ export const SimpleTimerScreen: React.FC = () => {
     startTimeRef.current = null;
     pausedTimeRemainingRef.current = duration * 60;
     endTimeRef.current = null;
+    completionTimeRef.current = null;
     audioService.stop();
   };
 
@@ -385,9 +392,10 @@ export const SimpleTimerScreen: React.FC = () => {
 
   const handleComplete = async () => {
     trackSimpleTimerComplete(duration);
-    // Save completed minutes to storage
-    const today = format(new Date(), 'yyyy-MM-dd');
-    await addExtraPracticeMinutes(today, duration);
+    // Save completed minutes to storage using the time when meditation actually finished
+    const completionDate = completionTimeRef.current || new Date();
+    const completedDay = format(completionDate, 'yyyy-MM-dd');
+    await addExtraPracticeMinutes(completedDay, duration);
     handleReset();
     navigation.goBack();
   };
