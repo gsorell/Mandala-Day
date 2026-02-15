@@ -20,6 +20,7 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
 import { TheViewScreen } from './src/screens/TheViewScreen';
 import { VipassanaScreen } from './src/screens/VipassanaScreen';
+import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing, borderRadius } from './src/utils/theme';
 import {
@@ -369,6 +370,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="Vipassana"
               component={VipassanaScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="ChildrensSleep"
+              component={ChildrensSleepScreen}
               options={{
                 presentation: 'card',
               }}

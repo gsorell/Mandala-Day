@@ -166,6 +166,14 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>10 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('ChildrensSleep')}
+          >
+            <Text style={styles.menuItemText}>Children's Sleep Meditation</Text>
+            <Text style={styles.menuItemSubtext}>9 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
