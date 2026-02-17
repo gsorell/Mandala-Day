@@ -98,6 +98,7 @@ export type RootStackParamList = {
   TheView: undefined;
   Vipassana: undefined;
   ChildrensSleep: undefined;
+  BodySeaVoyage: undefined;
 };
 
 export type MainTabParamList = {

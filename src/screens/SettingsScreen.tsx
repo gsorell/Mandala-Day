@@ -170,8 +170,16 @@ export const SettingsScreen: React.FC = () => {
             style={styles.menuItem}
             onPress={() => navigation.navigate('ChildrensSleep')}
           >
-            <Text style={styles.menuItemText}>Children's Sleep Meditation</Text>
+            <Text style={styles.menuItemText}>Jungle Safari</Text>
             <Text style={styles.menuItemSubtext}>9 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('BodySeaVoyage')}
+          >
+            <Text style={styles.menuItemText}>Sea Voyage</Text>
+            <Text style={styles.menuItemSubtext}>7 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
         </View>

@@ -21,6 +21,7 @@ import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
 import { TheViewScreen } from './src/screens/TheViewScreen';
 import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
+import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing, borderRadius } from './src/utils/theme';
 import {
@@ -377,6 +378,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="ChildrensSleep"
               component={ChildrensSleepScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="BodySeaVoyage"
+              component={BodySeaVoyageScreen}
               options={{
                 presentation: 'card',
               }}

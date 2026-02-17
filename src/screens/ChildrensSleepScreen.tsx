@@ -248,7 +248,7 @@ export const ChildrensSleepScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Children's Sleep</Text>
+        <Text style={styles.title}>Jungle Safari</Text>
         <View style={styles.headerSpacer} />
       </View>
 
