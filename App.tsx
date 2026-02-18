@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler, Animated, Easing, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,77 +36,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
 const BeginPracticeButton: React.FC<{ onPress: () => void; sessionTitle?: string }> = ({ onPress, sessionTitle }) => {
-  const breathScale = useRef(new Animated.Value(1)).current;
-  const breathOpacity = useRef(new Animated.Value(0.65)).current;
-  const pressScale = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const breathLoop = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(breathScale, {
-            toValue: 1.04,
-            duration: 2500,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(breathOpacity, {
-            toValue: 1.0,
-            duration: 2500,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(breathScale, {
-            toValue: 1,
-            duration: 2500,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(breathOpacity, {
-            toValue: 0.65,
-            duration: 2500,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    );
-    breathLoop.start();
-    return () => breathLoop.stop();
-  }, []);
-
-  const handlePressIn = () => {
-    Animated.timing(pressScale, {
-      toValue: 0.93,
-      duration: 80,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.timing(pressScale, {
-      toValue: 1,
-      duration: 200,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
-  };
-
   return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.beginButtonPressable}>
-      <Animated.View style={[styles.beginButtonRing1, { transform: [{ scale: breathScale }, { scale: pressScale }], opacity: breathOpacity }]}>
-        <View style={styles.beginButtonRing2}>
-          <View style={styles.beginButtonCore}>
-            <Text style={styles.beginButtonText}>Begin</Text>
-          </View>
-        </View>
-      </Animated.View>
+    <View style={styles.beginButtonPressable}>
+      <TouchableOpacity style={styles.beginButtonPill} onPress={onPress} activeOpacity={0.8}>
+        <Text style={styles.beginButtonText}>Begin Practice</Text>
+      </TouchableOpacity>
       {sessionTitle && (
         <Text style={styles.beginButtonSessionLabel}>{sessionTitle}</Text>
       )}
-    </Pressable>
+    </View>
   );
 };
 
@@ -520,27 +458,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  beginButtonRing1: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(184, 148, 95, 0.07)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonRing2: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    backgroundColor: 'rgba(184, 148, 95, 0.14)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonCore: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+  beginButtonPill: {
     backgroundColor: colors.agedBrass,
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },

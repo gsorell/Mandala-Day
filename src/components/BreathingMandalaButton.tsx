@@ -8,8 +8,10 @@ interface BreathingMandalaButtonProps {
 
 export const BreathingMandalaButton: React.FC<BreathingMandalaButtonProps> = ({ onPress }) => {
   const breathScale = useRef(new Animated.Value(1)).current;
-  const breathOpacity = useRef(new Animated.Value(0.65)).current;
+  const breathOpacity = useRef(new Animated.Value(0.78)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
+  // Counter-scale on core so the text doesn't grow with the outer rings
+  const inverseBreathScale = Animated.divide(1, breathScale);
 
   useEffect(() => {
     const breathLoop = Animated.loop(
@@ -36,7 +38,7 @@ export const BreathingMandalaButton: React.FC<BreathingMandalaButtonProps> = ({ 
             useNativeDriver: true,
           }),
           Animated.timing(breathOpacity, {
-            toValue: 0.65,
+            toValue: 0.78,
             duration: 2500,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
@@ -67,49 +69,62 @@ export const BreathingMandalaButton: React.FC<BreathingMandalaButtonProps> = ({ 
 
   return (
     <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View
-        style={[
-          styles.ring1,
-          { transform: [{ scale: breathScale }, { scale: pressScale }], opacity: breathOpacity },
-        ]}
-      >
-        <View style={styles.ring2}>
-          <View style={styles.ring3}>
-            <View style={styles.core}>
-              <View style={styles.innerDetail} />
-              <Text style={styles.text}>Begin</Text>
-            </View>
-          </View>
-        </View>
+      {/* Outer container: handles scale only */}
+      <Animated.View style={[styles.container, { transform: [{ scale: breathScale }, { scale: pressScale }] }]}>
+        {/* Rings layer: handles opacity only, rings drawn as absolute siblings */}
+        <Animated.View style={[styles.ringsLayer, { opacity: breathOpacity }]}>
+          <View style={styles.ring1bg} />
+          <View style={styles.ring2bg} />
+          <View style={styles.ring3bg} />
+        </Animated.View>
+        {/* Core: always full opacity, counter-scaled to prevent text jump */}
+        <Animated.View style={[styles.core, { transform: [{ scale: inverseBreathScale }] }]}>
+          <View style={styles.innerDetail} />
+          <Text style={styles.text}>Begin</Text>
+        </Animated.View>
       </Animated.View>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  ring1: {
+  container: {
+    width: 148,
+    height: 148,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringsLayer: {
+    position: 'absolute',
+    width: 148,
+    height: 148,
+  },
+  ring1bg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: 148,
     height: 148,
     borderRadius: 74,
     backgroundColor: 'rgba(184, 148, 95, 0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  ring2: {
+  ring2bg: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
     width: 120,
     height: 120,
     borderRadius: 60,
     backgroundColor: 'rgba(184, 148, 95, 0.11)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  ring3: {
+  ring3bg: {
+    position: 'absolute',
+    top: 27,
+    left: 27,
     width: 94,
     height: 94,
     borderRadius: 47,
     backgroundColor: 'rgba(184, 148, 95, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   core: {
     width: 70,

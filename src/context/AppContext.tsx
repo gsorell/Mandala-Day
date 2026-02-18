@@ -415,7 +415,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return false;
     });
     
-    return missedWithinOneHour;
+    if (missedWithinOneHour) {
+      return missedWithinOneHour;
+    }
+
+    return undefined;
   }, [todayInstances]);
 
   return (
