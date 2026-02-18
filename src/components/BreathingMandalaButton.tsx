@@ -143,10 +143,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(11, 8, 23, 0.25)',
   },
   text: {
-    color: colors.ritualNight,
+    color: colors.white,
     fontSize: 13,
     fontWeight: typography.fontWeights.medium as any,
-    letterSpacing: 2.5,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
 });

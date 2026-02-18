@@ -393,30 +393,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
 
   const getNextDueSession = useCallback(() => {
+    if (todayInstances.length === 0) return undefined;
+
     const now = new Date();
-    
-    // First, try to find a DUE or UPCOMING session
-    const nextSession = todayInstances.find((instance) => 
-      instance.status === SessionStatus.DUE ||
-      instance.status === SessionStatus.UPCOMING
+
+    // Sort instances by scheduled time ascending
+    const sorted = [...todayInstances].sort(
+      (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
     );
-    
-    if (nextSession) {
-      return nextSession;
-    }
-    
-    // If no upcoming/due session, check for recently missed sessions (within 1 hour)
-    const missedWithinOneHour = todayInstances.find((instance) => {
-      if (instance.status === SessionStatus.MISSED) {
-        const scheduledTime = new Date(instance.scheduledAt);
-        const timeSinceMissed = now.getTime() - scheduledTime.getTime();
-        return timeSinceMissed < 60 * 60 * 1000; // Within 1 hour
+
+    // Determine which session's time window we're currently in.
+    // Each session owns the window from 1 hour before its scheduled time
+    // up to 1 hour before the next session's scheduled time.
+    // The first session's window starts at midnight; the last runs until midnight.
+    // Default to the last session and walk forward until we find the right window.
+    let windowIndex = sorted.length - 1;
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const nextWindowOpen = new Date(
+        new Date(sorted[i + 1].scheduledAt).getTime() - 60 * 60 * 1000
+      );
+      if (now < nextWindowOpen) {
+        windowIndex = i;
+        break;
       }
-      return false;
-    });
-    
-    if (missedWithinOneHour) {
-      return missedWithinOneHour;
+    }
+
+    // From the active window's session onward, return the first incomplete session
+    for (let i = windowIndex; i < sorted.length; i++) {
+      const instance = sorted[i];
+      if (
+        instance.status !== SessionStatus.COMPLETED &&
+        instance.status !== SessionStatus.SKIPPED
+      ) {
+        return instance;
+      }
     }
 
     return undefined;

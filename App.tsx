@@ -39,11 +39,8 @@ const BeginPracticeButton: React.FC<{ onPress: () => void; sessionTitle?: string
   return (
     <View style={styles.beginButtonPressable}>
       <TouchableOpacity style={styles.beginButtonPill} onPress={onPress} activeOpacity={0.8}>
-        <Text style={styles.beginButtonText}>Begin Practice</Text>
+        <Text style={styles.beginButtonText}>{sessionTitle ?? 'Begin Practice'}</Text>
       </TouchableOpacity>
-      {sessionTitle && (
-        <Text style={styles.beginButtonSessionLabel}>{sessionTitle}</Text>
-      )}
     </View>
   );
 };
@@ -456,35 +453,26 @@ const styles = StyleSheet.create({
   beginButtonPressable: {
     alignSelf: 'center',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: 14,
   },
   beginButtonPill: {
     backgroundColor: colors.agedBrass,
     borderRadius: 999,
-    paddingVertical: 10,
+    paddingVertical: 13,
     paddingHorizontal: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   beginButtonText: {
-    color: colors.ritualNight,
-    fontSize: 10,
+    color: colors.white,
+    fontSize: 14,
     fontWeight: typography.fontWeights.medium as any,
-    letterSpacing: 2.5,
-    textTransform: 'uppercase' as const,
-  },
-  beginButtonSessionLabel: {
-    color: colors.textTertiary,
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: 'uppercase' as const,
-    marginTop: 6,
-    textAlign: 'center' as const,
+    letterSpacing: 0.5,
   },
   tabBar: {
     flexDirection: 'row',
-    height: 70,
-    paddingTop: 8,
+    height: 78,
+    paddingTop: 12,
     paddingBottom: 15,
     backgroundColor: colors.ritualSurface,
   },
