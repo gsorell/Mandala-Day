@@ -641,8 +641,15 @@ export const SessionPlayerScreen: React.FC = () => {
 
       <View style={styles.controls}>
         {countdown === null && (
-          <TouchableOpacity style={styles.playButton} onPress={togglePlay}>
-            <Text style={styles.playButtonText}>Begin Meditation</Text>
+          <TouchableOpacity style={styles.playButtonRing1} onPress={togglePlay} activeOpacity={0.85}>
+            <View style={styles.playButtonRing2}>
+              <View style={styles.playButtonRing3}>
+                <View style={styles.playButtonCore}>
+                  <View style={styles.playButtonInnerDetail} />
+                  <Text style={styles.playButtonText}>Begin</Text>
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
         )}
       </View>
@@ -774,22 +781,58 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   controls: {
-    padding: spacing.lg,
+    paddingVertical: spacing.xl,
     paddingBottom: spacing.xl,
     borderTopWidth: 1,
     borderTopColor: colors.charcoal,
-  },
-  playButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    ...shadows.presence,
+  },
+  playButtonRing1: {
+    width: 148,
+    height: 148,
+    borderRadius: 74,
+    backgroundColor: 'rgba(184, 148, 95, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonRing2: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(184, 148, 95, 0.11)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonRing3: {
+    width: 94,
+    height: 94,
+    borderRadius: 47,
+    backgroundColor: 'rgba(184, 148, 95, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonCore: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: colors.agedBrass,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonInnerDetail: {
+    position: 'absolute',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 0.5,
+    borderColor: 'rgba(11, 8, 23, 0.25)',
   },
   playButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSizes.lg,
-    fontWeight: typography.fontWeights.semibold,
+    color: colors.ritualNight,
+    fontSize: 13,
+    fontWeight: typography.fontWeights.medium,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
   },
   errorContainer: {
     flex: 1,

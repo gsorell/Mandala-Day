@@ -554,8 +554,15 @@ export const SimpleTimerScreen: React.FC = () => {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.beginButton} onPress={handleStart}>
-          <Text style={styles.beginButtonText}>Begin</Text>
+        <TouchableOpacity style={styles.beginButtonRing1} onPress={handleStart} activeOpacity={0.85}>
+          <View style={styles.beginButtonRing2}>
+            <View style={styles.beginButtonRing3}>
+              <View style={styles.beginButtonCore}>
+                <View style={styles.beginButtonInnerDetail} />
+                <Text style={styles.beginButtonText}>Begin</Text>
+              </View>
+            </View>
+          </View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -656,20 +663,58 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   footer: {
-    padding: spacing.md,
+    paddingVertical: spacing.xl,
+    paddingBottom: spacing.xl,
     borderTopWidth: 1,
     borderTopColor: colors.charcoal,
-  },
-  beginButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
+  beginButtonRing1: {
+    width: 148,
+    height: 148,
+    borderRadius: 74,
+    backgroundColor: 'rgba(184, 148, 95, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonRing2: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(184, 148, 95, 0.11)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonRing3: {
+    width: 94,
+    height: 94,
+    borderRadius: 47,
+    backgroundColor: 'rgba(184, 148, 95, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonCore: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: colors.agedBrass,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonInnerDetail: {
+    position: 'absolute',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 0.5,
+    borderColor: 'rgba(11, 8, 23, 0.25)',
+  },
   beginButtonText: {
-    color: colors.textPrimary,
-    fontSize: typography.fontSizes.lg,
+    color: colors.ritualNight,
+    fontSize: 13,
     fontWeight: typography.fontWeights.medium,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
   },
   // Running timer styles
   meditationView: {

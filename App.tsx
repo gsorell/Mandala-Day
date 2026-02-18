@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler, Animated, Easing, Pressable } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,8 @@ import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
-import { colors, typography, spacing, borderRadius } from './src/utils/theme';
+import { colors, typography, spacing } from './src/utils/theme';
+import { getSessionById } from './src/data/sessions';
 import {
   areNotificationsAvailable,
   scheduleAllSessionNotifications,
@@ -34,9 +35,85 @@ import {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
+const BeginPracticeButton: React.FC<{ onPress: () => void; sessionTitle?: string }> = ({ onPress, sessionTitle }) => {
+  const breathScale = useRef(new Animated.Value(1)).current;
+  const breathOpacity = useRef(new Animated.Value(0.65)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const breathLoop = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(breathScale, {
+            toValue: 1.04,
+            duration: 2500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(breathOpacity, {
+            toValue: 1.0,
+            duration: 2500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(breathScale, {
+            toValue: 1,
+            duration: 2500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(breathOpacity, {
+            toValue: 0.65,
+            duration: 2500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+    breathLoop.start();
+    return () => breathLoop.stop();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.timing(pressScale, {
+      toValue: 0.93,
+      duration: 80,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.timing(pressScale, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.beginButtonPressable}>
+      <Animated.View style={[styles.beginButtonRing1, { transform: [{ scale: breathScale }, { scale: pressScale }], opacity: breathOpacity }]}>
+        <View style={styles.beginButtonRing2}>
+          <View style={styles.beginButtonCore}>
+            <Text style={styles.beginButtonText}>Begin</Text>
+          </View>
+        </View>
+      </Animated.View>
+      {sessionTitle && (
+        <Text style={styles.beginButtonSessionLabel}>{sessionTitle}</Text>
+      )}
+    </Pressable>
+  );
+};
+
 const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigationRef }) => {
   const { getNextDueSession } = useApp();
   const nextSession = getNextDueSession();
+  const sessionTemplate = nextSession ? getSessionById(nextSession.templateId) : undefined;
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -48,12 +125,10 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigatio
   return (
     <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
       {nextSession && (
-        <TouchableOpacity
-          style={styles.nextSessionButtonFooter}
+        <BeginPracticeButton
           onPress={() => navigation.navigate('SessionPlayer', { instanceId: nextSession.id })}
-        >
-          <Text style={styles.nextSessionLabelFooter}>Start Next Session</Text>
-        </TouchableOpacity>
+          sessionTitle={sessionTemplate?.title}
+        />
       )}
       <View style={styles.tabBar}>
         {state.routes.map((route: any, index: number) => {
@@ -440,19 +515,49 @@ const styles = StyleSheet.create({
     borderTopColor: colors.charcoal,
     borderTopWidth: 1,
   },
-  nextSessionButtonFooter: {
-    margin: spacing.md,
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
+  beginButtonPressable: {
+    alignSelf: 'center',
     alignItems: 'center',
-    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
   },
-  nextSessionLabelFooter: {
-    color: colors.white,
-    fontSize: typography.fontSizes.md,
-    fontWeight: typography.fontWeights.semibold,
+  beginButtonRing1: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(184, 148, 95, 0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonRing2: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: 'rgba(184, 148, 95, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonCore: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: colors.agedBrass,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beginButtonText: {
+    color: colors.ritualNight,
+    fontSize: 10,
+    fontWeight: typography.fontWeights.medium as any,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase' as const,
+  },
+  beginButtonSessionLabel: {
+    color: colors.textTertiary,
+    fontSize: 9,
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
+    marginTop: 6,
+    textAlign: 'center' as const,
   },
   tabBar: {
     flexDirection: 'row',
