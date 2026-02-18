@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
 import {
   View,
   Text,
@@ -268,16 +269,7 @@ export const ChildrensSleepScreen: React.FC = () => {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.beginButtonRing1} onPress={handleStart} activeOpacity={0.85}>
-          <View style={styles.beginButtonRing2}>
-            <View style={styles.beginButtonRing3}>
-              <View style={styles.beginButtonCore}>
-                <View style={styles.beginButtonInnerDetail} />
-                <Text style={styles.beginButtonText}>Begin</Text>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
+        <BreathingMandalaButton onPress={handleStart} />
       </View>
     </SafeAreaView>
   );

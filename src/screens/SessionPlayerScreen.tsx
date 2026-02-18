@@ -23,6 +23,7 @@ import { audioService } from '../services/audio';
 import { getSessionAudioFile, getSessionAudioUri, getGongSound, getGongUri } from '../data/audioAssets';
 import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
 import { backgroundTimer } from '../services/backgroundTimer';
+import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -641,16 +642,7 @@ export const SessionPlayerScreen: React.FC = () => {
 
       <View style={styles.controls}>
         {countdown === null && (
-          <TouchableOpacity style={styles.playButtonRing1} onPress={togglePlay} activeOpacity={0.85}>
-            <View style={styles.playButtonRing2}>
-              <View style={styles.playButtonRing3}>
-                <View style={styles.playButtonCore}>
-                  <View style={styles.playButtonInnerDetail} />
-                  <Text style={styles.playButtonText}>Begin</Text>
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
+          <BreathingMandalaButton onPress={togglePlay} />
         )}
       </View>
     </SafeAreaView>
