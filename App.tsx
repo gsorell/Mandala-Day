@@ -453,7 +453,8 @@ const styles = StyleSheet.create({
   beginButtonPressable: {
     alignSelf: 'center',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
   beginButtonPill: {
     backgroundColor: colors.agedBrass,

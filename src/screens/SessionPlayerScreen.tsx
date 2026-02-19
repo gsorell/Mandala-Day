@@ -605,6 +605,7 @@ export const SessionPlayerScreen: React.FC = () => {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scriptContent}
+        scrollEnabled={false}
         pinchGestureEnabled={false}
         maximumZoomScale={1}
         minimumZoomScale={1}
@@ -775,8 +776,6 @@ const styles = StyleSheet.create({
   controls: {
     paddingVertical: spacing.xl,
     paddingBottom: spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: colors.charcoal,
     alignItems: 'center',
   },
   playButtonRing1: {
