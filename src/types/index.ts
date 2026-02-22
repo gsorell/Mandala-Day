@@ -99,6 +99,7 @@ export type RootStackParamList = {
   Vipassana: undefined;
   ChildrensSleep: undefined;
   BodySeaVoyage: undefined;
+  StarryNight: undefined;
 };
 
 export type MainTabParamList = {

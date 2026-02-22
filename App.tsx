@@ -22,6 +22,7 @@ import { TheViewScreen } from './src/screens/TheViewScreen';
 import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
+import { StarryNightScreen } from './src/screens/StarryNightScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
 import { getSessionById } from './src/data/sessions';
@@ -395,6 +396,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="BodySeaVoyage"
               component={BodySeaVoyageScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="StarryNight"
+              component={StarryNightScreen}
               options={{
                 presentation: 'card',
               }}
