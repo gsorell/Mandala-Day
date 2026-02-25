@@ -657,8 +657,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: spacing.xl,
     paddingBottom: spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: colors.charcoal,
     alignItems: 'center',
   },
   beginButtonRing1: {

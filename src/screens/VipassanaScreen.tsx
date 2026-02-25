@@ -249,7 +249,7 @@ export const VipassanaScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Vipassana</Text>
+        <Text style={styles.title}>Body Scan</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -260,7 +260,7 @@ export const VipassanaScreen: React.FC = () => {
         </View>
 
         <Text style={styles.description}>
-          A guided Vipassana meditation for insight and clarity.
+          A guided Body Scan meditation for insight and clarity.
         </Text>
 
         <Text style={styles.instruction}>
@@ -341,8 +341,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: spacing.xl,
     paddingBottom: spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: colors.charcoal,
     alignItems: 'center',
   },
   beginButtonRing1: {

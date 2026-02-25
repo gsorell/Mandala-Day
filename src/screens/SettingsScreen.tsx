@@ -162,7 +162,7 @@ export const SettingsScreen: React.FC = () => {
             style={styles.menuItem}
             onPress={() => navigation.navigate('Vipassana')}
           >
-            <Text style={styles.menuItemText}>Vipassana</Text>
+            <Text style={styles.menuItemText}>Body Scan</Text>
             <Text style={styles.menuItemSubtext}>10 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
