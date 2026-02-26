@@ -161,9 +161,14 @@ export const SessionPlayerScreen: React.FC = () => {
           // vs just the screen sleeping (audio continues in background)
           const actualStatus = await audioService.getActualStatus();
           if (actualStatus && !actualStatus.isPlaying) {
-            // Audio was interrupted - pause the session and show resume button
-            pausedTimeRemainingRef.current = Math.max(0, Math.floor((endTimeRef.current - now) / 1000));
-            setTimeRemaining(pausedTimeRemainingRef.current);
+            // Audio was interrupted — use audio position for accurate remaining time.
+            // Wall-clock calculation is wrong here: it would count call duration as
+            // elapsed meditation time, showing 0:00 after any long-enough call.
+            const remaining = session
+              ? Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000))
+              : Math.max(0, Math.floor((endTimeRef.current! - now) / 1000));
+            pausedTimeRemainingRef.current = remaining;
+            setTimeRemaining(remaining);
             startTimeRef.current = null;
             endTimeRef.current = null;
             setIsPlaying(false);
@@ -392,6 +397,22 @@ export const SessionPlayerScreen: React.FC = () => {
             onError: (error) => {
               console.error('Audio playback error:', error);
               setIsPlaying(false);
+            },
+            onInterrupt: (positionMs: number) => {
+              // Audio interrupted by a phone call — freeze timer at the exact audio position
+              if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+              }
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              const remaining = session
+                ? Math.max(0, Math.floor((session.durationSec * 1000 - positionMs) / 1000))
+                : 0;
+              pausedTimeRemainingRef.current = remaining;
+              setTimeRemaining(remaining);
+              setIsPlaying(false);
+              setIsPaused(true);
             },
           });
         } catch (error) {

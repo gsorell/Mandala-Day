@@ -5,6 +5,7 @@ export interface AudioPlaybackOptions {
   onPlaybackStatusUpdate?: (status: AVPlaybackStatus) => void;
   onComplete?: () => void;
   onError?: (error: string) => void;
+  onInterrupt?: (positionMs: number) => void;
 }
 
 class AudioService {
@@ -130,6 +131,11 @@ class AudioService {
         this.isPlaying = false;
         this.isPaused = false;
         this.options.onComplete?.();
+      } else if (!status.isPlaying && this.isPlaying && !this.isPaused) {
+        // Audio stopped unexpectedly (e.g., phone call interruption)
+        console.log('[AudioService] Playback interrupted at position:', status.positionMillis);
+        this.isPlaying = false;
+        this.options.onInterrupt?.(status.positionMillis);
       }
     } else if (status.error) {
       console.error('[AudioService] Playback error:', status.error);
@@ -139,10 +145,11 @@ class AudioService {
 
   async pause(): Promise<void> {
     if (this.sound && this.isPlaying && !this.isPaused) {
+      this.isPaused = true; // Set before pauseAsync to prevent spurious onInterrupt
       try {
         await this.sound.pauseAsync();
-        this.isPaused = true;
       } catch (error) {
+        this.isPaused = false;
         console.error('[AudioService] Error pausing:', error);
       }
     }
@@ -160,6 +167,8 @@ class AudioService {
   }
 
   async stop(): Promise<void> {
+    this.isPlaying = false; // Set before stopAsync to prevent spurious onInterrupt
+    this.isPaused = false;
     if (this.sound) {
       try {
         const status = await this.sound.getStatusAsync();
@@ -172,8 +181,6 @@ class AudioService {
       }
       this.sound = null;
     }
-    this.isPlaying = false;
-    this.isPaused = false;
   }
 
   async seekTo(positionMs: number): Promise<void> {
