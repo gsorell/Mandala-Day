@@ -264,6 +264,19 @@ export const SessionPlayerScreen: React.FC = () => {
     };
   }, [isPlaying, isSilentMode]);
 
+  // Safety net: if the timer hits 0 in audio mode but onComplete never fires
+  // (e.g., phone call interrupts audio while app stays in foreground on iOS),
+  // force completion after a 10-second grace period.
+  useEffect(() => {
+    if (timeRemaining === 0 && isPlaying && !isSilentMode && !showDedication) {
+      const timeout = setTimeout(() => {
+        setShowDedication(true);
+        setIsPlaying(false);
+      }, 10000);
+      return () => clearTimeout(timeout);
+    }
+  }, [timeRemaining, isPlaying, isSilentMode, showDedication]);
+
   // Navigate to share screen when meditation completes
   useEffect(() => {
     if (showDedication && session) {
