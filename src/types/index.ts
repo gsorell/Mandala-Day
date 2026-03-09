@@ -96,6 +96,7 @@ export type RootStackParamList = {
   History: undefined;
   SimpleTimer: undefined;
   TheView: undefined;
+  Firekeeper: undefined;
   Vipassana: undefined;
   ChildrensSleep: undefined;
   BodySeaVoyage: undefined;

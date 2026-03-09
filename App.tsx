@@ -19,6 +19,7 @@ import { HistoryScreen } from './src/screens/HistoryScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
 import { TheViewScreen } from './src/screens/TheViewScreen';
+import { FirekeeperScreen } from './src/screens/FirekeeperScreen';
 import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
@@ -375,6 +376,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="TheView"
               component={TheViewScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="Firekeeper"
+              component={FirekeeperScreen}
               options={{
                 presentation: 'card',
               }}
