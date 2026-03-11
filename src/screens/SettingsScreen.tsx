@@ -262,7 +262,7 @@ export const SettingsScreen: React.FC = () => {
             style={styles.menuItem}
             onPress={() => navigation.navigate('Firekeeper')}
           >
-            <Text style={styles.menuItemText}>The Firekeeper Philosophy</Text>
+            <Text style={styles.menuItemText}>The Firekeeper</Text>
             <Text style={styles.menuItemSubtext}>Attention, community & the center</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>

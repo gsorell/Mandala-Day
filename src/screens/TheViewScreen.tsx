@@ -28,7 +28,7 @@ export const TheViewScreen: React.FC = () => {
 
         <View style={styles.headerSection}>
           <Image
-            source={require('../../assets/mandala-icon-display.png')}
+            source={require('../../assets/mandala-logo.png')}
             style={styles.logo}
           />
           <Text style={styles.title}>The View</Text>
@@ -126,10 +126,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 160,
+    height: 160,
     marginBottom: spacing.lg,
-    opacity: 0.8,
   },
   title: {
     color: colors.textPrimary,

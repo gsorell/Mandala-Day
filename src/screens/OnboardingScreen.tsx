@@ -8,8 +8,10 @@ import {
   Alert,
   Modal,
   Image,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
@@ -20,6 +22,7 @@ type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing';
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [tempHour, setTempHour] = useState(7);
@@ -187,17 +190,50 @@ export const OnboardingScreen: React.FC = () => {
 
   const renderFraming = () => (
     <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.centerContent}>
-        <Text style={styles.framingTitle}>Practice as Life</Text>
+      <ScrollView style={styles.framingScroll} contentContainerStyle={styles.framingScrollContent} showsVerticalScrollIndicator={false}>
+        <Text style={styles.framingTitle}>Practice is Life</Text>
 
-        <Text style={styles.framingParagraph}>
-          Six moments to return to what's already here.
-        </Text>
+        {/* Section 1: The structure */}
+        <View style={styles.framingSection}>
+          <Text style={styles.framingBody}>
+            Each day is a mandala — a complete cycle.
+          </Text>
+          <Text style={styles.framingBody}>
+            Six short sessions follow the rhythm of the day: morning stillness, awareness of the body, the heart, clear seeing, movement, and rest.
+          </Text>
+          <Text style={styles.framingBody}>
+            Each session is small. Each one returns you to awareness.
+          </Text>
+        </View>
+
+        <View style={styles.framingDivider} />
+
+        {/* Section 2: The orientation */}
+        <View style={styles.framingSection}>
+          <Text style={styles.framingBody}>The orientation is simple:</Text>
+          <Text style={styles.framingKeyLine}>remain attentive.</Text>
+          <Text style={styles.framingBody}>
+            Tend the quiet fire of awareness through the turns of the day — not perfectly, just sincerely.
+          </Text>
+        </View>
+
+        <View style={styles.framingDivider} />
+
+        {/* Section 3: The permission */}
+        <View style={styles.framingSection}>
+          <Text style={styles.framingBody}>There are no streaks here. Life interrupts.</Text>
+          <Text style={styles.framingBody}>When you miss a session, you simply return.</Text>
+          <Text style={styles.framingBody}>Each return completes the mandala.</Text>
+        </View>
 
         <Text style={styles.framingQuote}>
           "Practice without edges."
         </Text>
-      </View>
+
+        <TouchableOpacity onPress={() => navigation.navigate('TheView')} style={styles.viewLink}>
+          <Text style={styles.viewLinkText}>Explore the philosophy →</Text>
+        </TouchableOpacity>
+      </ScrollView>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleComplete}>
         <Text style={styles.primaryButtonText}>Begin Practice</Text>
@@ -398,6 +434,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.fontSizes.sm,
   },
+  framingScroll: {
+    flex: 1,
+  },
+  framingScrollContent: {
+    paddingVertical: spacing.md,
+  },
   framingTitle: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xxl,
@@ -405,20 +447,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
-  framingParagraph: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.lg,
-    lineHeight: typography.fontSizes.lg * typography.lineHeights.relaxed,
-    textAlign: 'center',
+  framingSection: {
     marginBottom: spacing.xl,
-    paddingHorizontal: spacing.md,
+    gap: spacing.md,
+  },
+  framingBody: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+    textAlign: 'center',
+  },
+  framingKeyLine: {
+    color: colors.accent,
+    fontSize: typography.fontSizes.md,
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  framingDivider: {
+    height: 1,
+    backgroundColor: colors.charcoal,
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xl,
   },
   framingQuote: {
-    color: colors.accent,
-    fontSize: typography.fontSizes.lg,
+    color: colors.textMuted,
+    fontSize: typography.fontSizes.md,
     textAlign: 'center',
     fontStyle: 'italic',
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  viewLink: {
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  viewLinkText: {
+    color: colors.primary,
+    fontSize: typography.fontSizes.sm,
   },
   buttonGroup: {
     gap: spacing.sm,

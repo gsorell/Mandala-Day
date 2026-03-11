@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -180,7 +181,12 @@ export const FirekeeperScreen: React.FC = () => {
         </TouchableOpacity>
 
         <View style={styles.headerSection}>
-          <Text style={styles.title}>The Firekeeper Philosophy</Text>
+          <Image
+            source={require('../../assets/mandala-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>The Firekeeper</Text>
           <Text style={styles.subtitle}>
             A Treatise on Attention, Community, and the Care of the Center
           </Text>
@@ -225,6 +231,11 @@ const styles = StyleSheet.create({
   headerSection: {
     alignItems: 'center',
     marginBottom: spacing.xl,
+  },
+  logo: {
+    width: 160,
+    height: 160,
+    marginBottom: spacing.lg,
   },
   title: {
     color: colors.textPrimary,

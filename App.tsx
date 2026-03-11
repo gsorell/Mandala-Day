@@ -347,7 +347,14 @@ const AppNavigator: React.FC = () => {
         }}
       >
         {showOnboarding ? (
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen
+              name="TheView"
+              component={TheViewScreen}
+              options={{ presentation: 'card' }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="Main" component={MainTabs} />
