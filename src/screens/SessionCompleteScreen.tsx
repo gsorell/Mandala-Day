@@ -37,9 +37,9 @@ export const SessionCompleteScreen: React.FC = () => {
   const displayTime = format(completionDate, 'h:mm a');
 
   // Get the session symbol from the templateId (instanceId format: "YYYY-MM-DD_templateId")
-  const templateId = instanceId.split('_').slice(1).join('_');
-  const symbolData = sessionSymbols[templateId as keyof typeof sessionSymbols];
-  const sessionSymbol = symbolData?.glyph || '◯';
+  const sessionSymbol = instanceId
+    ? sessionSymbols[instanceId.split('_').slice(1).join('_') as keyof typeof sessionSymbols]?.glyph || '◯'
+    : '◯';
 
   // Check if all sessions for today are complete (only for fresh completions)
   const allSessionsComplete = !isViewingPast && todayInstances.length > 0 &&

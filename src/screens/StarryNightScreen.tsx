@@ -6,14 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVPlaybackStatus } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
-import { format } from 'date-fns';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { addExtraPracticeMinutes } from '../services/storage';
@@ -25,11 +25,10 @@ const STARRY_NIGHT_DURATION_SEC = STARRY_NIGHT_DURATION_MIN * 60;
 const getStarryNightAudio = () => require('../../assets/audio/starry-night.mp3');
 
 export const StarryNightScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [duration, setDuration] = useState(STARRY_NIGHT_DURATION_SEC * 1000);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -101,7 +100,7 @@ export const StarryNightScreen: React.FC = () => {
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
-          setShowComplete(true);
+          handleComplete();
         },
         onError: (error) => {
           console.error('Starry Night playback error:', error);
@@ -120,7 +119,7 @@ export const StarryNightScreen: React.FC = () => {
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);
-            setShowComplete(true);
+            handleComplete();
           },
           onError: (error) => {
             console.error('Starry Night playback error:', error);
@@ -155,32 +154,14 @@ export const StarryNightScreen: React.FC = () => {
 
   const handleComplete = async () => {
     // Save completed minutes to storage
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const today = new Date().toISOString().slice(0, 10);
     await addExtraPracticeMinutes(today, STARRY_NIGHT_DURATION_MIN);
-    setShowComplete(false);
-    navigation.goBack();
+    navigation.navigate('SessionComplete', {
+      sessionTitle: 'Starry Night',
+      dedication: 'May the stars guide little ones to peaceful dreams.',
+      shareMessage: 'A starry night journey for the little ones',
+    });
   };
-
-  // Completion screen
-  if (showComplete) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.completionContainer}>
-          <Image
-            source={require('../../assets/mandala-icon-display.png')}
-            style={styles.completionLogo}
-          />
-          <Text style={styles.completionTitle}>Practice Complete</Text>
-          <Text style={styles.completionText}>
-            May the stars guide little ones to peaceful dreams.
-          </Text>
-          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-            <Text style={styles.completeButtonText}>Return</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // Paused state view
   if (isPaused) {

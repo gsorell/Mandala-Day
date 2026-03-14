@@ -6,14 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVPlaybackStatus } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
-import { format } from 'date-fns';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { addExtraPracticeMinutes } from '../services/storage';
@@ -25,11 +25,10 @@ const CHILDRENS_SLEEP_DURATION_SEC = CHILDRENS_SLEEP_DURATION_MIN * 60;
 const getChildrensSleepAudio = () => require('../../assets/audio/body-safari.mp3');
 
 export const ChildrensSleepScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [duration, setDuration] = useState(CHILDRENS_SLEEP_DURATION_SEC * 1000);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -103,7 +102,7 @@ export const ChildrensSleepScreen: React.FC = () => {
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
-          setShowComplete(true);
+          handleComplete();
         },
         onError: (error) => {
           console.error('Children\'s Sleep playback error:', error);
@@ -122,7 +121,7 @@ export const ChildrensSleepScreen: React.FC = () => {
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);
-            setShowComplete(true);
+            handleComplete();
           },
           onError: (error) => {
             console.error('Children\'s Sleep playback error:', error);
@@ -157,32 +156,14 @@ export const ChildrensSleepScreen: React.FC = () => {
 
   const handleComplete = async () => {
     // Save completed minutes to storage
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const today = new Date().toISOString().slice(0, 10);
     await addExtraPracticeMinutes(today, CHILDRENS_SLEEP_DURATION_MIN);
-    setShowComplete(false);
-    navigation.goBack();
+    navigation.navigate('SessionComplete', {
+      sessionTitle: 'Jungle Safari',
+      dedication: 'May this practice bring peaceful dreams to all little ones.',
+      shareMessage: 'A bedtime journey for the little ones',
+    });
   };
-
-  // Completion screen
-  if (showComplete) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.completionContainer}>
-          <Image
-            source={require('../../assets/mandala-icon-display.png')}
-            style={styles.completionLogo}
-          />
-          <Text style={styles.completionTitle}>Practice Complete</Text>
-          <Text style={styles.completionText}>
-            May this practice bring peaceful dreams to all little ones.
-          </Text>
-          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-            <Text style={styles.completeButtonText}>Return</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // Paused state view
   if (isPaused) {

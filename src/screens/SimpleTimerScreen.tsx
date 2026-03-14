@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
@@ -15,7 +14,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as Notifications from 'expo-notifications';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format } from 'date-fns';
+import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
@@ -73,12 +74,11 @@ const releaseWakeLock = async () => {
 };
 
 export const SimpleTimerScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [duration, setDuration] = useState(10); // minutes
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(duration * 60); // seconds
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasPlayedGong = useRef(false);
@@ -173,8 +173,8 @@ export const SimpleTimerScreen: React.FC = () => {
           setIsRunning(false);
           // Record completion time when timer actually finished (use endTimeRef as that's when it completed)
           completionTimeRef.current = new Date(endTimeRef.current!);
-          setShowComplete(true);
           setTimeRemaining(0);
+          handleComplete();
           startTimeRef.current = null;
           endTimeRef.current = null;
         }
@@ -247,8 +247,8 @@ export const SimpleTimerScreen: React.FC = () => {
           setIsRunning(false);
           // Record completion time now, not when user presses Return
           completionTimeRef.current = new Date();
-          setShowComplete(true);
           setTimeRemaining(0);
+          handleComplete();
           startTimeRef.current = null;
           endTimeRef.current = null;
         } else {
@@ -345,7 +345,6 @@ export const SimpleTimerScreen: React.FC = () => {
     releaseWakeLock();
     setIsRunning(false);
     setIsPaused(false);
-    setShowComplete(false);
     setTimeRemaining(duration * 60);
     hasPlayedGong.current = false;
     startTimeRef.current = null;
@@ -397,8 +396,11 @@ export const SimpleTimerScreen: React.FC = () => {
     const completionDate = completionTimeRef.current || new Date();
     const completedDay = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(completedDay, duration);
-    handleReset();
-    navigation.goBack();
+    navigation.navigate('SessionComplete', {
+      sessionTitle: 'Simple Timer',
+      dedication: 'May your practice bring benefit to all beings.',
+      shareMessage: 'I completed a silent meditation',
+    });
   };
 
   const adjustDuration = (minutes: number) => {
@@ -409,27 +411,6 @@ export const SimpleTimerScreen: React.FC = () => {
       pausedTimeRemainingRef.current = newDuration * 60;
     }
   };
-
-  // Completion screen
-  if (showComplete) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.completionContainer}>
-          <Image
-            source={require('../../assets/mandala-icon-display.png')}
-            style={styles.completionLogo}
-          />
-          <Text style={styles.completionTitle}>Practice Complete</Text>
-          <Text style={styles.completionText}>
-            May your practice bring benefit to all beings.
-          </Text>
-          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-            <Text style={styles.completeButtonText}>Return</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // Paused state view
   if (isPaused) {
