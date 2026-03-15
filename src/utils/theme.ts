@@ -7,8 +7,8 @@ export const colors = {
   ritualThreshold: '#2d2d42', // Liminal spaces
 
   // Sacred metals (aged, not bright)
-  agedBrass: '#B8945F', // Primary accent - old brass, desaturated gold
-  tarnishedGold: '#9B7D4F', // Darker brass for hover states
+  agedBrass: '#C49040', // Primary accent - old brass, desaturated gold
+  tarnishedGold: '#A87530', // Darker brass for hover states
   ashWhite: '#E8E6E3', // Bone white, not pure
   moonstone: '#C8C6C3', // Softened white for secondary text
 
@@ -21,7 +21,7 @@ export const colors = {
   textPrimary: '#E8E6E3', // Ash white
   textSecondary: '#B8B6B3', // Softened
   textTertiary: '#8B8985', // Muted
-  textRitual: '#9B7D4F', // Brass for sacred moments
+  textRitual: '#A87530', // Brass for sacred moments
 
   // Status colors - non-optimizing, non-alarming
   passed: '#5a5a6a', // Neutral gray-violet
@@ -30,9 +30,9 @@ export const colors = {
   completeMandala: '#D4AF37', // Golden radiance for full mandala completion
 
   // Geometry colors (for sacred shapes)
-  geometryPrimary: '#B8945F', // Aged brass
+  geometryPrimary: '#C49040', // Aged brass
   geometrySecondary: '#3a3a4a', // Charcoal
-  geometryFaint: 'rgba(184, 148, 95, 0.1)', // Nearly invisible brass
+  geometryFaint: 'rgba(196, 144, 64, 0.1)', // Nearly invisible gold
 
   // Overlays and veils
   veil: 'rgba(15, 15, 26, 0.85)', // Ritual night veil
@@ -40,7 +40,7 @@ export const colors = {
 
   // Legacy/compatibility
   primary: '#6B5B95',
-  accent: '#B8945F',
+  accent: '#C49040',
   background: '#0b0817',
   white: '#FFFFFF',
   black: '#000000',
@@ -50,9 +50,9 @@ export const colors = {
   cardBackground: '#252535', // = ritualSurface
   surface: '#252535', // = ritualSurface
   surfaceLight: '#2d2d42', // = ritualThreshold
-  primaryLight: '#B8945F', // = agedBrass
+  primaryLight: '#C49040', // = agedBrass
   textMuted: '#8B8985', // = textTertiary
-  buttonPrimary: '#B8945F', // = agedBrass
+  buttonPrimary: '#C49040', // = agedBrass
   buttonSecondary: '#3a3a4a', // = charcoal
   due: '#4a5a6a', // = upcoming
   completed: '#6a7a6a', // = complete

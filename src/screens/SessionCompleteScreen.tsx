@@ -27,7 +27,7 @@ export const SessionCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { todayInstances } = useApp();
-  const { instanceId, sessionTitle, dedication, shareMessage, completedAt } = route.params;
+  const { instanceId, sessionTitle, dedication, shareMessage, completedAt, duration } = route.params;
   const shareCardRef = useRef<View>(null);
 
   // Use completedAt if provided (viewing past completion), otherwise use current time
@@ -171,6 +171,10 @@ export const SessionCompleteScreen: React.FC = () => {
 
             <Text style={styles.sessionTitle}>{sessionTitle}</Text>
 
+            {duration && (
+              <Text style={styles.durationText}>{duration} min</Text>
+            )}
+
             {/* Decorative divider */}
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
@@ -283,6 +287,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.lg,
     lineHeight: typography.fontSizes.xxl * typography.lineHeights.tight,
+  },
+  durationText: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    letterSpacing: typography.letterSpacing.spacious,
+    marginBottom: spacing.lg,
+    marginTop: -spacing.sm,
   },
   divider: {
     flexDirection: 'row',

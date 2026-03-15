@@ -89,7 +89,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
   SessionPlayer: { instanceId: string };
-  SessionComplete: { instanceId?: string; sessionTitle: string; dedication?: string; shareMessage?: string; completedAt?: string };
+  SessionComplete: { instanceId?: string; sessionTitle: string; dedication?: string; shareMessage?: string; completedAt?: string; duration?: number };
   MandalaComplete: { date: string };
   Settings: undefined;
   ScheduleSettings: undefined;

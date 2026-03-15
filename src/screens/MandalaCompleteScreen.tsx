@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,11 @@ import { captureRef } from 'react-native-view-shot';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, parseISO } from 'date-fns';
-import { RootStackParamList } from '../types';
+import { RootStackParamList, SessionStatus } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
+import { useApp } from '../context/AppContext';
+import { DEFAULT_SESSIONS } from '../data/sessions';
+import { getExtraPracticeMinutes } from '../services/storage';
 
 type RouteProps = RouteProp<RootStackParamList, 'MandalaComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -29,11 +32,27 @@ export const MandalaCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { date } = route.params;
+  const { todayInstances } = useApp();
   const shareCardRef = useRef<View>(null);
+  const [totalMinutes, setTotalMinutes] = useState<number>(0);
 
   const dateObj = parseISO(date);
   const displayDate = format(dateObj, 'MMMM d, yyyy');
   const isToday = format(new Date(), 'yyyy-MM-dd') === date;
+
+  useEffect(() => {
+    const calcTotal = async () => {
+      const sessionMinutes = todayInstances
+        .filter((i) => i.status === SessionStatus.COMPLETED)
+        .reduce((sum, i) => {
+          const template = DEFAULT_SESSIONS.find((s) => s.id === i.templateId);
+          return sum + Math.round((template?.durationSec ?? 600) / 60);
+        }, 0);
+      const extraMinutes = await getExtraPracticeMinutes(date);
+      setTotalMinutes(sessionMinutes + extraMinutes);
+    };
+    calcTotal();
+  }, [date, todayInstances]);
 
   const handleShare = async () => {
     const shareText = `May this merit extend to all 🙏\n\nA day's practice complete.\n\nJoin me: https://mandaladay.netlify.app`;
@@ -139,6 +158,10 @@ export const MandalaCompleteScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.dateText}>{displayDate}</Text>
+
+            {totalMinutes > 0 && (
+              <Text style={styles.totalTime}>{totalMinutes} min of practice</Text>
+            )}
 
             <Text style={styles.branding}>MandalaDay</Text>
           </View>
@@ -259,7 +282,14 @@ const styles = StyleSheet.create({
   dateText: {
     color: colors.textTertiary,
     fontSize: typography.fontSizes.sm,
+    marginBottom: spacing.sm,
+  },
+  totalTime: {
+    color: colors.completeMandala,
+    fontSize: typography.fontSizes.sm,
+    letterSpacing: typography.letterSpacing.spacious,
     marginBottom: spacing.lg,
+    opacity: 0.85,
   },
   branding: {
     color: colors.textTertiary,

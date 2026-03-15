@@ -400,6 +400,7 @@ export const SimpleTimerScreen: React.FC = () => {
       sessionTitle: 'Simple Timer',
       dedication: 'May your practice bring benefit to all beings.',
       shareMessage: 'I completed a silent meditation',
+      duration,
     });
   };
 

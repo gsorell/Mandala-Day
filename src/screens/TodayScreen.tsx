@@ -148,10 +148,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   logo: {
-    width: 600,
-    height: 180,
+    width: 1014,
+    height: 208,
     alignSelf: 'center',
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
     opacity: 0.9,
   },
   header: {
