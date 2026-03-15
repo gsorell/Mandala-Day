@@ -258,14 +258,6 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>Philosophy & practice roots</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Firekeeper')}
-          >
-            <Text style={styles.menuItemText}>The Firekeeper</Text>
-            <Text style={styles.menuItemSubtext}>Attention, community & the center</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.aboutSection}>

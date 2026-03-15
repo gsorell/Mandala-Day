@@ -92,6 +92,36 @@ export const TheViewScreen: React.FC = () => {
           })}
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>The Aphorisms of the Hearth</Text>
+          <Text style={styles.sectionContent}>{`Reality is not hidden behind experience.
+It is experience itself.
+
+The boundary between inside and outside is imagined.
+Heartbeat and wind arise in the same field.
+
+What we call things are temporary patterns in motion.
+
+The self is not the owner of experience.
+It is a story told within it.
+
+Attention gathers the world.
+Where attention rests, form appears.
+
+When attention softens, the solidity of things dissolves.
+
+No one stands outside the river of experience.
+
+Meaning is cultivated like a garden, not discovered in distant heavens.
+
+Every life organizes around a center.
+
+The task is simple:
+See clearly.
+Tend the fire.
+Welcome others to its warmth.`}</Text>
+        </View>
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             "The finger pointing at the moon{'\n'}is not the moon."
