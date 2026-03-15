@@ -14,9 +14,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format, parseISO } from 'date-fns';
 import { RootStackParamList, SessionStatus } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
-import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
-import { getExtraPracticeMinutes } from '../services/storage';
+import { getDailyInstances, getExtraPracticeMinutes } from '../services/storage';
 
 type RouteProps = RouteProp<RootStackParamList, 'MandalaComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -32,7 +31,6 @@ export const MandalaCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { date } = route.params;
-  const { todayInstances } = useApp();
   const shareCardRef = useRef<View>(null);
   const [totalMinutes, setTotalMinutes] = useState<number>(0);
 
@@ -42,7 +40,8 @@ export const MandalaCompleteScreen: React.FC = () => {
 
   useEffect(() => {
     const calcTotal = async () => {
-      const sessionMinutes = todayInstances
+      const instances = await getDailyInstances(date);
+      const sessionMinutes = instances
         .filter((i) => i.status === SessionStatus.COMPLETED)
         .reduce((sum, i) => {
           const template = DEFAULT_SESSIONS.find((s) => s.id === i.templateId);
@@ -52,7 +51,7 @@ export const MandalaCompleteScreen: React.FC = () => {
       setTotalMinutes(sessionMinutes + extraMinutes);
     };
     calcTotal();
-  }, [date, todayInstances]);
+  }, [date]);
 
   const handleShare = async () => {
     const shareText = `May this merit extend to all 🙏\n\nA day's practice complete.\n\nJoin me: https://mandaladay.netlify.app`;

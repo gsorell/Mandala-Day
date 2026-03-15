@@ -7,6 +7,7 @@ import {
   Platform,
   Share,
   Image,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -212,6 +213,11 @@ export const SessionCompleteScreen: React.FC = () => {
           <TouchableOpacity style={styles.returnButton} onPress={handleReturn}>
             <Text style={styles.returnButtonText}>Return</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
+          >
+            <Text style={styles.donateLink}>Support this app ↗</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -378,5 +384,12 @@ const styles = StyleSheet.create({
   returnButtonText: {
     color: colors.textSecondary,
     fontSize: typography.fontSizes.md,
+  },
+  donateLink: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    textAlign: 'center',
+    opacity: 0.6,
+    paddingVertical: spacing.xs,
   },
 });
