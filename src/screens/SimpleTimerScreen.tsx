@@ -22,7 +22,8 @@ import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
 import { trackSimpleTimerStart, trackSimpleTimerComplete } from '../services/analytics';
 import { backgroundTimer } from '../services/backgroundTimer';
-import { addExtraPracticeMinutes } from '../services/storage';
+import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
+import { SessionStatus } from '../types';
 import {
   areWebNotificationsSupported,
   getNotificationPermission,
@@ -396,6 +397,15 @@ export const SimpleTimerScreen: React.FC = () => {
     const completionDate = completionTimeRef.current || new Date();
     const completedDay = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(completedDay, duration);
+    await appendExtraInstance({
+      id: `${completedDay}_extra_simple_timer_${Date.now()}`,
+      date: completedDay,
+      templateId: 'extra_simple_timer',
+      scheduledAt: completionDate.toISOString(),
+      status: SessionStatus.COMPLETED,
+      endedAt: completionDate.toISOString(),
+      snoozeCount: 0,
+    });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Simple Timer',
       dedication: 'May your practice bring benefit to all beings.',

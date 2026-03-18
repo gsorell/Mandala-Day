@@ -16,7 +16,8 @@ import { Audio } from 'expo-av';
 import { Asset } from 'expo-asset';
 import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
-import { addExtraPracticeMinutes } from '../services/storage';
+import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
+import { SessionStatus } from '../types';
 import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
 
 const INHALE_SEC = 7;
@@ -297,6 +298,15 @@ export const PranayamaScreen: React.FC = () => {
     const completionDate = completionTimeRef.current || new Date();
     const completedDay = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(completedDay, durationRef.current);
+    await appendExtraInstance({
+      id: `${completedDay}_extra_pranayama_${Date.now()}`,
+      date: completedDay,
+      templateId: 'extra_pranayama',
+      scheduledAt: completionDate.toISOString(),
+      status: SessionStatus.COMPLETED,
+      endedAt: completionDate.toISOString(),
+      snoozeCount: 0,
+    });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Pranayama',
       dedication: 'May your breath carry peace to all beings.',

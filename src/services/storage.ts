@@ -288,6 +288,30 @@ export const getEventLogs = async (limit = 100): Promise<EventLog[]> => {
   }
 };
 
+// Append a single extra practice instance to a day's instances (e.g. Simple Timer, Pranayama)
+export const appendExtraInstance = async (instance: DailySessionInstance): Promise<void> => {
+  return withInstancesLock(async () => {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_INSTANCES);
+      const allInstances: Record<string, DailySessionInstance[]> = data ? JSON.parse(data) : {};
+      const existing = allInstances[instance.date] || [];
+      allInstances[instance.date] = [...existing, instance];
+
+      // Clean up old entries (keep only last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const cutoffDate = format(thirtyDaysAgo, 'yyyy-MM-dd');
+      Object.keys(allInstances).forEach((key) => {
+        if (key < cutoffDate) delete allInstances[key];
+      });
+
+      await AsyncStorage.setItem(STORAGE_KEYS.DAILY_INSTANCES, JSON.stringify(allInstances));
+    } catch (error) {
+      console.error('Error appending extra instance:', error);
+    }
+  });
+};
+
 // Extra Practice Minutes (Simple Timer, Vipassana, etc.)
 // Stored as { "YYYY-MM-DD": number } for each day
 export const getExtraPracticeMinutes = async (date: string): Promise<number> => {

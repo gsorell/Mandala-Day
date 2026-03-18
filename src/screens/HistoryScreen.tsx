@@ -88,7 +88,41 @@ export const HistoryScreen: React.FC = () => {
     0
   );
 
+  const EXTRA_SESSION_META: Record<string, { title: string; dedication: string; shareMessage: string; abbr: string }> = {
+    extra_simple_timer: {
+      title: 'Simple Timer',
+      dedication: 'May your practice bring benefit to all beings.',
+      shareMessage: 'I completed a silent meditation',
+      abbr: 'ST',
+    },
+    extra_pranayama: {
+      title: 'Pranayama',
+      dedication: 'May your breath carry peace to all beings.',
+      shareMessage: 'I completed a pranayama breathing meditation',
+      abbr: 'P',
+    },
+    extra_sea_voyage: {
+      title: 'Sea Voyage',
+      dedication: 'May this voyage bring peaceful dreams to all little ones.',
+      shareMessage: 'A bedtime voyage for the little ones',
+      abbr: 'SV',
+    },
+  };
+
   const handleShareSession = (instance: DailySessionInstance) => {
+    if (instance.templateId.startsWith('extra_')) {
+      const meta = EXTRA_SESSION_META[instance.templateId];
+      if (meta) {
+        navigation.navigate('SessionComplete', {
+          instanceId: instance.id,
+          sessionTitle: meta.title,
+          dedication: meta.dedication,
+          shareMessage: meta.shareMessage,
+          completedAt: instance.endedAt,
+        });
+      }
+      return;
+    }
     const session = getSessionById(instance.templateId);
     if (session) {
       navigation.navigate('SessionComplete', {
@@ -127,7 +161,13 @@ export const HistoryScreen: React.FC = () => {
           const dateObj = parseISO(day.date);
           const isToday = format(new Date(), 'yyyy-MM-dd') === day.date;
           const dayLabel = isToday ? 'Today' : format(dateObj, 'EEEE, MMM d');
-          const isFullMandala = day.completedCount === FULL_MANDALA_COUNT && day.totalCount === FULL_MANDALA_COUNT;
+
+          const coreInstances = day.instances.filter((i) => !i.templateId.startsWith('extra_'));
+          const extraInstances = day.instances.filter(
+            (i) => i.templateId.startsWith('extra_') && i.status === SessionStatus.COMPLETED
+          );
+          const coreCompleted = coreInstances.filter((i) => i.status === SessionStatus.COMPLETED).length;
+          const isFullMandala = coreCompleted === FULL_MANDALA_COUNT && coreInstances.length === FULL_MANDALA_COUNT;
 
           return (
             <View key={day.date} style={[styles.dayCard, isFullMandala && styles.dayCardComplete]}>
@@ -145,7 +185,7 @@ export const HistoryScreen: React.FC = () => {
 
               <View style={styles.sessionsRow}>
                 <View style={styles.sessionDots}>
-                  {day.instances.map((instance) => {
+                  {coreInstances.map((instance) => {
                     const session = getSessionById(instance.templateId);
                     const isCompleted = instance.status === SessionStatus.COMPLETED;
 
@@ -153,10 +193,7 @@ export const HistoryScreen: React.FC = () => {
                       return (
                         <TouchableOpacity
                           key={instance.id}
-                          style={[
-                            styles.sessionDot,
-                            { backgroundColor: getStatusColor(instance.status) },
-                          ]}
+                          style={[styles.sessionDot, { backgroundColor: getStatusColor(instance.status) }]}
                           onPress={() => handleShareSession(instance)}
                         >
                           <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
@@ -167,19 +204,32 @@ export const HistoryScreen: React.FC = () => {
                     return (
                       <View
                         key={instance.id}
-                        style={[
-                          styles.sessionDot,
-                          { backgroundColor: getStatusColor(instance.status) },
-                        ]}
+                        style={[styles.sessionDot, { backgroundColor: getStatusColor(instance.status) }]}
                       >
                         <Text style={styles.sessionDotText}>{session?.order || '?'}</Text>
                       </View>
                     );
                   })}
+
+                  {extraInstances.map((instance) => {
+                    const abbr = EXTRA_SESSION_META[instance.templateId]?.abbr ?? '+';
+                    return (
+                      <TouchableOpacity
+                        key={instance.id}
+                        style={[styles.sessionDot, { backgroundColor: getStatusColor(instance.status) }]}
+                        onPress={() => handleShareSession(instance)}
+                      >
+                        <Text style={[styles.sessionDotText, abbr.length > 1 && styles.sessionDotTextSmall]}>
+                          {abbr}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-                
+
                 <Text style={[styles.dayCount, isFullMandala && styles.dayCountComplete]}>
-                  {day.completedCount} / {day.totalCount}
+                  {coreCompleted} / {coreInstances.length}
+                  {extraInstances.length > 0 ? ` +${extraInstances.length}` : ''}
                 </Text>
               </View>
             </View>
@@ -319,7 +369,9 @@ const styles = StyleSheet.create({
   },
   sessionDots: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.xs,
+    flex: 1,
   },
   sessionDot: {
     width: 28,
@@ -332,6 +384,12 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
+    lineHeight: typography.fontSizes.xs,
+    includeFontPadding: false,
+  },
+  sessionDotTextSmall: {
+    fontSize: typography.fontSizes.micro,
+    lineHeight: typography.fontSizes.micro,
   },
   aboutSection: {
     alignItems: 'center',

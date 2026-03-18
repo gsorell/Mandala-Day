@@ -16,7 +16,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
-import { addExtraPracticeMinutes } from '../services/storage';
+import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
+import { SessionStatus } from '../types';
 
 const BODY_SEA_VOYAGE_DURATION_MIN = 7;
 const BODY_SEA_VOYAGE_DURATION_SEC = BODY_SEA_VOYAGE_DURATION_MIN * 60;
@@ -154,8 +155,18 @@ export const BodySeaVoyageScreen: React.FC = () => {
 
   const handleComplete = async () => {
     // Save completed minutes to storage
-    const today = new Date().toISOString().slice(0, 10);
+    const completionDate = new Date();
+    const today = completionDate.toISOString().slice(0, 10);
     await addExtraPracticeMinutes(today, BODY_SEA_VOYAGE_DURATION_MIN);
+    await appendExtraInstance({
+      id: `${today}_extra_sea_voyage_${Date.now()}`,
+      date: today,
+      templateId: 'extra_sea_voyage',
+      scheduledAt: completionDate.toISOString(),
+      status: SessionStatus.COMPLETED,
+      endedAt: completionDate.toISOString(),
+      snoozeCount: 0,
+    });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Sea Voyage',
       dedication: 'May this voyage bring peaceful dreams to all little ones.',
