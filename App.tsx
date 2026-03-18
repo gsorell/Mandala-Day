@@ -70,7 +70,7 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation, navigatio
       <View style={styles.tabBar}>
         {state.routes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
-          const label = route.name;
+          const label = route.name === 'Settings' ? 'Extras' : route.name;
           const isFocused = state.index === index;
 
           const onPress = () => {
@@ -115,7 +115,7 @@ const TabIcon: React.FC<{ label: string; focused: boolean }> = ({ label, focused
   let iconName: keyof typeof Ionicons.glyphMap = 'radio-button-on';
   if (label === 'History') {
     iconName = 'calendar-outline';
-  } else if (label === 'Settings') {
+  } else if (label === 'Settings' || label === 'Extras') {
     iconName = 'settings-sharp';
   }
   

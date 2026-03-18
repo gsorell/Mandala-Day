@@ -62,8 +62,21 @@ export const MandalaCompleteScreen: React.FC = () => {
         const element = shareCardRef.current;
 
         if (element) {
-          const canvas = await html2canvas(element as any);
-          canvas.toBlob(async (blob) => {
+          const canvas = await html2canvas(element as any, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+          });
+
+          // Redraw into an explicit sRGB canvas so platforms like FB Messenger
+          // don't misinterpret wide-gamut pixel values when they recompress.
+          const srgbCanvas = document.createElement('canvas');
+          srgbCanvas.width = canvas.width;
+          srgbCanvas.height = canvas.height;
+          const ctx = srgbCanvas.getContext('2d', { colorSpace: 'srgb' } as any)!;
+          ctx.drawImage(canvas, 0, 0);
+
+          srgbCanvas.toBlob(async (blob) => {
             if (blob) {
               const file = new File([blob], 'mandala-complete.png', { type: 'image/png' });
 

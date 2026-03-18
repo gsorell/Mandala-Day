@@ -143,7 +143,7 @@ export const SettingsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} pinchGestureEnabled={false} maximumZoomScale={1} minimumZoomScale={1}>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>Extras</Text>
 
         <View style={styles.todayCard}>
           <Text style={styles.todayMinutes}>{todayMinutes}</Text>
