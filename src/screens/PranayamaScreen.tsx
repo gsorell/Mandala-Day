@@ -76,6 +76,8 @@ export const PranayamaScreen: React.FC = () => {
 
   const breathAnim = useRef(new Animated.Value(0)).current;
   const breathAnimRef = useRef<Animated.CompositeAnimation | null>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     durationRef.current = duration;
@@ -85,6 +87,7 @@ export const PranayamaScreen: React.FC = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (breathAnimRef.current) breathAnimRef.current.stop();
+      if (pulseAnimRef.current) { pulseAnimRef.current.stop(); pulseAnimRef.current = null; }
       if (Platform.OS === 'android') deactivateKeepAwake('pranayama-timer');
       releaseWakeLock();
       unloadSounds();
@@ -159,6 +162,11 @@ export const PranayamaScreen: React.FC = () => {
     }
   };
 
+  const stopPulse = () => {
+    if (pulseAnimRef.current) { pulseAnimRef.current.stop(); pulseAnimRef.current = null; }
+    pulseAnim.setValue(1);
+  };
+
   // Start one smooth animation for the remaining duration of a phase.
   // snapToValue: if provided, snaps breathAnim to this value before animating.
   const startPhaseAnimation = (phase: Phase, remainingMs: number, snapToValue?: number) => {
@@ -167,8 +175,21 @@ export const PranayamaScreen: React.FC = () => {
     if (snapToValue !== undefined) breathAnim.setValue(snapToValue);
     if (phase === 'hold-in' || phase === 'hold-out') {
       breathAnim.setValue(toValue);
+      if (phase === 'hold-in') {
+        stopPulse();
+        pulseAnimRef.current = Animated.loop(
+          Animated.sequence([
+            Animated.timing(pulseAnim, { toValue: 0.97, duration: 1000, useNativeDriver: true }),
+            Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+          ])
+        );
+        pulseAnimRef.current.start();
+      } else {
+        stopPulse();
+      }
       return;
     }
+    stopPulse();
     breathAnimRef.current = Animated.timing(breathAnim, {
       toValue,
       duration: remainingMs,
@@ -416,7 +437,7 @@ export const PranayamaScreen: React.FC = () => {
             <Animated.View
               style={[
                 styles.breathCircleOuter,
-                { width: circleSize, height: circleSize },
+                { width: circleSize, height: circleSize, transform: [{ scale: pulseAnim }] },
               ]}
             />
           </View>
