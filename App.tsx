@@ -24,6 +24,7 @@ import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
 import { StarryNightScreen } from './src/screens/StarryNightScreen';
+import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
 import { getSessionById } from './src/data/sessions';
@@ -139,6 +140,10 @@ const MainTabs: React.FC = () => {
         
         if (currentRoute === 'History' || currentRoute === 'Settings') {
           navigationRef.current.navigate('Today');
+          return true;
+        }
+        // On Today (root tab), consume the event so the app stays open
+        if (currentRoute === 'Today') {
           return true;
         }
       }
@@ -343,6 +348,7 @@ const AppNavigator: React.FC = () => {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
+          gestureEnabled: true,
           contentStyle: { backgroundColor: colors.background },
         }}
       >
@@ -364,6 +370,7 @@ const AppNavigator: React.FC = () => {
               options={{
                 presentation: 'fullScreenModal',
                 animation: 'none',
+                gestureEnabled: false,
               }}
             />
             <Stack.Screen
@@ -423,11 +430,19 @@ const AppNavigator: React.FC = () => {
               }}
             />
             <Stack.Screen
+              name="Pranayama"
+              component={PranayamaScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
               name="SessionComplete"
               component={SessionCompleteScreen}
               options={{
                 presentation: 'fullScreenModal',
                 animation: 'fade',
+                gestureEnabled: false,
               }}
             />
             <Stack.Screen
@@ -436,6 +451,7 @@ const AppNavigator: React.FC = () => {
               options={{
                 presentation: 'fullScreenModal',
                 animation: 'fade',
+                gestureEnabled: false,
               }}
             />
           </>

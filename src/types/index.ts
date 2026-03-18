@@ -101,6 +101,7 @@ export type RootStackParamList = {
   ChildrensSleep: undefined;
   BodySeaVoyage: undefined;
   StarryNight: undefined;
+  Pranayama: undefined;
 };
 
 export type MainTabParamList = {
