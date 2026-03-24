@@ -119,6 +119,7 @@ export const HistoryScreen: React.FC = () => {
           dedication: meta.dedication,
           shareMessage: meta.shareMessage,
           completedAt: instance.endedAt,
+          duration: instance.duration,
         });
       }
       return;

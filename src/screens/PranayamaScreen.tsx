@@ -306,6 +306,7 @@ export const PranayamaScreen: React.FC = () => {
       status: SessionStatus.COMPLETED,
       endedAt: completionDate.toISOString(),
       snoozeCount: 0,
+      duration: durationRef.current,
     });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Pranayama',

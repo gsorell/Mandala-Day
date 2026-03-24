@@ -65,6 +65,7 @@ export interface DailySessionInstance {
   startedAt?: string; // ISO datetime
   endedAt?: string; // ISO datetime
   snoozeCount: number;
+  duration?: number; // minutes (for extra practices like Pranayama, Simple Timer)
 }
 
 // Event log entry for analytics
