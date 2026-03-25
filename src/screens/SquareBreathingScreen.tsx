@@ -22,11 +22,11 @@ import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storag
 import { SessionStatus } from '../types';
 import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
 
-const INHALE_SEC = 7;
+const INHALE_SEC = 4;
 const HOLD_IN_SEC = 4;
-const EXHALE_SEC = 7;
+const EXHALE_SEC = 4;
 const HOLD_OUT_SEC = 4;
-const CYCLE_SEC = INHALE_SEC + HOLD_IN_SEC + EXHALE_SEC + HOLD_OUT_SEC; // 22
+const CYCLE_SEC = INHALE_SEC + HOLD_IN_SEC + EXHALE_SEC + HOLD_OUT_SEC; // 16
 
 type Phase = 'inhale' | 'hold-in' | 'exhale' | 'hold-out';
 
@@ -54,7 +54,7 @@ const releaseWakeLock = async () => {
   }
 };
 
-export const PranayamaScreen: React.FC = () => {
+export const SquareBreathingScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
 
@@ -91,7 +91,7 @@ export const PranayamaScreen: React.FC = () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (breathAnimRef.current) breathAnimRef.current.stop();
       if (pulseAnimRef.current) { pulseAnimRef.current.stop(); pulseAnimRef.current = null; }
-      if (Platform.OS === 'android') deactivateKeepAwake('pranayama-timer');
+      if (Platform.OS === 'android') deactivateKeepAwake('square-breathing-timer');
       releaseWakeLock();
       unloadSounds();
     };
@@ -111,7 +111,6 @@ export const PranayamaScreen: React.FC = () => {
     soundsLoadedRef.current = false;
   };
 
-  // Load both sounds during user gesture to satisfy Safari autoplay restrictions
   const loadSounds = async () => {
     if (soundsLoadedRef.current) return;
     try {
@@ -143,7 +142,7 @@ export const PranayamaScreen: React.FC = () => {
       mutedSoundRef.current = s2;
       soundsLoadedRef.current = true;
     } catch (e) {
-      console.error('[Pranayama] loadSounds error:', e);
+      console.error('[SquareBreathing] loadSounds error:', e);
     }
   };
 
@@ -161,7 +160,7 @@ export const PranayamaScreen: React.FC = () => {
         }
       }
     } catch (e) {
-      console.error('[Pranayama] playPhaseSound error:', e);
+      console.error('[SquareBreathing] playPhaseSound error:', e);
     }
   };
 
@@ -170,8 +169,6 @@ export const PranayamaScreen: React.FC = () => {
     pulseAnim.setValue(1);
   };
 
-  // Start one smooth animation for the remaining duration of a phase.
-  // snapToValue: if provided, snaps breathAnim to this value before animating.
   const startPhaseAnimation = (phase: Phase, remainingMs: number, snapToValue?: number) => {
     if (breathAnimRef.current) breathAnimRef.current.stop();
     const toValue = (phase === 'inhale' || phase === 'hold-in') ? 1 : 0;
@@ -229,7 +226,7 @@ export const PranayamaScreen: React.FC = () => {
   const handleStart = async () => {
     await loadSounds();
     if (Platform.OS === 'android') {
-      try { await activateKeepAwakeAsync('pranayama-timer'); } catch (e) {}
+      try { await activateKeepAwakeAsync('square-breathing-timer'); } catch (e) {}
     }
     requestWakeLock();
     setCountdown(5);
@@ -255,7 +252,7 @@ export const PranayamaScreen: React.FC = () => {
     if (breathAnimRef.current) breathAnimRef.current.stop();
     pausedTotalRef.current = totalTimeRemaining;
     startTimeRef.current = null;
-    if (Platform.OS === 'android') deactivateKeepAwake('pranayama-timer');
+    if (Platform.OS === 'android') deactivateKeepAwake('square-breathing-timer');
     releaseWakeLock();
     setIsRunning(false);
     setIsPaused(true);
@@ -263,7 +260,7 @@ export const PranayamaScreen: React.FC = () => {
 
   const handleResume = async () => {
     if (Platform.OS === 'android') {
-      try { await activateKeepAwakeAsync('pranayama-timer'); } catch (e) {}
+      try { await activateKeepAwakeAsync('square-breathing-timer'); } catch (e) {}
     }
     requestWakeLock();
     startTimeRef.current = Date.now();
@@ -276,7 +273,7 @@ export const PranayamaScreen: React.FC = () => {
     setCountdown(null);
     if (timerRef.current) clearInterval(timerRef.current);
     if (breathAnimRef.current) breathAnimRef.current.stop();
-    if (Platform.OS === 'android') deactivateKeepAwake('pranayama-timer');
+    if (Platform.OS === 'android') deactivateKeepAwake('square-breathing-timer');
     releaseWakeLock();
     breathAnim.setValue(0);
     const newTotal = durationRef.current * 60;
@@ -305,11 +302,11 @@ export const PranayamaScreen: React.FC = () => {
       }
       await audioService.preload(audioSource, {
         onComplete: () => { audioService.stop(); },
-        onError: (error) => { console.error('[Pranayama] gong error:', error); },
+        onError: (error) => { console.error('[SquareBreathing] gong error:', error); },
       });
       await audioService.play();
     } catch (error) {
-      console.error('[Pranayama] Failed to play gong:', error);
+      console.error('[SquareBreathing] Failed to play gong:', error);
     }
   };
 
@@ -319,9 +316,9 @@ export const PranayamaScreen: React.FC = () => {
     await playGongSound();
     await addExtraPracticeMinutes(completedDay, durationRef.current);
     await appendExtraInstance({
-      id: `${completedDay}_extra_pranayama_${Date.now()}`,
+      id: `${completedDay}_extra_square_breathing_${Date.now()}`,
       date: completedDay,
-      templateId: 'extra_pranayama',
+      templateId: 'extra_square_breathing',
       scheduledAt: completionDate.toISOString(),
       status: SessionStatus.COMPLETED,
       endedAt: completionDate.toISOString(),
@@ -329,9 +326,9 @@ export const PranayamaScreen: React.FC = () => {
       duration: durationRef.current,
     });
     navigation.navigate('SessionComplete', {
-      sessionTitle: 'Pranayama',
-      dedication: 'May your breath carry peace to all beings.',
-      shareMessage: 'I completed a pranayama breathing meditation',
+      sessionTitle: 'Square Breathing',
+      dedication: 'May your steady breath bring balance to all beings.',
+      shareMessage: 'I completed a square breathing meditation',
       duration: durationRef.current,
     });
   };
@@ -364,7 +361,6 @@ export const PranayamaScreen: React.FC = () => {
       if (phase !== prevPhaseRef.current) {
         prevPhaseRef.current = phase;
         playPhaseSound(phase);
-        // Compute precise fractional offset into the new phase to account for detection delay
         const totalElapsedFrac = durationRef.current * 60 - pausedTotalRef.current + elapsedMs / 1000;
         const cycleElapsedFrac = totalElapsedFrac % CYCLE_SEC;
         let cumulative = 0;
@@ -387,7 +383,7 @@ export const PranayamaScreen: React.FC = () => {
         clearInterval(timerRef.current!);
         timerRef.current = null;
         if (breathAnimRef.current) breathAnimRef.current.stop();
-        if (Platform.OS === 'android') deactivateKeepAwake('pranayama-timer');
+        if (Platform.OS === 'android') deactivateKeepAwake('square-breathing-timer');
         releaseWakeLock();
         setIsRunning(false);
         completionTimeRef.current = new Date();
@@ -410,7 +406,6 @@ export const PranayamaScreen: React.FC = () => {
     inputRange: [0, 1],
     outputRange: [0, 200],
   });
-
 
   // Countdown state
   if (countdown !== null) {
@@ -491,7 +486,7 @@ export const PranayamaScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Pranayama</Text>
+        <Text style={styles.title}>Square Breathing</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -634,7 +629,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     alignItems: 'center',
   },
-  // Countdown styles
   countdownView: {
     flex: 1,
     justifyContent: 'center',
@@ -653,7 +647,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: spacing.md,
   },
-  // Running / paused styles
   endButton: {
     position: 'absolute',
     left: spacing.md,

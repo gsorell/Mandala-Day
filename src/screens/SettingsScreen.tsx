@@ -169,6 +169,14 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('SquareBreathing')}
+          >
+            <Text style={styles.menuItemText}>Square Breathing</Text>
+            <Text style={styles.menuItemSubtext}>4 · 4 · 4 · 4 breath</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('Vipassana')}
           >
             <Text style={styles.menuItemText}>Body Scan</Text>

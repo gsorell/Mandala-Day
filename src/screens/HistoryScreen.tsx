@@ -101,6 +101,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed a pranayama breathing meditation',
       abbr: 'P',
     },
+    extra_square_breathing: {
+      title: 'Square Breathing',
+      dedication: 'May your steady breath bring balance to all beings.',
+      shareMessage: 'I completed a square breathing meditation',
+      abbr: 'SB',
+    },
     extra_sea_voyage: {
       title: 'Sea Voyage',
       dedication: 'May this voyage bring peaceful dreams to all little ones.',

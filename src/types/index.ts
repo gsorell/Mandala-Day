@@ -103,6 +103,7 @@ export type RootStackParamList = {
   BodySeaVoyage: undefined;
   StarryNight: undefined;
   Pranayama: undefined;
+  SquareBreathing: undefined;
 };
 
 export type MainTabParamList = {
