@@ -193,7 +193,7 @@ export const SessionCompleteScreen: React.FC = () => {
               <Text style={styles.dateText}>{displayTime}</Text>
             </View>
 
-            <Text style={styles.branding}>MandalaDay</Text>
+            <Text style={styles.branding}>mandaladay.netlify.app</Text>
           </View>
         </View>
 

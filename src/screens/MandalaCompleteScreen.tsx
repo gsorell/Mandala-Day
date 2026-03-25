@@ -175,7 +175,7 @@ export const MandalaCompleteScreen: React.FC = () => {
               <Text style={styles.totalTime}>{totalMinutes} min of practice</Text>
             )}
 
-            <Text style={styles.branding}>MandalaDay</Text>
+            <Text style={styles.branding}>mandaladay.netlify.app</Text>
           </View>
         </View>
 
