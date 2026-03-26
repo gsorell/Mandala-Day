@@ -14,41 +14,36 @@ import { AVPlaybackStatus } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
 
-const VIPASSANA_DURATION_MIN = 10; // 10 minutes
-const VIPASSANA_DURATION_SEC = VIPASSANA_DURATION_MIN * 60;
+const VISION_DURATION_MIN = 10;
+const VISION_DURATION_SEC = VISION_DURATION_MIN * 60;
 
-// Audio asset - using require for bundling
-const getVipassanaAudio = () => require('../../assets/audio/vipassana.mp3');
+const getVisionAudio = () => require('../../assets/audio/vision.mp3');
 
-export const VipassanaScreen: React.FC = () => {
+export const VisionScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
-  const [duration, setDuration] = useState(VIPASSANA_DURATION_SEC * 1000);
+  const [duration, setDuration] = useState(VISION_DURATION_SEC * 1000);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
 
-  // Handle app state changes (background/foreground)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      // Audio continues in background - no special handling needed
+      // Audio continues in background
     });
-
     return () => {
       subscription.remove();
     };
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (hasStarted.current) {
@@ -57,7 +52,6 @@ export const VipassanaScreen: React.FC = () => {
     };
   }, []);
 
-  // Handle countdown timer
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => {
@@ -65,9 +59,6 @@ export const VipassanaScreen: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Countdown finished, start playing
-      // Set isPlaying FIRST to avoid flash of "Begin" screen,
-      // then clear countdown and start the actual playback
       setIsPlaying(true);
       setCountdown(null);
       playAudio();
@@ -90,24 +81,22 @@ export const VipassanaScreen: React.FC = () => {
     }
   };
 
-  // Play audio after countdown finishes
   const playAudio = async () => {
     hasStarted.current = true;
     setIsPlaying(true);
     setIsPaused(false);
 
-    // On web, audio was preloaded; on native, load and play now
     if (Platform.OS === 'web' && audioService.isLoaded()) {
       await audioService.play();
     } else {
-      await audioService.loadAndPlay(getVipassanaAudio(), {
+      await audioService.loadAndPlay(getVisionAudio(), {
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
           handleComplete();
         },
         onError: (error) => {
-          console.error('Vipassana playback error:', error);
+          console.error('Vision playback error:', error);
           setIsPlaying(false);
         },
       });
@@ -116,26 +105,24 @@ export const VipassanaScreen: React.FC = () => {
 
   const handleStart = async () => {
     if (Platform.OS === 'web') {
-      // Web/Safari requires preload during user gesture
       setIsLoading(true);
       try {
-        await audioService.preload(getVipassanaAudio(), {
+        await audioService.preload(getVisionAudio(), {
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);
             handleComplete();
           },
           onError: (error) => {
-            console.error('Vipassana playback error:', error);
+            console.error('Vision playback error:', error);
             setIsPlaying(false);
           },
         });
       } catch (error) {
-        console.error('Failed to pre-load Vipassana audio:', error);
+        console.error('Failed to pre-load Vision audio:', error);
       }
       setIsLoading(false);
     }
-    // Start countdown (audio will load and play when countdown reaches 0)
     setCountdown(5);
   };
 
@@ -159,24 +146,23 @@ export const VipassanaScreen: React.FC = () => {
   const handleComplete = async () => {
     const completionDate = new Date();
     const today = completionDate.toISOString().slice(0, 10);
-    await addExtraPracticeMinutes(today, VIPASSANA_DURATION_MIN);
+    await addExtraPracticeMinutes(today, VISION_DURATION_MIN);
     await appendExtraInstance({
-      id: `${today}_extra_vipassana_${Date.now()}`,
+      id: `${today}_extra_vision_${Date.now()}`,
       date: today,
-      templateId: 'extra_vipassana',
+      templateId: 'extra_vision',
       scheduledAt: completionDate.toISOString(),
       status: SessionStatus.COMPLETED,
       endedAt: completionDate.toISOString(),
       snoozeCount: 0,
     });
     navigation.navigate('SessionComplete', {
-      sessionTitle: 'Body Scan',
-      dedication: 'May this practice bring clarity and peace to all beings.',
-      shareMessage: 'I completed a Body Scan meditation',
+      sessionTitle: 'Clear Seeing',
+      dedication: 'Seeing, just as it is.',
+      shareMessage: 'I opened my eyes wider today',
     });
   };
 
-  // Paused state view
   if (isPaused) {
     return (
       <SafeAreaView style={styles.container}>
@@ -198,7 +184,6 @@ export const VipassanaScreen: React.FC = () => {
     );
   }
 
-  // Playing state view
   if (isPlaying) {
     return (
       <SafeAreaView style={styles.container}>
@@ -208,7 +193,7 @@ export const VipassanaScreen: React.FC = () => {
 
         <View style={styles.meditationView}>
           <Text style={styles.timerLarge}>{formatTime(duration - currentPosition)}</Text>
-          <Text style={styles.meditationPrompt}>Observe. Notice. Allow.</Text>
+          <Text style={styles.meditationPrompt}>Wide open vision.</Text>
         </View>
 
         <View style={styles.controls}>
@@ -220,7 +205,6 @@ export const VipassanaScreen: React.FC = () => {
     );
   }
 
-  // Countdown view
   if (countdown !== null) {
     return (
       <SafeAreaView style={styles.container}>
@@ -234,14 +218,13 @@ export const VipassanaScreen: React.FC = () => {
     );
   }
 
-  // Initial screen
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Body Scan</Text>
+        <Text style={styles.title}>Clear Seeing</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -252,7 +235,7 @@ export const VipassanaScreen: React.FC = () => {
         </View>
 
         <Text style={styles.description}>
-          A guided Body Scan meditation for insight and clarity.
+          See clearly.{'\n'}Nothing added. Nothing removed.
         </Text>
 
         <Text style={styles.instruction}>
@@ -335,54 +318,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     alignItems: 'center',
   },
-  beginButtonRing1: {
-    width: 148,
-    height: 148,
-    borderRadius: 74,
-    backgroundColor: 'rgba(184, 148, 95, 0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonRing2: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(184, 148, 95, 0.11)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonRing3: {
-    width: 94,
-    height: 94,
-    borderRadius: 47,
-    backgroundColor: 'rgba(184, 148, 95, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonCore: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: colors.agedBrass,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  beginButtonInnerDetail: {
-    position: 'absolute',
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    borderWidth: 0.5,
-    borderColor: 'rgba(11, 8, 23, 0.25)',
-  },
-  beginButtonText: {
-    color: colors.ritualNight,
-    fontSize: 13,
-    fontWeight: typography.fontWeights.medium,
-    letterSpacing: 2.5,
-    textTransform: 'uppercase',
-  },
-  // Running/playing styles
   meditationView: {
     flex: 1,
     justifyContent: 'center',
@@ -441,46 +376,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.medium,
   },
-  // Completion screen styles
-  completionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-  },
-  completionLogo: {
-    width: 120,
-    height: 120,
-    marginBottom: spacing.xl,
-    opacity: 0.8,
-  },
-  completionTitle: {
-    color: colors.textPrimary,
-    fontSize: typography.fontSizes.xxl,
-    fontWeight: typography.fontWeights.semibold,
-    marginBottom: spacing.xl,
-  },
-  completionText: {
-    color: colors.accent,
-    fontSize: typography.fontSizes.lg,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    lineHeight: typography.fontSizes.lg * typography.lineHeights.relaxed,
-    marginBottom: spacing.xl,
-    maxWidth: 300,
-  },
-  completeButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xxl,
-    borderRadius: borderRadius.lg,
-  },
-  completeButtonText: {
-    color: colors.textPrimary,
-    fontSize: typography.fontSizes.lg,
-    fontWeight: typography.fontWeights.semibold,
-  },
-  // Countdown styles
   countdownView: {
     flex: 1,
     justifyContent: 'center',

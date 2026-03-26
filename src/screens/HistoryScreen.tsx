@@ -113,6 +113,18 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A bedtime voyage for the little ones',
       abbr: 'SV',
     },
+    extra_vipassana: {
+      title: 'Body Scan',
+      dedication: 'May this practice bring clarity and peace to all beings.',
+      shareMessage: 'I completed a Body Scan meditation',
+      abbr: 'BS',
+    },
+    extra_vision: {
+      title: 'Clear Seeing',
+      dedication: 'Seeing, just as it is.',
+      shareMessage: 'I opened my eyes wider today',
+      abbr: 'CS',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

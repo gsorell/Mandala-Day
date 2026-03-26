@@ -26,6 +26,7 @@ import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
 import { StarryNightScreen } from './src/screens/StarryNightScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
+import { VisionScreen } from './src/screens/VisionScreen';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
 import { getSessionById } from './src/data/sessions';
@@ -440,6 +441,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="SquareBreathing"
               component={SquareBreathingScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="Vision"
+              component={VisionScreen}
               options={{
                 presentation: 'card',
               }}
