@@ -37,6 +37,7 @@ export const VipassanaScreen: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
+  const hasCompleted = useRef(false);
 
   // Handle app state changes (background/foreground)
   useEffect(() => {
@@ -158,6 +159,8 @@ export const VipassanaScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    if (hasCompleted.current) return;
+    hasCompleted.current = true;
     const completionDate = new Date();
     const today = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, VIPASSANA_DURATION_MIN);

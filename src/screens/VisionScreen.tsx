@@ -35,6 +35,7 @@ export const VisionScreen: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
+  const hasCompleted = useRef(false);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
@@ -145,6 +146,8 @@ export const VisionScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    if (hasCompleted.current) return;
+    hasCompleted.current = true;
     const completionDate = new Date();
     const today = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, VISION_DURATION_MIN);

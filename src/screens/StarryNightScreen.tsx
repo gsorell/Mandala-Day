@@ -35,6 +35,7 @@ export const StarryNightScreen: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
+  const hasCompleted = useRef(false);
 
   // Handle app state changes (background/foreground)
   useEffect(() => {
@@ -154,7 +155,8 @@ export const StarryNightScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
-    // Save completed minutes to storage
+    if (hasCompleted.current) return;
+    hasCompleted.current = true;
     const today = format(new Date(), 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, STARRY_NIGHT_DURATION_MIN);
     navigation.navigate('SessionComplete', {

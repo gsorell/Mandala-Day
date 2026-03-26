@@ -36,6 +36,7 @@ export const BodySeaVoyageScreen: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
+  const hasCompleted = useRef(false);
 
   // Handle app state changes (background/foreground)
   useEffect(() => {
@@ -155,7 +156,8 @@ export const BodySeaVoyageScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
-    // Save completed minutes to storage
+    if (hasCompleted.current) return;
+    hasCompleted.current = true;
     const completionDate = new Date();
     const today = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, BODY_SEA_VOYAGE_DURATION_MIN);
