@@ -124,15 +124,17 @@ export const getDailyInstances = async (
 ): Promise<DailySessionInstance[]> => {
   try {
     const existing = await getDailyInstancesRaw(date);
-    if (existing) {
+    const hasCoreInstances = existing?.some((i) => !i.templateId.startsWith('extra_'));
+    if (existing && hasCoreInstances) {
       return existing;
     }
 
-    // Generate instances for this date if they don't exist
+    // Generate core instances for this date (preserving any existing extras)
     const schedule = await getUserSchedule();
-    const instances = generateDailyInstances(date, schedule);
-    await saveDailyInstances(date, instances);
-    return instances;
+    const coreInstances = generateDailyInstances(date, schedule);
+    const combined = existing ? [...coreInstances, ...existing] : coreInstances;
+    await saveDailyInstances(date, combined);
+    return combined;
   } catch (error) {
     console.error('Error loading daily instances:', error);
     return [];
