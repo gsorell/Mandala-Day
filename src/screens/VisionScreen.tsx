@@ -163,7 +163,7 @@ export const VisionScreen: React.FC = () => {
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Clear Seeing',
       dedication: 'Seeing, just as it is.',
-      shareMessage: 'I opened my eyes wider today',
+      shareMessage: 'I completed a Clear Seeing meditation',
     });
   };
 

@@ -122,7 +122,7 @@ export const HistoryScreen: React.FC = () => {
     extra_vision: {
       title: 'Clear Seeing',
       dedication: 'Seeing, just as it is.',
-      shareMessage: 'I opened my eyes wider today',
+      shareMessage: 'I completed a Clear Seeing meditation',
       abbr: 'CS',
     },
   };
