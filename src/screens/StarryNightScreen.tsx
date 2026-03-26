@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
+import { format } from 'date-fns';
 import { addExtraPracticeMinutes } from '../services/storage';
 
 const STARRY_NIGHT_DURATION_MIN = 8; // ~7:38 rounded up
@@ -154,7 +155,7 @@ export const StarryNightScreen: React.FC = () => {
 
   const handleComplete = async () => {
     // Save completed minutes to storage
-    const today = new Date().toISOString().slice(0, 10);
+    const today = format(new Date(), 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, STARRY_NIGHT_DURATION_MIN);
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Starry Night',

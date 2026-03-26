@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
+import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
 
@@ -156,7 +157,7 @@ export const BodySeaVoyageScreen: React.FC = () => {
   const handleComplete = async () => {
     // Save completed minutes to storage
     const completionDate = new Date();
-    const today = completionDate.toISOString().slice(0, 10);
+    const today = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, BODY_SEA_VOYAGE_DURATION_MIN);
     await appendExtraInstance({
       id: `${today}_extra_sea_voyage_${Date.now()}`,

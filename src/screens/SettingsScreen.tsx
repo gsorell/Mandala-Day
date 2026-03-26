@@ -98,7 +98,7 @@ export const SettingsScreen: React.FC = () => {
             await clearAllData();
             // Force hard reload to reset in-memory state and show onboarding
             if (Platform.OS === 'web' && typeof window !== 'undefined') {
-              window.location.href = window.location.href;
+              window.location.reload();
             }
           },
         },

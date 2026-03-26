@@ -17,6 +17,7 @@ import { RootStackParamList } from '../types';
 
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
+import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
 
@@ -158,7 +159,7 @@ export const VipassanaScreen: React.FC = () => {
 
   const handleComplete = async () => {
     const completionDate = new Date();
-    const today = completionDate.toISOString().slice(0, 10);
+    const today = format(completionDate, 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, VIPASSANA_DURATION_MIN);
     await appendExtraInstance({
       id: `${today}_extra_vipassana_${Date.now()}`,
