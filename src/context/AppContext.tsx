@@ -248,7 +248,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       // Only update state and storage if there were actual changes
       if (changedInstances.length > 0) {
-        setTodayInstances(updatedInstances);
+        // Use functional setState to preserve the original array order.
+        // updatedInstances is sorted by scheduledAt, but the original order
+        // matters for dot rendering — extras appended at the end must stay there.
+        const changedById = new Map(changedInstances.map((i) => [i.id, i]));
+        setTodayInstances((prev) => prev.map((i) => changedById.get(i.id) ?? i));
         // Only save the instances that actually changed
         for (const instance of changedInstances) {
           await updateSessionInstance(instance);
