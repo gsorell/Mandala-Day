@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { SessionCard } from '../components/SessionCard';
@@ -30,6 +30,12 @@ export const TodayScreen: React.FC = () => {
     skipSession,
     snoozeSession,
   } = useApp();
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshTodayInstances();
+    }, [refreshTodayInstances])
+  );
 
   const handleStart = useCallback((instanceId: string) => {
     navigation.navigate('SessionPlayer', { instanceId });

@@ -17,7 +17,8 @@ import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { format } from 'date-fns';
-import { addExtraPracticeMinutes } from '../services/storage';
+import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
+import { SessionStatus } from '../types';
 
 const STARRY_NIGHT_DURATION_MIN = 8; // ~7:38 rounded up
 const STARRY_NIGHT_DURATION_SEC = STARRY_NIGHT_DURATION_MIN * 60;
@@ -159,6 +160,15 @@ export const StarryNightScreen: React.FC = () => {
     hasCompleted.current = true;
     const today = format(new Date(), 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, STARRY_NIGHT_DURATION_MIN);
+    await appendExtraInstance({
+      id: `${today}_extra_starry_night_${Date.now()}`,
+      date: today,
+      templateId: 'extra_starry_night',
+      scheduledAt: new Date().toISOString(),
+      status: SessionStatus.COMPLETED,
+      endedAt: new Date().toISOString(),
+      snoozeCount: 0,
+    });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Starry Night',
       dedication: 'May the stars guide little ones to peaceful dreams.',

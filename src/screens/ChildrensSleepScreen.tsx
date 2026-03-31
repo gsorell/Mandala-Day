@@ -17,7 +17,8 @@ import { RootStackParamList } from '../types';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { audioService } from '../services/audio';
 import { format } from 'date-fns';
-import { addExtraPracticeMinutes } from '../services/storage';
+import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
+import { SessionStatus } from '../types';
 
 const CHILDRENS_SLEEP_DURATION_MIN = 9; // ~8:45 rounded up
 const CHILDRENS_SLEEP_DURATION_SEC = CHILDRENS_SLEEP_DURATION_MIN * 60;
@@ -161,6 +162,15 @@ export const ChildrensSleepScreen: React.FC = () => {
     hasCompleted.current = true;
     const today = format(new Date(), 'yyyy-MM-dd');
     await addExtraPracticeMinutes(today, CHILDRENS_SLEEP_DURATION_MIN);
+    await appendExtraInstance({
+      id: `${today}_extra_childrens_sleep_${Date.now()}`,
+      date: today,
+      templateId: 'extra_childrens_sleep',
+      scheduledAt: new Date().toISOString(),
+      status: SessionStatus.COMPLETED,
+      endedAt: new Date().toISOString(),
+      snoozeCount: 0,
+    });
     navigation.navigate('SessionComplete', {
       sessionTitle: 'Jungle Safari',
       dedication: 'May this practice bring peaceful dreams to all little ones.',
