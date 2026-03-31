@@ -42,7 +42,7 @@ export const MandalaCompleteScreen: React.FC = () => {
     const calcTotal = async () => {
       const instances = await getDailyInstances(date);
       const sessionMinutes = instances
-        .filter((i) => i.status === SessionStatus.COMPLETED)
+        .filter((i) => i.status === SessionStatus.COMPLETED && !i.templateId.startsWith('extra_'))
         .reduce((sum, i) => {
           const template = DEFAULT_SESSIONS.find((s) => s.id === i.templateId);
           return sum + Math.round((template?.durationSec ?? 600) / 60);
