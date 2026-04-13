@@ -1,5 +1,5 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 export interface AudioPlaybackOptions {
   onPlaybackStatusUpdate?: (status: AVPlaybackStatus) => void;
@@ -132,10 +132,17 @@ class AudioService {
         this.isPaused = false;
         this.options.onComplete?.();
       } else if (!status.isPlaying && this.isPlaying && !this.isPaused) {
-        // Audio stopped unexpectedly (e.g., phone call interruption)
-        console.log('[AudioService] Playback interrupted at position:', status.positionMillis);
-        this.isPlaying = false;
-        this.options.onInterrupt?.(status.positionMillis);
+        // Only treat as interruption when the app is in the foreground.
+        // When the screen sleeps, Android can briefly report isPlaying:false
+        // even with staysActiveInBackground:true — firing onInterrupt here would
+        // corrupt the timer state and prevent the meditation from completing.
+        // The AppState 'active' handler in SessionPlayerScreen checks actual audio
+        // status on return and surfaces the Paused screen if audio truly stopped.
+        if (AppState.currentState === 'active') {
+          console.log('[AudioService] Playback interrupted at position:', status.positionMillis);
+          this.isPlaying = false;
+          this.options.onInterrupt?.(status.positionMillis);
+        }
       }
     } else if (status.error) {
       console.error('[AudioService] Playback error:', status.error);
