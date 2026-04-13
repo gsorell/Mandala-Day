@@ -367,6 +367,11 @@ export const SessionPlayerScreen: React.FC = () => {
       setIsPlaying(true);
     } else if (audioService.isLoaded()) {
       setIsPlaying(true);
+      // Start foreground service on Android to keep audio alive when screen sleeps.
+      // staysActiveInBackground alone is insufficient on modern Android without one.
+      if (Platform.OS === 'android') {
+        await backgroundTimer.startKeepAlive(timeRemaining);
+      }
       await audioService.play();
     } else {
       setIsPlaying(true);
@@ -391,6 +396,8 @@ export const SessionPlayerScreen: React.FC = () => {
           // Pre-load audio during the tap gesture
           await audioService.preload(audioSource, {
             onComplete: () => {
+              // Stop the Android keepalive foreground service
+              backgroundTimer.stop();
               setShowDedication(true);
               setIsPlaying(false);
             },
@@ -436,6 +443,9 @@ export const SessionPlayerScreen: React.FC = () => {
         // Release screen wake lock
         deactivateKeepAwake('silent-meditation');
       } else {
+        if (Platform.OS === 'android') {
+          await backgroundTimer.stop();
+        }
         await audioService.pause();
       }
     }
@@ -494,6 +504,9 @@ export const SessionPlayerScreen: React.FC = () => {
     } else if (audioService.isLoaded()) {
       setIsPlaying(true);
       setIsPaused(false);
+      if (Platform.OS === 'android') {
+        await backgroundTimer.startKeepAlive(timeRemaining);
+      }
       await audioService.play();
     } else {
       setIsPlaying(true);

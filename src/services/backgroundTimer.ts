@@ -18,6 +18,15 @@ let currentGongSound: Audio.Sound | null = null;
 // Sleep helper
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+// Keepalive task for guided audio — just holds the foreground service open.
+// No timer, no gong. Exits when shouldStop is set.
+const keepAliveTask = async () => {
+  shouldStop = false;
+  while (!shouldStop) {
+    await sleep(1000);
+  }
+};
+
 // The background task that runs the timer
 const timerTask = async (taskData?: { durationSeconds: number }) => {
   const durationSeconds = taskData?.durationSeconds ?? 600; // Default to 10 minutes
@@ -139,6 +148,30 @@ export const backgroundTimer = {
       return true;
     } catch (error) {
       console.error('Error starting background timer:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Start a foreground service keepalive for guided audio on Android.
+   * No timer logic, no gong — just prevents Android from killing background audio.
+   * Call stop() when audio completes or is paused.
+   */
+  startKeepAlive: async (durationSeconds: number): Promise<boolean> => {
+    if (Platform.OS !== 'android') return false;
+
+    onTickCallback = null;
+    onCompleteCallback = null;
+    shouldStop = false;
+
+    try {
+      if (BackgroundActions.isRunning()) {
+        await BackgroundActions.stop();
+      }
+      await BackgroundActions.start(keepAliveTask, getBackgroundOptions(durationSeconds));
+      return true;
+    } catch (error) {
+      console.error('Error starting background keepalive:', error);
       return false;
     }
   },
