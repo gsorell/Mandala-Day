@@ -153,7 +153,7 @@ export const SessionPlayerScreen: React.FC = () => {
           return;
         }
 
-        // Guided audio: if meditation should be playing, check and recover audio.
+        // Guided audio: if meditation should be playing, check actual audio state.
         // Uses guidedAudioShouldPlayRef instead of isPlaying state — the ref is only
         // cleared by explicit user actions (pause/stop/complete), so it survives the
         // onInterrupt race condition where screen-sleep fires the callback while
@@ -163,33 +163,20 @@ export const SessionPlayerScreen: React.FC = () => {
           if (!actualStatus) return;
 
           if (!actualStatus.isPlaying) {
-            // Audio was paused by Android during background (screen sleep).
-            // Auto-resume from current position — don't show the Paused screen,
-            // the user expects meditation to complete without intervention.
+            // Audio was interrupted (phone call, or Android paused despite foreground service).
+            // Show Paused screen with accurate remaining time from audio position.
             const remaining = session
               ? Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000))
               : endTimeRef.current
                 ? Math.max(0, Math.floor((endTimeRef.current - now) / 1000))
                 : 0;
-
-            if (remaining > 0) {
-              pausedTimeRemainingRef.current = remaining;
-              setTimeRemaining(remaining);
-              startTimeRef.current = null;
-              endTimeRef.current = Date.now() + remaining * 1000;
-              if (Platform.OS === 'android') {
-                await backgroundTimer.startKeepAlive(remaining);
-              }
-              await audioService.play();
-              setIsPlaying(true);
-              setIsPaused(false);
-            } else {
-              // Audio position is at the end — complete the session
-              guidedAudioShouldPlayRef.current = false;
-              backgroundTimer.stop();
-              setShowDedication(true);
-              setIsPlaying(false);
-            }
+            guidedAudioShouldPlayRef.current = false;
+            pausedTimeRemainingRef.current = remaining;
+            setTimeRemaining(remaining);
+            startTimeRef.current = null;
+            endTimeRef.current = null;
+            setIsPlaying(false);
+            setIsPaused(true);
           } else {
             // Audio is still playing fine (foreground service kept it alive).
             // Fix UI state in case onInterrupt fired as a false positive before
