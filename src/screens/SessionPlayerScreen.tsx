@@ -60,10 +60,6 @@ export const SessionPlayerScreen: React.FC = () => {
   const notificationIdRef = useRef<string | null>(null);
   // Track if completion has been handled (to avoid duplicate handling)
   const completionHandledRef = useRef(false);
-  // Track whether guided audio SHOULD be playing — set only by explicit user actions,
-  // never by onInterrupt. This survives the onInterrupt race condition so the AppState
-  // 'active' handler can always detect and recover a background-paused meditation.
-  const guidedAudioShouldPlayRef = useRef(false);
 
   // Ensure the timer-gong notification channel exists on Android
   const ensureNotificationChannel = async () => {
@@ -129,76 +125,67 @@ export const SessionPlayerScreen: React.FC = () => {
         return;
       }
 
-      if (nextAppState === 'active') {
+      if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
         const now = Date.now();
-
-        // Silent mode: check if the timer expired while in background
-        if (isSilentMode && endTimeRef.current && now >= endTimeRef.current) {
+        if (now >= endTimeRef.current) {
+          // Timer should have completed while in background
           setIsPlaying(false);
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
+
+          // Cancel notification (it may have already played the gong, or we'll play it now)
           await cancelCompletionNotification();
+
+          // Navigate to completion screen immediately
           setShowDedication(true);
-          try {
-            let gongSource: number | { uri: string } = getGongSound();
-            if (Platform.OS === 'web') {
-              const uri = await getGongUri();
-              if (uri) gongSource = { uri };
+
+          // Play gong sound if it was a silent practice (web/fallback)
+          if (isSilentMode) {
+            try {
+              let gongSource: number | { uri: string } = getGongSound();
+              if (Platform.OS === 'web') {
+                const uri = await getGongUri();
+                if (uri) {
+                  gongSource = { uri };
+                }
+              }
+              await audioService.loadAndPlay(gongSource);
+            } catch (error) {
+              console.error('Failed to play gong:', error);
             }
-            await audioService.loadAndPlay(gongSource);
-          } catch (error) {
-            console.error('Failed to play gong:', error);
           }
-          return;
-        }
-
-        // Guided audio: if meditation should be playing, check actual audio state.
-        // Uses guidedAudioShouldPlayRef instead of isPlaying state — the ref is only
-        // cleared by explicit user actions (pause/stop/complete), so it survives the
-        // onInterrupt race condition where screen-sleep fires the callback while
-        // AppState is still 'active', corrupting isPlaying and endTimeRef.
-        if (!isSilentMode && guidedAudioShouldPlayRef.current) {
+        } else if (!isSilentMode) {
+          // App returned from background but timer not complete
+          // Check if audio was actually interrupted (phone call, etc.)
+          // vs just the screen sleeping (audio continues in background)
           const actualStatus = await audioService.getActualStatus();
-          if (!actualStatus) return;
-
-          if (!actualStatus.isPlaying) {
-            // Audio was interrupted (phone call, or Android paused despite foreground service).
-            // Show Paused screen with accurate remaining time from audio position.
+          if (actualStatus && !actualStatus.isPlaying) {
+            // Audio was interrupted — use audio position for accurate remaining time.
+            // Wall-clock calculation is wrong here: it would count call duration as
+            // elapsed meditation time, showing 0:00 after any long-enough call.
             const remaining = session
               ? Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000))
-              : endTimeRef.current
-                ? Math.max(0, Math.floor((endTimeRef.current - now) / 1000))
-                : 0;
-            guidedAudioShouldPlayRef.current = false;
+              : Math.max(0, Math.floor((endTimeRef.current! - now) / 1000));
             pausedTimeRemainingRef.current = remaining;
             setTimeRemaining(remaining);
             startTimeRef.current = null;
             endTimeRef.current = null;
             setIsPlaying(false);
             setIsPaused(true);
-          } else {
-            // Audio is still playing fine (foreground service kept it alive).
-            // Fix UI state in case onInterrupt fired as a false positive before
-            // AppState transitioned to background.
-            setIsPlaying(true);
-            setIsPaused(false);
-            if (session) {
-              const remaining = Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000));
-              pausedTimeRemainingRef.current = remaining;
-              setTimeRemaining(remaining);
-              startTimeRef.current = null;
-              endTimeRef.current = Date.now() + remaining * 1000;
-            }
           }
+          // If audio is still playing, just continue - nothing to do
         }
+        // For silent mode, timer continues automatically via wall-clock calculation
       }
+      // Don't pause when going to background - let audio continue playing
+      // The audio service is configured with staysActiveInBackground: true
     });
 
     return () => {
       subscription.remove();
     };
-  }, [isSilentMode]);
+  }, [isPlaying, isSilentMode]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -379,12 +366,12 @@ export const SessionPlayerScreen: React.FC = () => {
       }
       setIsPlaying(true);
     } else if (audioService.isLoaded()) {
-      guidedAudioShouldPlayRef.current = true;
       setIsPlaying(true);
-      // Start foreground service on Android to keep audio alive when screen sleeps.
-      // staysActiveInBackground alone is insufficient on modern Android without one.
-      if (Platform.OS === 'android') {
-        await backgroundTimer.startKeepAlive(timeRemaining);
+      // Keep screen awake during guided audio, same as silent mode
+      try {
+        await activateKeepAwakeAsync('guided-meditation');
+      } catch (err) {
+        console.log('Keep awake error:', err);
       }
       await audioService.play();
     } else {
@@ -410,8 +397,7 @@ export const SessionPlayerScreen: React.FC = () => {
           // Pre-load audio during the tap gesture
           await audioService.preload(audioSource, {
             onComplete: () => {
-              guidedAudioShouldPlayRef.current = false;
-              backgroundTimer.stop();
+              deactivateKeepAwake('guided-meditation');
               setShowDedication(true);
               setIsPlaying(false);
             },
@@ -457,10 +443,7 @@ export const SessionPlayerScreen: React.FC = () => {
         // Release screen wake lock
         deactivateKeepAwake('silent-meditation');
       } else {
-        guidedAudioShouldPlayRef.current = false;
-        if (Platform.OS === 'android') {
-          await backgroundTimer.stop();
-        }
+        deactivateKeepAwake('guided-meditation');
         await audioService.pause();
       }
     }
@@ -517,11 +500,12 @@ export const SessionPlayerScreen: React.FC = () => {
       setIsPlaying(true);
       setIsPaused(false);
     } else if (audioService.isLoaded()) {
-      guidedAudioShouldPlayRef.current = true;
       setIsPlaying(true);
       setIsPaused(false);
-      if (Platform.OS === 'android') {
-        await backgroundTimer.startKeepAlive(timeRemaining);
+      try {
+        await activateKeepAwakeAsync('guided-meditation');
+      } catch (err) {
+        console.log('Keep awake error:', err);
       }
       await audioService.play();
     } else {
@@ -532,7 +516,6 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const handleEndEarly = async () => {
     const endSession = async () => {
-      guidedAudioShouldPlayRef.current = false;
       // Track ending early (calculate elapsed time)
       if (session) {
         const elapsedSeconds = session.durationSec - timeRemaining;
@@ -545,6 +528,8 @@ export const SessionPlayerScreen: React.FC = () => {
       // Release keep awake for silent mode
       if (isSilentMode) {
         deactivateKeepAwake('silent-meditation');
+      } else {
+        deactivateKeepAwake('guided-meditation');
       }
       endTimeRef.current = null;
       setIsPlaying(false);
