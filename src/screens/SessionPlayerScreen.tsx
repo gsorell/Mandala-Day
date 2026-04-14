@@ -223,8 +223,11 @@ export const SessionPlayerScreen: React.FC = () => {
       }
 
       timerRef.current = setInterval(() => {
+        // startTimeRef is nulled when the session is paused or stopped — skip
+        // bogus tick to avoid computing Date.now() - null = ~1.7 trillion ms
+        if (startTimeRef.current === null) return;
         // Calculate remaining time based on actual elapsed wall-clock time
-        const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
         const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
         // Only end session via timer in silent mode (no audio)
