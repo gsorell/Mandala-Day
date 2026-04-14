@@ -162,17 +162,22 @@ export const SessionPlayerScreen: React.FC = () => {
           const actualStatus = await audioService.getActualStatus();
           if (actualStatus && !actualStatus.isPlaying) {
             // Audio was interrupted — use audio position for accurate remaining time.
-            // Wall-clock calculation is wrong here: it would count call duration as
-            // elapsed meditation time, showing 0:00 after any long-enough call.
             const remaining = session
               ? Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000))
               : Math.max(0, Math.floor((endTimeRef.current! - now) / 1000));
-            pausedTimeRemainingRef.current = remaining;
-            setTimeRemaining(remaining);
             startTimeRef.current = null;
             endTimeRef.current = null;
-            setIsPlaying(false);
-            setIsPaused(true);
+            if (Platform.OS === 'android') await backgroundTimer.stop();
+            if (remaining === 0) {
+              // Audio played to end while in background but onComplete didn't navigate
+              setShowDedication(true);
+              setIsPlaying(false);
+            } else {
+              pausedTimeRemainingRef.current = remaining;
+              setTimeRemaining(remaining);
+              setIsPlaying(false);
+              setIsPaused(true);
+            }
           }
           // If audio is still playing, just continue - nothing to do
         }
@@ -373,7 +378,24 @@ export const SessionPlayerScreen: React.FC = () => {
       } catch (err) {
         console.log('Keep awake error:', err);
       }
+      // Start foreground service on Android to prevent the OS from killing audio in background
+      if (Platform.OS === 'android') {
+        await backgroundTimer.startKeepAlive(timeRemaining);
+      }
       await audioService.play();
+      // Register with browser media session so Chrome treats this as intentional background audio
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+        try {
+          const ms = (navigator as any).mediaSession;
+          ms.metadata = new (window as any).MediaMetadata({
+            title: session?.title || 'Guided Meditation',
+            artist: 'Mandala Day',
+          });
+          ms.playbackState = 'playing';
+          ms.setActionHandler('play', null);
+          ms.setActionHandler('pause', null);
+        } catch (_e) { /* MediaSession not supported */ }
+      }
     } else {
       setIsPlaying(true);
     }
@@ -398,6 +420,7 @@ export const SessionPlayerScreen: React.FC = () => {
           await audioService.preload(audioSource, {
             onComplete: () => {
               deactivateKeepAwake('guided-meditation');
+              if (Platform.OS === 'android') backgroundTimer.stop();
               setShowDedication(true);
               setIsPlaying(false);
             },
@@ -428,6 +451,7 @@ export const SessionPlayerScreen: React.FC = () => {
         deactivateKeepAwake('silent-meditation');
       } else {
         deactivateKeepAwake('guided-meditation');
+        if (Platform.OS === 'android') await backgroundTimer.stop();
         await audioService.pause();
       }
     }
@@ -491,7 +515,15 @@ export const SessionPlayerScreen: React.FC = () => {
       } catch (err) {
         console.log('Keep awake error:', err);
       }
+      if (Platform.OS === 'android') {
+        await backgroundTimer.startKeepAlive(timeRemaining);
+      }
       await audioService.play();
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+        try {
+          (navigator as any).mediaSession.playbackState = 'playing';
+        } catch (_e) { /* MediaSession not supported */ }
+      }
     } else {
       setIsPlaying(true);
       setIsPaused(false);
