@@ -386,17 +386,26 @@ export const SessionPlayerScreen: React.FC = () => {
         await backgroundTimer.startKeepAlive(timeRemaining);
       }
       await audioService.play();
-      // Register with browser media session so Chrome treats this as intentional background audio
+      // Register with browser media session so Chrome treats this as active background audio.
+      // Passing null to setActionHandler REMOVES the handler — we need real handlers registered
+      // or Chrome won't show lockscreen controls and may throttle the audio session.
       if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
         try {
           const ms = (navigator as any).mediaSession;
           ms.metadata = new (window as any).MediaMetadata({
             title: session?.title || 'Guided Meditation',
             artist: 'Mandala Day',
+            artwork: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
           });
           ms.playbackState = 'playing';
-          ms.setActionHandler('play', null);
-          ms.setActionHandler('pause', null);
+          ms.setActionHandler('pause', async () => {
+            await audioService.pause();
+            ms.playbackState = 'paused';
+          });
+          ms.setActionHandler('play', async () => {
+            await audioService.play();
+            ms.playbackState = 'playing';
+          });
         } catch (_e) { /* MediaSession not supported */ }
       }
     } else {
@@ -424,6 +433,9 @@ export const SessionPlayerScreen: React.FC = () => {
             onComplete: () => {
               deactivateKeepAwake('guided-meditation');
               if (Platform.OS === 'android') backgroundTimer.stop();
+              if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+                try { (navigator as any).mediaSession.playbackState = 'none'; } catch (_e) {}
+              }
               setShowDedication(true);
               setIsPlaying(false);
             },
@@ -456,6 +468,9 @@ export const SessionPlayerScreen: React.FC = () => {
         deactivateKeepAwake('guided-meditation');
         if (Platform.OS === 'android') await backgroundTimer.stop();
         await audioService.pause();
+        if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+          try { (navigator as any).mediaSession.playbackState = 'paused'; } catch (_e) {}
+        }
       }
     }
   };
