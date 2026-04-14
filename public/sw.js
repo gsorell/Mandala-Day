@@ -1,7 +1,20 @@
 // Service Worker for Mandala Day PWA
 // Handles notification display, background scheduling, and network-first caching
 
-const CACHE_NAME = 'mandala-day-v3';
+const CACHE_NAME = 'mandala-day-v4';
+
+// Audio and app shell assets to pre-cache on install
+// Audio URLs are stable (non-hashed) so safe to hardcode here
+const PRECACHE_ASSETS = [
+  '/assets/assets/audio/waking-the-view.mp3',
+  '/assets/assets/audio/embodying-presence.mp3',
+  '/assets/assets/audio/compassion-activation.mp3',
+  '/assets/assets/audio/cutting-through.mp3',
+  '/assets/assets/audio/integration-motion.mp3',
+  '/assets/assets/audio/dissolution-rest.mp3',
+  '/assets/assets/audio/gong.mp3',
+  '/assets/assets/audio/vipassana.mp3',
+];
 const DB_NAME = 'mandala-notifications';
 const STORE_NAME = 'scheduled';
 const DB_VERSION = 1;
@@ -172,9 +185,23 @@ async function checkAndShowNotifications() {
 
 // ============ Service Worker Events ============
 
-// Install event - immediately take control
+// Install event - pre-cache audio assets and take control immediately
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Pre-caching audio assets...');
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[SW] Failed to pre-cache:', url, err.message);
+          })
+        )
+      );
+    }).then(() => {
+      console.log('[SW] Pre-caching complete');
+    })
+  );
   self.skipWaiting();
 });
 

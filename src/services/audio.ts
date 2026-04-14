@@ -1,11 +1,10 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
-import { AppState, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 export interface AudioPlaybackOptions {
   onPlaybackStatusUpdate?: (status: AVPlaybackStatus) => void;
   onComplete?: () => void;
   onError?: (error: string) => void;
-  onInterrupt?: (positionMs: number) => void;
 }
 
 class AudioService {
@@ -131,18 +130,6 @@ class AudioService {
         this.isPlaying = false;
         this.isPaused = false;
         this.options.onComplete?.();
-      } else if (!status.isPlaying && this.isPlaying && !this.isPaused) {
-        // Only treat as interruption when the app is in the foreground.
-        // When the screen sleeps, Android can briefly report isPlaying:false
-        // even with staysActiveInBackground:true — firing onInterrupt here would
-        // corrupt the timer state and prevent the meditation from completing.
-        // The AppState 'active' handler in SessionPlayerScreen checks actual audio
-        // status on return and surfaces the Paused screen if audio truly stopped.
-        if (AppState.currentState === 'active') {
-          console.log('[AudioService] Playback interrupted at position:', status.positionMillis);
-          this.isPlaying = false;
-          this.options.onInterrupt?.(status.positionMillis);
-        }
       }
     } else if (status.error) {
       console.error('[AudioService] Playback error:', status.error);
@@ -152,7 +139,7 @@ class AudioService {
 
   async pause(): Promise<void> {
     if (this.sound && this.isPlaying && !this.isPaused) {
-      this.isPaused = true; // Set before pauseAsync to prevent spurious onInterrupt
+      this.isPaused = true; // Set before pauseAsync so status callback sees correct state
       try {
         await this.sound.pauseAsync();
       } catch (error) {

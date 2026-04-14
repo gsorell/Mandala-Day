@@ -405,22 +405,6 @@ export const SessionPlayerScreen: React.FC = () => {
               console.error('Audio playback error:', error);
               setIsPlaying(false);
             },
-            onInterrupt: (positionMs: number) => {
-              // Audio interrupted by a phone call — freeze timer at the exact audio position
-              if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-              }
-              startTimeRef.current = null;
-              endTimeRef.current = null;
-              const remaining = session
-                ? Math.max(0, Math.floor((session.durationSec * 1000 - positionMs) / 1000))
-                : 0;
-              pausedTimeRemainingRef.current = remaining;
-              setTimeRemaining(remaining);
-              setIsPlaying(false);
-              setIsPaused(true);
-            },
           });
         } catch (error) {
           console.error('Failed to pre-load meditation audio:', error);
