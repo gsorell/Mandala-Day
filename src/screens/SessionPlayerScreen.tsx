@@ -51,7 +51,7 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasStartedRef = useRef(false);
-  // Track wall-clock time to handle screen sleep correctly
+  // Track wall-clock time to handle screen sleep correctly (silent mode only)
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRemainingRef = useRef<number>(session?.durationSec || 600);
   // Track the expected end time for background completion detection
@@ -60,6 +60,8 @@ export const SessionPlayerScreen: React.FC = () => {
   const notificationIdRef = useRef<string | null>(null);
   // Track if completion has been handled (to avoid duplicate handling)
   const completionHandledRef = useRef(false);
+  // Track the total audio duration in ms (for audio-position-based timer)
+  const audioDurationMsRef = useRef<number>((session?.durationSec || 600) * 1000);
 
   // Ensure the timer-gong notification channel exists on Android
   const ensureNotificationChannel = async () => {
@@ -127,61 +129,61 @@ export const SessionPlayerScreen: React.FC = () => {
 
       if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
         const now = Date.now();
-        if (now >= endTimeRef.current) {
-          // Timer should have completed while in background
+
+        if (!isSilentMode) {
+          // Guided audio mode: audio position is the source of truth.
+          // iOS suspends audio during screen lock, so wall-clock time is unreliable
+          // for determining how much of the meditation has actually been heard.
+          const actualStatus = await audioService.getActualStatus();
+          if (actualStatus) {
+            const remaining = Math.max(0, Math.floor((audioDurationMsRef.current - actualStatus.positionMs) / 1000));
+            if (remaining === 0) {
+              // Audio played to end while in background
+              setShowDedication(true);
+              setIsPlaying(false);
+              setTimeRemaining(0);
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+            } else if (!actualStatus.isPlaying) {
+              // Audio was suspended/interrupted — resync timer and resume playback
+              pausedTimeRemainingRef.current = remaining;
+              startTimeRef.current = Date.now();
+              endTimeRef.current = Date.now() + remaining * 1000;
+              setTimeRemaining(remaining);
+              await audioService.play();
+            } else {
+              // Audio still playing — just resync timer to audio position
+              setTimeRemaining(remaining);
+              pausedTimeRemainingRef.current = remaining;
+              startTimeRef.current = Date.now();
+              endTimeRef.current = Date.now() + remaining * 1000;
+            }
+          }
+          // If no status available, let the timer/onComplete handle it
+        } else if (now >= endTimeRef.current) {
+          // Silent mode: wall-clock is the source of truth
           setIsPlaying(false);
           setTimeRemaining(0);
           startTimeRef.current = null;
           endTimeRef.current = null;
 
-          // Cancel notification (it may have already played the gong, or we'll play it now)
           await cancelCompletionNotification();
-
-          // Navigate to completion screen immediately
           setShowDedication(true);
 
-          // Play gong sound if it was a silent practice (web/fallback)
-          if (isSilentMode) {
-            try {
-              let gongSource: number | { uri: string } = getGongSound();
-              if (Platform.OS === 'web') {
-                const uri = await getGongUri();
-                if (uri) {
-                  gongSource = { uri };
-                }
+          try {
+            let gongSource: number | { uri: string } = getGongSound();
+            if (Platform.OS === 'web') {
+              const uri = await getGongUri();
+              if (uri) {
+                gongSource = { uri };
               }
-              await audioService.loadAndPlay(gongSource);
-            } catch (error) {
-              console.error('Failed to play gong:', error);
             }
+            await audioService.loadAndPlay(gongSource);
+          } catch (error) {
+            console.error('Failed to play gong:', error);
           }
-        } else if (!isSilentMode) {
-          // App returned from background but timer not complete
-          // Check if audio was actually interrupted (phone call, etc.)
-          // vs just the screen sleeping (audio continues in background)
-          const actualStatus = await audioService.getActualStatus();
-          if (actualStatus && !actualStatus.isPlaying) {
-            // Audio was interrupted — use audio position for accurate remaining time.
-            const remaining = session
-              ? Math.max(0, Math.floor((session.durationSec * 1000 - actualStatus.positionMs) / 1000))
-              : Math.max(0, Math.floor((endTimeRef.current! - now) / 1000));
-            startTimeRef.current = null;
-            endTimeRef.current = null;
-            if (Platform.OS === 'android') await backgroundTimer.stop();
-            if (remaining === 0) {
-              // Audio played to end while in background but onComplete didn't navigate
-              setShowDedication(true);
-              setIsPlaying(false);
-            } else {
-              pausedTimeRemainingRef.current = remaining;
-              setTimeRemaining(remaining);
-              setIsPlaying(false);
-              setIsPaused(true);
-            }
-          }
-          // If audio is still playing, just continue - nothing to do
         }
-        // For silent mode, timer continues automatically via wall-clock calculation
+        // For silent mode with time remaining, timer continues via wall-clock calculation
       }
       // Don't pause when going to background - let audio continue playing
       // The audio service is configured with staysActiveInBackground: true
@@ -222,50 +224,56 @@ export const SessionPlayerScreen: React.FC = () => {
         pausedTimeRemainingRef.current = timeRemaining;
       }
 
-      timerRef.current = setInterval(() => {
+      timerRef.current = setInterval(async () => {
         // startTimeRef is nulled when the session is paused or stopped — skip
         // bogus tick to avoid computing Date.now() - null = ~1.7 trillion ms
         if (startTimeRef.current === null) return;
-        // Calculate remaining time based on actual elapsed wall-clock time
-        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
-        // Only end session via timer in silent mode (no audio)
-        // When audio is playing, let the audio's onComplete callback handle completion
-        if (newTimeRemaining <= 0 && isSilentMode) {
-          clearInterval(timerRef.current!);
-          setIsPlaying(false);
-          setTimeRemaining(0);
-          startTimeRef.current = null;
-          endTimeRef.current = null;
-
-          // Release keep awake - silent meditation is done
-          deactivateKeepAwake('silent-meditation');
-
-          // Cancel notification to avoid double gong (notification handles it when phone is asleep)
-          cancelCompletionNotification();
-
-          // Navigate to completion screen immediately - gong will continue playing
-          // User can stop gong by interacting with completion screen (Return/Share)
-          setShowDedication(true);
-
-          // Play gong sound to signal completion in silent mode
-          (async () => {
-            try {
-              let gongSource: number | { uri: string } = getGongSound();
-              if (Platform.OS === 'web') {
-                const uri = await getGongUri();
-                if (uri) {
-                  gongSource = { uri };
-                }
-              }
-              await audioService.loadAndPlay(gongSource);
-            } catch (error) {
-              console.error('Failed to play gong:', error);
-            }
-          })();
+        if (!isSilentMode) {
+          // Guided audio mode: sync timer to actual audio position.
+          // This prevents the timer from drifting ahead when iOS suspends audio
+          // during screen lock — the timer can never show less time remaining
+          // than the audio has left to play.
+          const status = await audioService.getActualStatus();
+          if (status) {
+            const remaining = Math.max(0, Math.floor((audioDurationMsRef.current - status.positionMs) / 1000));
+            setTimeRemaining(remaining);
+          }
+          // If status unavailable, skip this tick (don't fall back to wall-clock)
         } else {
-          setTimeRemaining(newTimeRemaining);
+          // Silent mode: use wall-clock time
+          const elapsed = Math.floor((Date.now() - startTimeRef.current!) / 1000);
+          const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
+
+          if (newTimeRemaining <= 0) {
+            clearInterval(timerRef.current!);
+            setIsPlaying(false);
+            setTimeRemaining(0);
+            startTimeRef.current = null;
+            endTimeRef.current = null;
+
+            deactivateKeepAwake('silent-meditation');
+            cancelCompletionNotification();
+            setShowDedication(true);
+
+            // Play gong sound to signal completion in silent mode
+            (async () => {
+              try {
+                let gongSource: number | { uri: string } = getGongSound();
+                if (Platform.OS === 'web') {
+                  const uri = await getGongUri();
+                  if (uri) {
+                    gongSource = { uri };
+                  }
+                }
+                await audioService.loadAndPlay(gongSource);
+              } catch (error) {
+                console.error('Failed to play gong:', error);
+              }
+            })();
+          } else {
+            setTimeRemaining(newTimeRemaining);
+          }
         }
       }, 1000);
     }
@@ -430,6 +438,12 @@ export const SessionPlayerScreen: React.FC = () => {
 
           // Pre-load audio during the tap gesture
           await audioService.preload(audioSource, {
+            onPlaybackStatusUpdate: (status) => {
+              // Capture actual audio duration for position-based timer sync
+              if (status.isLoaded && status.durationMillis) {
+                audioDurationMsRef.current = status.durationMillis;
+              }
+            },
             onComplete: () => {
               deactivateKeepAwake('guided-meditation');
               if (Platform.OS === 'android') backgroundTimer.stop();

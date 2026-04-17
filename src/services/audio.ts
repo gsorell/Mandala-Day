@@ -17,11 +17,10 @@ class AudioService {
   private keepAliveContext: AudioContext | null = null;
 
   /**
-   * Start a silent looping AudioContext on web. Chrome suspends AudioContexts
-   * when a PWA is backgrounded (screen lock), but allows resume() calls from
-   * background pages that were already unlocked by a user gesture. The
-   * statechange listener fights the suspension, keeping Chrome's audio session
-   * active so the main meditation audio isn't paused.
+   * Start a keepalive AudioContext on web. Prevents both Chrome's silence-detection
+   * (which pauses audio during quiet passages) and iOS Safari's tendency to suspend
+   * audio when the screen locks. The statechange listener and visibilitychange handler
+   * fight OS-level suspension by calling resume() whenever the context is interrupted.
    */
   private startWebAudioKeepalive(): void {
     if (Platform.OS !== 'web') return;
@@ -35,8 +34,6 @@ class AudioService {
       // 20kHz oscillator at -46dB: above Chrome's silence-detection threshold
       // (~-60dBFS) but inaudible — 20kHz is at/above the human hearing limit
       // and -46dB at that frequency is imperceptible even through headphones.
-      // A zero-gain (truly silent) node would still trigger Chrome's silence
-      // detector; non-zero frames keep the audio session classified as active.
       const oscillator = ctx.createOscillator();
       oscillator.frequency.value = 20000;
       const gainNode = ctx.createGain();
@@ -44,12 +41,34 @@ class AudioService {
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
       oscillator.start();
-      // If Chrome suspends the context on screen lock, immediately resume.
+      // If the browser suspends the context on screen lock, immediately resume.
       ctx.addEventListener('statechange', () => {
         if (ctx.state === 'suspended') {
           ctx.resume().catch(() => {});
         }
       });
+      // iOS Safari: also try to resume audio when the page becomes visible again.
+      // iOS may suspend the AudioContext AND the main audio element on screen lock.
+      // When the user unlocks, visibilitychange fires before AppState — use it to
+      // resume the AudioContext ASAP so the main audio pipeline can recover.
+      const onVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          if (ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+          }
+          // Also try to resume the main audio if it was suspended by iOS
+          if (this.sound && this.isPlaying && !this.isPaused) {
+            this.sound.getStatusAsync().then((status) => {
+              if (status.isLoaded && !status.isPlaying) {
+                this.sound?.playAsync().catch(() => {});
+              }
+            }).catch(() => {});
+          }
+        }
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      // Store the handler for cleanup
+      (ctx as any).__visHandler = onVisibilityChange;
       this.keepAliveContext = ctx;
     } catch (_e) {
       // AudioContext unavailable — no keepalive
@@ -58,6 +77,10 @@ class AudioService {
 
   private stopWebAudioKeepalive(): void {
     if (this.keepAliveContext) {
+      const handler = (this.keepAliveContext as any).__visHandler;
+      if (handler) {
+        document.removeEventListener('visibilitychange', handler);
+      }
       try { this.keepAliveContext.close(); } catch (_e) {}
       this.keepAliveContext = null;
     }
