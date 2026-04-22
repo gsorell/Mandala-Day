@@ -74,4 +74,4 @@ If this policy changes, the updated version will be posted at this URL with a ne
 
 Questions about this policy can be sent to:
 
-**gsorell@gmail.com**
+**nakmuayshotcaller@gmail.com**
