@@ -19,8 +19,14 @@
         "UIBackgroundModes": [
           "audio",
           "fetch",
+          "remote-notification",
+          "audio",
+          "fetch",
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Mandala Day needs access to your photo library so you can save session completion cards you create in the app.",
+        "NSPhotoLibraryAddUsageDescription": "Mandala Day saves session completion cards you create to your photo library."
       }
     },
     "android": {
