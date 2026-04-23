@@ -422,12 +422,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
 
-    // From the active window's session onward, return the first incomplete session
+    // From the active window's session onward, return the first actionable session
     for (let i = windowIndex; i < sorted.length; i++) {
       const instance = sorted[i];
       if (
         instance.status !== SessionStatus.COMPLETED &&
-        instance.status !== SessionStatus.SKIPPED
+        instance.status !== SessionStatus.SKIPPED &&
+        instance.status !== SessionStatus.MISSED
       ) {
         return instance;
       }
