@@ -426,6 +426,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sessionTitle: {
+    flex: 1,
+    marginRight: spacing.sm,
     color: colors.textPrimary,
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.medium,
@@ -510,6 +512,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
   },
   timeButton: {
+    flexShrink: 0,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     backgroundColor: colors.primary + '20',

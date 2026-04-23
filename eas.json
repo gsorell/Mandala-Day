@@ -27,6 +27,11 @@
       "android": {
         "serviceAccountKeyPath": "./play-store-key.json",
         "track": "internal"
+      },
+      "ios": {
+        "appleId": "gsorell@gmail.com",
+        "ascAppId": "6763063799",
+        "appleTeamId": "5Z2HT9TQNK"
       }
     }
   }
