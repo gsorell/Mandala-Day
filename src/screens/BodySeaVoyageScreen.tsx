@@ -100,6 +100,8 @@ export const BodySeaVoyageScreen: React.FC = () => {
       await audioService.play();
     } else {
       await audioService.loadAndPlay(getBodySeaVoyageAudio(), {
+        title: 'Sea Voyage',
+        artist: 'Mandala Day',
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -119,6 +121,8 @@ export const BodySeaVoyageScreen: React.FC = () => {
       setIsLoading(true);
       try {
         await audioService.preload(getBodySeaVoyageAudio(), {
+          title: 'Sea Voyage',
+          artist: 'Mandala Day',
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

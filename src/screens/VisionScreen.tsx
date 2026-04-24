@@ -92,6 +92,8 @@ export const VisionScreen: React.FC = () => {
       await audioService.play();
     } else {
       await audioService.loadAndPlay(getVisionAudio(), {
+        title: 'Clear Seeing',
+        artist: 'Mandala Day',
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -110,6 +112,8 @@ export const VisionScreen: React.FC = () => {
       setIsLoading(true);
       try {
         await audioService.preload(getVisionAudio(), {
+          title: 'Clear Seeing',
+          artist: 'Mandala Day',
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

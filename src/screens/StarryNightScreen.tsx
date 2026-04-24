@@ -100,6 +100,8 @@ export const StarryNightScreen: React.FC = () => {
       await audioService.play();
     } else {
       await audioService.loadAndPlay(getStarryNightAudio(), {
+        title: 'Starry Night',
+        artist: 'Mandala Day',
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -119,6 +121,8 @@ export const StarryNightScreen: React.FC = () => {
       setIsLoading(true);
       try {
         await audioService.preload(getStarryNightAudio(), {
+          title: 'Starry Night',
+          artist: 'Mandala Day',
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

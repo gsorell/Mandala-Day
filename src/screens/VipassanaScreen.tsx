@@ -103,6 +103,8 @@ export const VipassanaScreen: React.FC = () => {
       await audioService.play();
     } else {
       await audioService.loadAndPlay(getVipassanaAudio(), {
+        title: 'Body Scan',
+        artist: 'Mandala Day',
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -122,6 +124,8 @@ export const VipassanaScreen: React.FC = () => {
       setIsLoading(true);
       try {
         await audioService.preload(getVipassanaAudio(), {
+          title: 'Body Scan',
+          artist: 'Mandala Day',
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

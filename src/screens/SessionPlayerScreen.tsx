@@ -438,6 +438,8 @@ export const SessionPlayerScreen: React.FC = () => {
 
           // Pre-load audio during the tap gesture
           await audioService.preload(audioSource, {
+            title: session?.title ?? 'Guided Meditation',
+            artist: 'Mandala Day',
             onPlaybackStatusUpdate: (status) => {
               // Capture actual audio duration for position-based timer sync
               if (status.isLoaded && status.durationMillis) {

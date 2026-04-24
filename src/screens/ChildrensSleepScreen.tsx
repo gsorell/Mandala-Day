@@ -102,6 +102,8 @@ export const ChildrensSleepScreen: React.FC = () => {
       await audioService.play();
     } else {
       await audioService.loadAndPlay(getChildrensSleepAudio(), {
+        title: 'Jungle Safari',
+        artist: 'Mandala Day',
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -121,6 +123,8 @@ export const ChildrensSleepScreen: React.FC = () => {
       setIsLoading(true);
       try {
         await audioService.preload(getChildrensSleepAudio(), {
+          title: 'Jungle Safari',
+          artist: 'Mandala Day',
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

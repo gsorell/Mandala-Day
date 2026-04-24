@@ -71,7 +71,8 @@
         }
       ],
       "./plugins/withBackgroundActionsService",
-      "./plugins/withAndroidBundleDensity"
+      "./plugins/withAndroidBundleDensity",
+      "react-native-track-player"
     ],
     "extra": {
       "eas": {
