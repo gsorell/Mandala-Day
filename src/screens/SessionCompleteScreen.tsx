@@ -19,7 +19,7 @@ import { RootStackParamList, SessionStatus } from '../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { sessionSymbols } from '../utils/ritualSymbols';
 import { audioService } from '../services/audio';
-import { backgroundTimer } from '../services/backgroundTimer';
+import { getGongSound, getGongUri } from '../data/audioAssets';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -28,7 +28,7 @@ export const SessionCompleteScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
   const { todayInstances } = useApp();
-  const { instanceId, sessionTitle, dedication, shareMessage, completedAt, duration } = route.params;
+  const { instanceId, sessionTitle, dedication, shareMessage, completedAt, duration, playEndingGong } = route.params;
   const shareCardRef = useRef<View>(null);
 
   // Use completedAt if provided (viewing past completion), otherwise use current time
@@ -46,18 +46,42 @@ export const SessionCompleteScreen: React.FC = () => {
   const allSessionsComplete = !isViewingPast && todayInstances.length > 0 &&
     todayInstances.every((instance) => instance.status === SessionStatus.COMPLETED);
 
+  // Sound the closing gong when arriving from Silent Practice. The PlayerScreen
+  // can't play it itself — its unmount cleanup tears down audioService — so we
+  // wait until this screen has mounted before starting playback.
+  useEffect(() => {
+    if (!playEndingGong) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        let gongSource: number | { uri: string } = getGongSound();
+        if (Platform.OS === 'web') {
+          const uri = await getGongUri();
+          if (uri) {
+            gongSource = { uri };
+          }
+        }
+        if (cancelled) return;
+        await audioService.loadAndPlay(gongSource);
+      } catch (error) {
+        console.error('Failed to play ending gong:', error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [playEndingGong]);
+
   // Stop any playing audio (e.g., gong) when this screen unmounts
   useEffect(() => {
     return () => {
       audioService.stop();
-      backgroundTimer.stopGong();
     };
   }, []);
 
   const handleShare = async () => {
     // Stop any playing audio (e.g., gong) when user interacts
     audioService.stop();
-    backgroundTimer.stopGong();
     const message = shareMessage || 'Thinking of you';
     const shareText = dedication
       ? `${message} 🙏\n\n${sessionTitle}\n"${dedication}"\n\nJoin me: https://mandaladay.netlify.app`
@@ -131,7 +155,6 @@ export const SessionCompleteScreen: React.FC = () => {
   const handleReturn = () => {
     // Stop any playing audio (e.g., gong) when user navigates away
     audioService.stop();
-    backgroundTimer.stopGong();
     if (isViewingPast) {
       // Go back to previous screen (History or Today)
       navigation.goBack();

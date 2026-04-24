@@ -1,7 +1,5 @@
 import { Platform } from 'react-native';
 import BackgroundActions from 'react-native-background-actions';
-import { Audio } from 'expo-av';
-import { getGongSound } from '../data/audioAssets';
 
 // Callback type for timer updates
 type TimerCallback = (remainingSeconds: number) => void;
@@ -11,9 +9,6 @@ type CompletionCallback = () => void;
 let onTickCallback: TimerCallback | null = null;
 let onCompleteCallback: CompletionCallback | null = null;
 let shouldStop = false;
-
-// Store reference to gong sound so it can be stopped
-let currentGongSound: Audio.Sound | null = null;
 
 // Sleep helper
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -27,59 +22,34 @@ const keepAliveTask = async () => {
   }
 };
 
-// The background task that runs the timer
+// Pure timer task — fires onTickCallback every second, then onCompleteCallback
+// when the duration elapses. Gong playback is handled by the JS side via
+// audioService (track-player), NOT here, so we only have one audio backend
+// active and there's no race between this task being torn down and the gong
+// finishing.
 const timerTask = async (taskData?: { durationSeconds: number }) => {
-  const durationSeconds = taskData?.durationSeconds ?? 600; // Default to 10 minutes
+  const durationSeconds = taskData?.durationSeconds ?? 600;
   const startTime = Date.now();
   const endTime = startTime + durationSeconds * 1000;
 
   shouldStop = false;
 
-  // Loop until timer completes or is stopped
   while (!shouldStop) {
     const now = Date.now();
     const remainingMs = endTime - now;
     const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
 
-    // Notify the UI of the current time
     if (onTickCallback) {
       onTickCallback(remainingSeconds);
     }
 
-    // Check if timer completed
     if (remainingMs <= 0) {
-      // Play the gong sound
-      try {
-        // Configure audio mode for playback
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-          shouldDuckAndroid: false,
-        });
-        
-        const gongSource = getGongSound();
-        const { sound } = await Audio.Sound.createAsync(gongSource);
-        currentGongSound = sound;
-        await sound.playAsync();
-        // Wait for gong to finish (roughly 3 seconds), but can be stopped early
-        await sleep(3000);
-        // Only unload if not already stopped
-        if (currentGongSound === sound) {
-          await sound.unloadAsync();
-          currentGongSound = null;
-        }
-      } catch (error) {
-        console.error('Error playing gong in background:', error);
-      }
-
-      // Notify completion
       if (onCompleteCallback) {
         onCompleteCallback();
       }
       break;
     }
 
-    // Wait before next tick (update every second)
     await sleep(1000);
   }
 };
@@ -223,21 +193,5 @@ export const backgroundTimer = {
   isRunning: (): boolean => {
     if (Platform.OS !== 'android') return false;
     return BackgroundActions.isRunning();
-  },
-
-  /**
-   * Stop the gong sound if it's currently playing
-   */
-  stopGong: async (): Promise<void> => {
-    if (currentGongSound) {
-      try {
-        await currentGongSound.stopAsync();
-        await currentGongSound.unloadAsync();
-        currentGongSound = null;
-      } catch (error) {
-        // Sound may have already finished, ignore errors
-        currentGongSound = null;
-      }
-    }
   },
 };

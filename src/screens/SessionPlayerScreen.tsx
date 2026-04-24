@@ -20,7 +20,7 @@ import { getSessionById } from '../data/sessions';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { RootStackParamList } from '../types';
 import { audioService } from '../services/audio';
-import { getSessionAudioFile, getSessionAudioUri, getGongSound, getGongUri } from '../data/audioAssets';
+import { getSessionAudioFile, getSessionAudioUri } from '../data/audioAssets';
 import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
 import { backgroundTimer } from '../services/backgroundTimer';
 import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
@@ -122,11 +122,6 @@ export const SessionPlayerScreen: React.FC = () => {
   // Handle app state changes (background/foreground) for audio interruptions
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
-      // On Android with silent mode and foreground service, the service handles completion
-      if (Platform.OS === 'android' && isSilentMode && backgroundTimer.isRunning()) {
-        return;
-      }
-
       if (nextAppState === 'active' && isPlaying && endTimeRef.current) {
         const now = Date.now();
 
@@ -161,7 +156,8 @@ export const SessionPlayerScreen: React.FC = () => {
           }
           // If no status available, let the timer/onComplete handle it
         } else if (now >= endTimeRef.current) {
-          // Silent mode: wall-clock is the source of truth
+          // Silent mode: wall-clock is the source of truth.
+          // Gong is played on SessionCompleteScreen via playEndingGong route flag.
           setIsPlaying(false);
           setTimeRemaining(0);
           startTimeRef.current = null;
@@ -169,19 +165,6 @@ export const SessionPlayerScreen: React.FC = () => {
 
           await cancelCompletionNotification();
           setShowDedication(true);
-
-          try {
-            let gongSource: number | { uri: string } = getGongSound();
-            if (Platform.OS === 'web') {
-              const uri = await getGongUri();
-              if (uri) {
-                gongSource = { uri };
-              }
-            }
-            await audioService.loadAndPlay(gongSource);
-          } catch (error) {
-            console.error('Failed to play gong:', error);
-          }
         }
         // For silent mode with time remaining, timer continues via wall-clock calculation
       }
@@ -254,23 +237,10 @@ export const SessionPlayerScreen: React.FC = () => {
 
             deactivateKeepAwake('silent-meditation');
             cancelCompletionNotification();
+            // SessionCompleteScreen plays the closing gong via audioService when
+            // playEndingGong is set on the route — keep it there so the user
+            // hears the chime *on* the completion screen, not before navigation.
             setShowDedication(true);
-
-            // Play gong sound to signal completion in silent mode
-            (async () => {
-              try {
-                let gongSource: number | { uri: string } = getGongSound();
-                if (Platform.OS === 'web') {
-                  const uri = await getGongUri();
-                  if (uri) {
-                    gongSource = { uri };
-                  }
-                }
-                await audioService.loadAndPlay(gongSource);
-              } catch (error) {
-                console.error('Failed to play gong:', error);
-              }
-            })();
           } else {
             setTimeRemaining(newTimeRemaining);
           }
@@ -303,17 +273,27 @@ export const SessionPlayerScreen: React.FC = () => {
     if (showDedication && session) {
       const completeAndNavigate = async () => {
         trackMeditationComplete(session.title, session.practiceType, session.durationSec);
-        await completeSession(instanceId);
         navigation.replace('SessionComplete', {
           instanceId,
           sessionTitle: session.title,
           dedication: session.dedication,
           shareMessage: session.shareMessage,
+          // Silent practice has no closing chime baked into audio — play a gong
+          // on the completion screen so the meditation has an audible ending.
+          playEndingGong: isSilentMode,
         });
+
+        // Persist completion in the background so transition to completion UI
+        // is never blocked by storage/network latency or transient failures.
+        try {
+          await completeSession(instanceId);
+        } catch (error) {
+          console.error('Failed to persist session completion:', error);
+        }
       };
       completeAndNavigate();
     }
-  }, [showDedication, session, instanceId, completeSession, navigation]);
+  }, [showDedication, session, instanceId, completeSession, navigation, isSilentMode]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -327,8 +307,12 @@ export const SessionPlayerScreen: React.FC = () => {
     if (session) {
       trackMeditationStart(session.title, session.practiceType);
     }
+    // Recover from the edge case where timer state was left at 0 after a
+    // previous failed completion transition.
+    const effectiveDuration = timeRemaining > 0 ? timeRemaining : (session?.durationSec || 600);
+
     // Set the expected end time for background completion detection
-    endTimeRef.current = Date.now() + timeRemaining * 1000;
+    endTimeRef.current = Date.now() + effectiveDuration * 1000;
 
     if (isSilentMode) {
       // Keep screen awake during silent meditation (all platforms)
@@ -345,28 +329,22 @@ export const SessionPlayerScreen: React.FC = () => {
         completionHandledRef.current = false;
 
         const started = await backgroundTimer.start(
-          timeRemaining,
+          effectiveDuration,
           (remaining) => {
-            // Update UI with remaining time from background service
             setTimeRemaining(remaining);
 
-            // Handle completion in tick callback since it runs in main JS context
-            // The background service's completion callback may not work reliably
-            // because it runs in a different JS context on Android
             if (remaining === 0 && !completionHandledRef.current) {
               completionHandledRef.current = true;
-              // Navigate to completion screen immediately - gong will continue playing
-              // User will stop gong by interacting with completion screen (Return/Share)
               setIsPlaying(false);
               startTimeRef.current = null;
               endTimeRef.current = null;
               deactivateKeepAwake('silent-meditation');
+              cancelCompletionNotification();
               setShowDedication(true);
             }
           },
           () => {
-            // Completion callback from background service - may not work reliably
-            // Keeping as fallback in case tick callback didn't trigger
+            // Fallback if the tick callback never fired remaining=0
             if (!completionHandledRef.current) {
               completionHandledRef.current = true;
               setIsPlaying(false);
@@ -391,7 +369,7 @@ export const SessionPlayerScreen: React.FC = () => {
       }
       // Start foreground service on Android to prevent the OS from killing audio in background
       if (Platform.OS === 'android') {
-        await backgroundTimer.startKeepAlive(timeRemaining);
+        await backgroundTimer.startKeepAlive(effectiveDuration);
       }
       await audioService.play();
       // Register with browser media session so Chrome treats this as active background audio.
@@ -423,6 +401,12 @@ export const SessionPlayerScreen: React.FC = () => {
 
   const togglePlay = async () => {
     if (!isPlaying) {
+      if (timeRemaining <= 0) {
+        const resetDuration = session?.durationSec || 600;
+        setTimeRemaining(resetDuration);
+        pausedTimeRemainingRef.current = resetDuration;
+      }
+
       // Pre-load audio during user gesture (required for iOS Safari)
       // Then start countdown
       if (hasAudioFile && sessionAudioFile && instance && !isSilentMode) {
