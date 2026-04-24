@@ -416,8 +416,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   aboutLogo: {
-    width: 500,
-    height: 150,
+    width: 180,
+    height: 180,
     marginBottom: spacing.md,
     opacity: 0.9,
   },

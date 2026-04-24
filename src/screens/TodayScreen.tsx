@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   logo: {
-    width: 1014,
-    height: 208,
+    width: 240,
+    height: 240,
     alignSelf: 'center',
     marginBottom: spacing.xs,
     opacity: 0.9,
