@@ -559,12 +559,13 @@ export const SessionPlayerScreen: React.FC = () => {
       await cancelCompletionNotification();
       // Stop the foreground service on Android
       await backgroundTimer.stop();
-      // Release keep awake for silent mode
-      if (isSilentMode) {
-        deactivateKeepAwake('silent-meditation');
-      } else {
-        deactivateKeepAwake('guided-meditation');
-      }
+      // Release keep awake. Tag may never have been activated if End was
+      // tapped before countdown completed — swallow the async rejection.
+      Promise.resolve()
+        .then(() => deactivateKeepAwake(isSilentMode ? 'silent-meditation' : 'guided-meditation'))
+        .catch(() => {
+          // Wake lock was never activated, ignore
+        });
       endTimeRef.current = null;
       setIsPlaying(false);
       setIsPaused(false);
