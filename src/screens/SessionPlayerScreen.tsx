@@ -612,6 +612,21 @@ export const SessionPlayerScreen: React.FC = () => {
     );
   }
 
+  // Hold the meditation layout while navigating to SessionCompleteScreen.
+  // Without this, the pre-session "Begin" view flashes between the timer
+  // hitting 0 and the completion screen mounting.
+  if (showDedication) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.meditationView}>
+          <View style={styles.meditationContent}>
+            <Text style={styles.meditationTitle}>{session.title}</Text>
+            <Text style={styles.meditationTimer}>0:00</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Paused state view
   if (isPaused) {
