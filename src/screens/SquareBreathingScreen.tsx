@@ -177,10 +177,14 @@ export const SquareBreathingScreen: React.FC = () => {
       breathAnim.setValue(toValue);
       if (phase === 'hold-in') {
         stopPulse();
+        // useNativeDriver MUST be false — this view also animates width/height
+        // via breathAnim (interpolated), which is JS-only. Mixing drivers on
+        // the same view moves the JS node into the native graph and the next
+        // JS-driven animation crashes ("animated node moved to native earlier").
         pulseAnimRef.current = Animated.loop(
           Animated.sequence([
-            Animated.timing(pulseAnim, { toValue: 0.97, duration: 1000, useNativeDriver: true }),
-            Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+            Animated.timing(pulseAnim, { toValue: 0.97, duration: 1000, useNativeDriver: false }),
+            Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: false }),
           ])
         );
         pulseAnimRef.current.start();
