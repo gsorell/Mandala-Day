@@ -457,7 +457,7 @@ const AppNavigator: React.FC = () => {
               component={SessionCompleteScreen}
               options={{
                 presentation: 'fullScreenModal',
-                animation: 'fade',
+                animation: 'none',
                 gestureEnabled: false,
               }}
             />

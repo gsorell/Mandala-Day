@@ -45,7 +45,6 @@ export const SessionPlayerScreen: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(session?.durationSec || 600);
-  const [showDedication, setShowDedication] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isSilentMode, setIsSilentMode] = useState(false);
 
@@ -96,6 +95,52 @@ export const SessionPlayerScreen: React.FC = () => {
     // No-op since we're not scheduling notifications
   };
 
+  // Single completion path. Called directly from every end-of-session trigger
+  // (silent JS tick, Android foreground service, audio onComplete, AppState
+  // handler). Idempotent via completionHandledRef so duplicate triggers no-op.
+  const handleComplete = () => {
+    if (completionHandledRef.current) return;
+    if (!session) return;
+    completionHandledRef.current = true;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    startTimeRef.current = null;
+    endTimeRef.current = null;
+
+    audioService.stop();
+    cancelCompletionNotification();
+    backgroundTimer.stop();
+    Promise.resolve()
+      .then(() => deactivateKeepAwake(isSilentMode ? 'silent-meditation' : 'guided-meditation'))
+      .catch(() => {
+        // Wake lock was never activated, ignore
+      });
+
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      try { (navigator as any).mediaSession.playbackState = 'none'; } catch (_e) {}
+    }
+
+    trackMeditationComplete(session.title, session.practiceType, session.durationSec);
+
+    navigation.replace('SessionComplete', {
+      instanceId,
+      sessionTitle: session.title,
+      dedication: session.dedication,
+      shareMessage: session.shareMessage,
+      // Silent practice has no closing chime baked into audio — play a gong
+      // on the completion screen so the meditation has an audible ending.
+      playEndingGong: isSilentMode,
+    });
+
+    // Persist completion in the background; never block the navigation on it.
+    completeSession(instanceId).catch((error) => {
+      console.error('Failed to persist session completion:', error);
+    });
+  };
+
   useEffect(() => {
     if (!hasStartedRef.current && instance) {
       startSession(instanceId);
@@ -134,11 +179,7 @@ export const SessionPlayerScreen: React.FC = () => {
             const remaining = Math.max(0, Math.floor((audioDurationMsRef.current - actualStatus.positionMs) / 1000));
             if (remaining === 0) {
               // Audio played to end while in background
-              setShowDedication(true);
-              setIsPlaying(false);
-              setTimeRemaining(0);
-              startTimeRef.current = null;
-              endTimeRef.current = null;
+              handleComplete();
             } else if (!actualStatus.isPlaying) {
               // Audio was suspended/interrupted — resync timer and resume playback
               pausedTimeRemainingRef.current = remaining;
@@ -158,13 +199,7 @@ export const SessionPlayerScreen: React.FC = () => {
         } else if (now >= endTimeRef.current) {
           // Silent mode: wall-clock is the source of truth.
           // Gong is played on SessionCompleteScreen via playEndingGong route flag.
-          setIsPlaying(false);
-          setTimeRemaining(0);
-          startTimeRef.current = null;
-          endTimeRef.current = null;
-
-          await cancelCompletionNotification();
-          setShowDedication(true);
+          handleComplete();
         }
         // For silent mode with time remaining, timer continues via wall-clock calculation
       }
@@ -229,18 +264,7 @@ export const SessionPlayerScreen: React.FC = () => {
           const newTimeRemaining = Math.max(0, pausedTimeRemainingRef.current - elapsed);
 
           if (newTimeRemaining <= 0) {
-            clearInterval(timerRef.current!);
-            setIsPlaying(false);
-            setTimeRemaining(0);
-            startTimeRef.current = null;
-            endTimeRef.current = null;
-
-            deactivateKeepAwake('silent-meditation');
-            cancelCompletionNotification();
-            // SessionCompleteScreen plays the closing gong via audioService when
-            // playEndingGong is set on the route — keep it there so the user
-            // hears the chime *on* the completion screen, not before navigation.
-            setShowDedication(true);
+            handleComplete();
           } else {
             setTimeRemaining(newTimeRemaining);
           }
@@ -259,41 +283,13 @@ export const SessionPlayerScreen: React.FC = () => {
   // (e.g., phone call interrupts audio while app stays in foreground on iOS),
   // force completion after a 10-second grace period.
   useEffect(() => {
-    if (timeRemaining === 0 && isPlaying && !isSilentMode && !showDedication) {
+    if (timeRemaining === 0 && isPlaying && !isSilentMode) {
       const timeout = setTimeout(() => {
-        setShowDedication(true);
-        setIsPlaying(false);
+        handleComplete();
       }, 10000);
       return () => clearTimeout(timeout);
     }
-  }, [timeRemaining, isPlaying, isSilentMode, showDedication]);
-
-  // Navigate to share screen when meditation completes
-  useEffect(() => {
-    if (showDedication && session) {
-      const completeAndNavigate = async () => {
-        trackMeditationComplete(session.title, session.practiceType, session.durationSec);
-        navigation.replace('SessionComplete', {
-          instanceId,
-          sessionTitle: session.title,
-          dedication: session.dedication,
-          shareMessage: session.shareMessage,
-          // Silent practice has no closing chime baked into audio — play a gong
-          // on the completion screen so the meditation has an audible ending.
-          playEndingGong: isSilentMode,
-        });
-
-        // Persist completion in the background so transition to completion UI
-        // is never blocked by storage/network latency or transient failures.
-        try {
-          await completeSession(instanceId);
-        } catch (error) {
-          console.error('Failed to persist session completion:', error);
-        }
-      };
-      completeAndNavigate();
-    }
-  }, [showDedication, session, instanceId, completeSession, navigation, isSilentMode]);
+  }, [timeRemaining, isPlaying, isSilentMode]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -332,28 +328,11 @@ export const SessionPlayerScreen: React.FC = () => {
           effectiveDuration,
           (remaining) => {
             setTimeRemaining(remaining);
-
-            if (remaining === 0 && !completionHandledRef.current) {
-              completionHandledRef.current = true;
-              setIsPlaying(false);
-              startTimeRef.current = null;
-              endTimeRef.current = null;
-              deactivateKeepAwake('silent-meditation');
-              cancelCompletionNotification();
-              setShowDedication(true);
-            }
+            if (remaining === 0) handleComplete();
           },
           () => {
             // Fallback if the tick callback never fired remaining=0
-            if (!completionHandledRef.current) {
-              completionHandledRef.current = true;
-              setIsPlaying(false);
-              setTimeRemaining(0);
-              startTimeRef.current = null;
-              endTimeRef.current = null;
-              deactivateKeepAwake('silent-meditation');
-              setShowDedication(true);
-            }
+            handleComplete();
           }
         );
         console.log('Background timer started:', started);
@@ -431,13 +410,7 @@ export const SessionPlayerScreen: React.FC = () => {
               }
             },
             onComplete: () => {
-              deactivateKeepAwake('guided-meditation');
-              if (Platform.OS === 'android') backgroundTimer.stop();
-              if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
-                try { (navigator as any).mediaSession.playbackState = 'none'; } catch (_e) {}
-              }
-              setShowDedication(true);
-              setIsPlaying(false);
+              handleComplete();
             },
             onError: (error) => {
               console.error('Audio playback error:', error);
@@ -498,28 +471,11 @@ export const SessionPlayerScreen: React.FC = () => {
           timeRemaining,
           (remaining) => {
             setTimeRemaining(remaining);
-
-            // Handle completion in tick callback (same as initial start)
-            if (remaining === 0 && !completionHandledRef.current) {
-              completionHandledRef.current = true;
-              setIsPlaying(false);
-              startTimeRef.current = null;
-              endTimeRef.current = null;
-              deactivateKeepAwake('silent-meditation');
-              setShowDedication(true);
-            }
+            if (remaining === 0) handleComplete();
           },
           () => {
-            // Fallback completion callback
-            if (!completionHandledRef.current) {
-              completionHandledRef.current = true;
-              setIsPlaying(false);
-              setTimeRemaining(0);
-              startTimeRef.current = null;
-              endTimeRef.current = null;
-              deactivateKeepAwake('silent-meditation');
-              setShowDedication(true);
-            }
+            // Fallback if the tick callback never fired remaining=0
+            handleComplete();
           }
         );
       }
@@ -608,22 +564,6 @@ export const SessionPlayerScreen: React.FC = () => {
           >
             <Text style={styles.backButtonText}>Return</Text>
           </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Hold the meditation layout while navigating to SessionCompleteScreen.
-  // Without this, the pre-session "Begin" view flashes between the timer
-  // hitting 0 and the completion screen mounting.
-  if (showDedication) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.meditationView}>
-          <View style={styles.meditationContent}>
-            <Text style={styles.meditationTitle}>{session.title}</Text>
-            <Text style={styles.meditationTimer}>0:00</Text>
-          </View>
         </View>
       </SafeAreaView>
     );
