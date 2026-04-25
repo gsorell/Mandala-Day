@@ -191,9 +191,13 @@ class AudioService {
     const artwork = this.options.artwork ?? DEFAULT_ARTWORK;
     // reset() both clears any prior track and allows loading a fresh one.
     // tpSuppressEnd prevents the QueueEnded event from firing onComplete when
-    // a new track replaces a finished/stopped one.
+    // a new track replaces a finished/stopped one. Clear it immediately after
+    // reset resolves — otherwise, on a fresh load with no prior track, the
+    // reset emits no event, the flag stays set, and the new track's natural
+    // end is silently swallowed.
     this.tpSuppressEnd = true;
     await TP.reset();
+    this.tpSuppressEnd = false;
     await TP.add({
       id: String(Date.now()),
       url,
