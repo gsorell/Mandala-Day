@@ -38,7 +38,8 @@
     "react-native-tab-view": "^4.2.2",
     "react-native-track-player": "^4.1.2",
     "react-native-view-shot": "^4.0.3",
-    "react-native-web": "^0.21.0"
+    "react-native-web": "^0.21.0",
+    "shaka-player": "^4.16.28"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
