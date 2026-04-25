@@ -76,7 +76,7 @@ export const TodayScreen: React.FC = () => {
   )?.id;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
