@@ -755,6 +755,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scriptContent: {
+    flexGrow: 1,
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
   },
