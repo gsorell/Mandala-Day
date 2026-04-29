@@ -34,6 +34,8 @@ Before building native binaries, bump version fields. Match `versionCode` betwee
 
 Commit the bump separately (e.g. `build: bump to 1.0.13 / vc18 / ios b3`).
 
+> **Note:** `/android` is in `.gitignore`, but `android/app/build.gradle` is force-tracked (it carries the release signing config and version fields). Plain `git add android/app/build.gradle` will be refused with an "ignored" warning — use `git add -f android/app/build.gradle` to stage version bumps.
+
 ## 4. Android — local signed AAB
 
 Local gradle build (~1 min) instead of EAS cloud. Signing config is wired into `android/app/build.gradle` (release signingConfig points at `android-keystore.jks` at the repo root).
