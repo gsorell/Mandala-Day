@@ -375,15 +375,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   charmBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
   charmSymbol: {
-    fontSize: 14,
+    fontSize: 22,
     color: colors.completeMandala,
   },
   sessionDots: {
