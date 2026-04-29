@@ -151,29 +151,31 @@ export const MandalaCompleteScreen: React.FC = () => {
           />
 
           <View style={styles.cardContent}>
-            {/* Lotus symbol */}
-            <Text style={styles.lotusSymbol}>❁</Text>
+            <View style={styles.cardContentInner}>
+              {/* Lotus symbol */}
+              <Text style={styles.lotusSymbol}>❁</Text>
 
-            <Text style={styles.completedLabel}>Mandala Complete</Text>
+              <Text style={styles.completedLabel}>Mandala Complete</Text>
 
-            <Text style={styles.mainTitle}>A Day's Practice</Text>
+              <Text style={styles.mainTitle}>A Day's Practice</Text>
 
-            {/* Decorative divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerOrnament}>✦</Text>
-              <View style={styles.dividerLine} />
+              {/* Decorative divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerOrnament}>✦</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <Text style={styles.blessing}>
+                "May this merit extend to all."
+              </Text>
+
+              <Text style={styles.dateText}>{displayDate}</Text>
+
+              {totalMinutes > 0 && (
+                <Text style={styles.totalTime}>{totalMinutes} min of practice</Text>
+              )}
             </View>
-
-            <Text style={styles.blessing}>
-              "May this merit extend to all."
-            </Text>
-
-            <Text style={styles.dateText}>{displayDate}</Text>
-
-            {totalMinutes > 0 && (
-              <Text style={styles.totalTime}>{totalMinutes} min of practice</Text>
-            )}
 
             <Text style={styles.branding}>mandaladay.netlify.app</Text>
           </View>
@@ -200,11 +202,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   backButton: {
-    position: 'absolute',
-    top: spacing.xl,
-    left: spacing.md,
-    zIndex: 10,
+    alignSelf: 'flex-start',
     padding: spacing.sm,
+    marginTop: spacing.sm,
+    marginLeft: spacing.sm,
   },
   backButtonText: {
     color: colors.primary,
@@ -238,10 +239,17 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    zIndex: 1,
+  },
+  cardContentInner: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
-    zIndex: 1,
+    width: '100%',
   },
   lotusSymbol: {
     fontSize: 40,
@@ -300,15 +308,13 @@ const styles = StyleSheet.create({
     color: colors.completeMandala,
     fontSize: typography.fontSizes.sm,
     letterSpacing: typography.letterSpacing.spacious,
-    marginBottom: spacing.lg,
     opacity: 0.85,
   },
   branding: {
     color: colors.textTertiary,
     fontSize: typography.fontSizes.xs,
     letterSpacing: typography.letterSpacing.relaxed,
-    position: 'absolute',
-    bottom: spacing.lg,
+    marginTop: spacing.md,
   },
   actions: {
     width: '100%',

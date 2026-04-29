@@ -106,16 +106,6 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
-  const handleDebugNotifications = async () => {
-    const result = await debugNotifications();
-    
-    Alert.alert(
-      'Notification Debug Info',
-      `Permission: ${result.permissionStatus}\nScheduled: ${result.scheduledCount} notifications\n\nCheck console for details.`,
-      [{ text: 'OK' }]
-    );
-  };
-
   const handleRescheduleNotifications = async () => {
     if (!userSchedule || !todayInstances.length) {
       Alert.alert(
@@ -250,12 +240,6 @@ export const SettingsScreen: React.FC = () => {
                 onPress={handleRescheduleNotifications}
               >
                 <Text style={styles.menuItemText}>Reschedule Notifications</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleDebugNotifications}
-              >
-                <Text style={styles.menuItemText}>Debug Notifications</Text>
               </TouchableOpacity>
             </>
           )}
