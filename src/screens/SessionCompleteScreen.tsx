@@ -188,32 +188,34 @@ export const SessionCompleteScreen: React.FC = () => {
 
           {/* Content overlay */}
           <View style={styles.cardContent}>
-            {/* Session symbol */}
-            <Text style={styles.sessionSymbol}>{sessionSymbol}</Text>
+            <View style={styles.cardContentInner}>
+              {/* Session symbol */}
+              <Text style={styles.sessionSymbol}>{sessionSymbol}</Text>
 
-            <Text style={styles.completedLabel}>Session Complete</Text>
+              <Text style={styles.completedLabel}>Session Complete</Text>
 
-            <Text style={styles.sessionTitle}>{sessionTitle}</Text>
+              <Text style={styles.sessionTitle}>{sessionTitle}</Text>
 
-            {duration && (
-              <Text style={styles.durationText}>{duration} min</Text>
-            )}
+              {duration && (
+                <Text style={styles.durationText}>{duration} min</Text>
+              )}
 
-            {/* Decorative divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerOrnament}>✦</Text>
-              <View style={styles.dividerLine} />
-            </View>
+              {/* Decorative divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerOrnament}>✦</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-            {dedication && (
-              <Text style={styles.dedication}>"{dedication}"</Text>
-            )}
+              {dedication && (
+                <Text style={styles.dedication}>"{dedication}"</Text>
+              )}
 
-            <View style={styles.dateContainer}>
-              <Text style={styles.dateText}>{displayDate}</Text>
-              <Text style={styles.timeSeparator}>•</Text>
-              <Text style={styles.dateText}>{displayTime}</Text>
+              <View style={styles.dateContainer}>
+                <Text style={styles.dateText}>{displayDate}</Text>
+                <Text style={styles.timeSeparator}>•</Text>
+                <Text style={styles.dateText}>{displayTime}</Text>
+              </View>
             </View>
 
             <Text style={styles.branding}>mandaladay.netlify.app</Text>
@@ -253,11 +255,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   backButton: {
-    position: 'absolute',
-    top: spacing.xl,
-    left: spacing.md,
-    zIndex: 10,
+    alignSelf: 'flex-start',
     padding: spacing.sm,
+    marginTop: spacing.sm,
+    marginLeft: spacing.sm,
   },
   backButtonText: {
     color: colors.primary,
@@ -290,11 +291,17 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+    zIndex: 1,
+  },
+  cardContentInner: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
-    paddingTop: spacing.lg,
-    zIndex: 1,
+    width: '100%',
   },
   sessionSymbol: {
     fontSize: 28,
@@ -354,7 +361,6 @@ const styles = StyleSheet.create({
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
   },
   dateText: {
     color: colors.textTertiary,
@@ -370,8 +376,7 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontSize: typography.fontSizes.xs,
     letterSpacing: typography.letterSpacing.relaxed,
-    position: 'absolute',
-    bottom: spacing.lg,
+    marginTop: spacing.md,
   },
   mandalaCompleteText: {
     color: colors.accent,
