@@ -27,6 +27,7 @@ import { StarryNightScreen } from './src/screens/StarryNightScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
+import { WebAppPromptModal } from './src/components/WebAppPromptModal';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
 import { getSessionById } from './src/data/sessions';
@@ -483,6 +484,7 @@ export default function App() {
       <AppProvider>
         <StatusBar style="light" />
         <AppNavigator />
+        <WebAppPromptModal />
       </AppProvider>
     </SafeAreaProvider>
   );
