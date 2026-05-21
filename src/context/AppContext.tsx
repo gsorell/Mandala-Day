@@ -70,6 +70,62 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     todayInstancesRef.current = todayInstances;
   }, [todayInstances]);
 
+  // Reconcile session statuses against the current time. Idempotent: instances
+  // already at the correct status pass through unchanged with no side effects.
+  // Persists every transition and logs MISS once on the UPCOMING/DUE → MISSED edge.
+  const reconcileInstanceStatuses = useCallback(
+    async (
+      instances: DailySessionInstance[],
+      schedule: UserSchedule | null
+    ): Promise<DailySessionInstance[]> => {
+      if (instances.length === 0 || !schedule) return instances;
+
+      const now = new Date();
+      const graceWindowMs =
+        (schedule.graceWindowMin || DEFAULT_GRACE_WINDOW) * 60 * 1000;
+      const changedById = new Map<string, DailySessionInstance>();
+
+      for (const instance of instances) {
+        if (
+          instance.status === SessionStatus.COMPLETED ||
+          instance.status === SessionStatus.SKIPPED
+        ) {
+          continue;
+        }
+
+        const scheduledTime = new Date(instance.scheduledAt);
+        const graceEnd = new Date(scheduledTime.getTime() + graceWindowMs);
+
+        let newStatus = instance.status;
+        if (now < scheduledTime) {
+          newStatus = SessionStatus.UPCOMING;
+        } else if (now < graceEnd) {
+          newStatus = SessionStatus.DUE;
+        } else {
+          newStatus = SessionStatus.MISSED;
+        }
+
+        if (newStatus !== instance.status) {
+          const updated = { ...instance, status: newStatus };
+          changedById.set(instance.id, updated);
+
+          if (newStatus === SessionStatus.MISSED) {
+            await logEvent({
+              timestamp: new Date().toISOString(),
+              eventType: EventType.MISS,
+              instanceId: instance.id,
+            });
+          }
+          await updateSessionInstance(updated);
+        }
+      }
+
+      if (changedById.size === 0) return instances;
+      return instances.map((i) => changedById.get(i.id) ?? i);
+    },
+    []
+  );
+
   // Helper function to load/generate instances for a given date
   const loadInstancesForDate = useCallback(async (date: string, schedule: UserSchedule | null) => {
     let instances = await getDailyInstances(date);
@@ -92,8 +148,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       await saveDailyInstances(date, instances);
     }
 
-    return instances;
-  }, []);
+    // Reconcile statuses against the current wall clock so callers (cold start,
+    // foreground return, day-change check, focus refresh) never surface stale
+    // UPCOMING labels for sessions whose grace window has already passed.
+    return reconcileInstanceStatuses(instances, schedule);
+  }, [reconcileInstanceStatuses]);
 
   // Check if date has changed and refresh if needed
   const checkAndRefreshForNewDay = useCallback(async () => {
@@ -179,92 +238,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, [todayInstances, userSchedule, appSettings?.notificationsEnabled]);
 
-  // Update session statuses based on time
+  // Periodic status refresh for users who leave the app open. Cold start,
+  // foreground return, and focus refresh all reconcile through
+  // loadInstancesForDate, so this only catches in-session transitions.
   useEffect(() => {
-    // Don't run until initial data is loaded
     if (isLoading || !userSchedule) return;
 
-    const updateStatuses = async () => {
-      const currentInstances = todayInstancesRef.current;
-      if (currentInstances.length === 0) return;
-
-      const now = new Date();
-      const changedInstances: DailySessionInstance[] = [];
-
-      // Sort instances by scheduled time to find previous session
-      const sortedInstances = [...currentInstances].sort(
-        (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
-      );
-
-      const updatedInstances = sortedInstances.map((instance, index) => {
-        // Skip completed and skipped sessions - they don't change
-        if (
-          instance.status === SessionStatus.COMPLETED ||
-          instance.status === SessionStatus.SKIPPED
-        ) {
-          return instance;
-        }
-
-        const scheduledTime = new Date(instance.scheduledAt);
-        const graceEnd = new Date(
-          scheduledTime.getTime() +
-            (userSchedule.graceWindowMin || DEFAULT_GRACE_WINDOW) * 60 * 1000
-        );
-
-        let newStatus = instance.status;
-
-        // UPCOMING: Before scheduled time
-        if (now < scheduledTime) {
-          newStatus = SessionStatus.UPCOMING;
-        }
-        // DUE: At or after scheduled time, before grace period ends
-        else if (now >= scheduledTime && now < graceEnd) {
-          newStatus = SessionStatus.DUE;
-        }
-        // MISSED (Passed): After grace period and not completed
-        else if (now >= graceEnd) {
-          newStatus = SessionStatus.MISSED;
-        }
-
-        // Only track as changed if status actually changed
-        if (newStatus !== instance.status) {
-          const updatedInstance = { ...instance, status: newStatus };
-          changedInstances.push(updatedInstance);
-
-          // Log miss event
-          if (newStatus === SessionStatus.MISSED) {
-            logEvent({
-              timestamp: new Date().toISOString(),
-              eventType: EventType.MISS,
-              instanceId: instance.id,
-            });
-          }
-
-          return updatedInstance;
-        }
-
-        return instance;
-      });
-
-      // Only update state and storage if there were actual changes
-      if (changedInstances.length > 0) {
-        // Use functional setState to preserve the original array order.
-        // updatedInstances is sorted by scheduledAt, but the original order
-        // matters for dot rendering — extras appended at the end must stay there.
-        const changedById = new Map(changedInstances.map((i) => [i.id, i]));
-        setTodayInstances((prev) => prev.map((i) => changedById.get(i.id) ?? i));
-        // Only save the instances that actually changed
-        for (const instance of changedInstances) {
-          await updateSessionInstance(instance);
-        }
+    const tick = async () => {
+      const current = todayInstancesRef.current;
+      if (current.length === 0) return;
+      const updated = await reconcileInstanceStatuses(current, userSchedule);
+      if (updated !== current) {
+        const updatedById = new Map(updated.map((i) => [i.id, i]));
+        setTodayInstances((prev) => prev.map((i) => updatedById.get(i.id) ?? i));
       }
     };
 
-    const interval = setInterval(updateStatuses, 60000); // Check every minute
-    updateStatuses(); // Run immediately on mount
+    const interval = setInterval(tick, 60000);
+    tick();
 
     return () => clearInterval(interval);
-  }, [isLoading, userSchedule]);
+  }, [isLoading, userSchedule, reconcileInstanceStatuses]);
 
   const refreshTodayInstances = useCallback(async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
