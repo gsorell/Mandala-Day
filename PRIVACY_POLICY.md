@@ -1,21 +1,21 @@
 # Privacy Policy for Mandala Day
 
-**Last updated: April 22, 2026**
+**Last updated: June 3, 2026**
 
 Mandala Day ("the app") is a meditation and mindfulness application published by the Mandala Day team. This policy explains what information the app handles, where it is stored, and what rights you have.
 
 ## Summary
 
 - The app does **not** require an account.
-- The app does **not** collect, transmit, or sell your personal information.
-- All practice data, schedules, and preferences are stored **only on your device**.
+- The app does **not** sell your data or collect personal information that identifies you.
+- Your meditation schedule, settings, and detailed session history are stored **only on your device**.
 - The app does **not** track your location, contacts, photos, microphone, or camera.
-- The web version of Mandala Day uses Google Analytics for anonymous aggregate traffic statistics. The mobile app does not.
+- Both the web and mobile versions send **anonymous, aggregate usage statistics** to Google Analytics (e.g. which meditations are started and completed). This is not tied to your identity.
 
 ## Information the app handles
 
 ### Stored only on your device
-The following information is saved locally on your device using the operating system's standard secure storage and never leaves it:
+The following information is saved locally on your device using the operating system's standard secure storage. It stays on your device and is not uploaded to us (see "Analytics" below for the limited anonymous events the app does send):
 
 - Your meditation schedule (session times, which sessions are enabled, quiet hours)
 - Your app settings (notification preferences, onboarding status)
@@ -33,9 +33,15 @@ The app plays bundled meditation audio files. Audio is played locally; nothing i
 ### Background activity
 To keep your meditation audio playing when the screen is off, and to deliver on-time reminders, the app uses standard Android and iOS background-audio and scheduled-notification capabilities. No data is sent off the device as part of this activity.
 
-## Information the web version handles
+## Analytics
 
-If you use Mandala Day in a web browser at the Mandala Day website, Google Analytics records anonymous, aggregate information about how the site is used (e.g., which pages are viewed, approximate geographic region, browser type). This information is used only to understand overall usage and is not tied to your identity. You can opt out using any standard "Do Not Track" or analytics-blocking browser setting or extension. The mobile app (iOS and Android) does **not** include Google Analytics or any other analytics SDK.
+Both the web and mobile versions of Mandala Day use Google Analytics, a service provided by Google, to understand overall, anonymous usage so we can improve the app.
+
+**What is sent:** when you start, complete, or end a session early — or complete onboarding — the app sends an event to Google Analytics describing the action, the meditation's title and practice type, and the session length. The app generates a random identifier, stored on your device, so that repeat usage can be counted without knowing who you are. This identifier is not linked to your name, email, or any account. Google may also derive an approximate geographic region (typically country or city level) from the network address used to send these events.
+
+**What is not sent:** your name, email, phone number, precise location, contacts, photos, audio, or the contents of your schedule. The app does not use advertising identifiers and does not track you across other apps or websites.
+
+On the web, Google Analytics additionally records standard anonymous traffic information such as which pages are viewed and the browser type. You can opt out in a browser using any standard "Do Not Track" or analytics-blocking setting or extension.
 
 ## Information the app does not collect
 
@@ -64,7 +70,7 @@ If you are located in the European Economic Area, the United Kingdom, California
 
 ## Security
 
-Data is stored using the standard secure storage APIs provided by iOS (Keychain-backed UserDefaults) and Android (internal app storage). Because no data is transmitted to a server operated by us, there is no server-side data to secure.
+Data is stored using the standard secure storage APIs provided by iOS (Keychain-backed UserDefaults) and Android (internal app storage). Aside from the anonymous usage events sent to Google Analytics, no data is transmitted off your device, and we do not operate servers that store your information.
 
 ## Changes to this policy
 
