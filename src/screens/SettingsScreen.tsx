@@ -283,11 +283,13 @@ export const SettingsScreen: React.FC = () => {
             Six daily sessions for awareness and compassion.
           </Text>
           <Text style={styles.aboutVersion}>Version 1.0.0</Text>
-          <TouchableOpacity
-            onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
-          >
-            <Text style={styles.donateLink}>Support MandalaDay ↗</Text>
-          </TouchableOpacity>
+          {Platform.OS !== 'ios' && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
+            >
+              <Text style={styles.donateLink}>Support MandalaDay ↗</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.gentleMessage}>

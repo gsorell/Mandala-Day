@@ -238,11 +238,13 @@ export const SessionCompleteScreen: React.FC = () => {
           <TouchableOpacity style={styles.returnButton} onPress={handleReturn}>
             <Text style={styles.returnButtonText}>Return</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
-          >
-            <Text style={styles.donateLink}>Support this app ↗</Text>
-          </TouchableOpacity>
+          {Platform.OS !== 'ios' && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
+            >
+              <Text style={styles.donateLink}>Support this app ↗</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>
