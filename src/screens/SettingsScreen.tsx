@@ -181,6 +181,14 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>10 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('DirectInquiry')}
+          >
+            <Text style={styles.menuItemText}>Direct Inquiry</Text>
+            <Text style={styles.menuItemSubtext}>10 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>

@@ -27,6 +27,7 @@ import { StarryNightScreen } from './src/screens/StarryNightScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
+import { DirectInquiryScreen } from './src/screens/DirectInquiryScreen';
 import { WebAppPromptModal } from './src/components/WebAppPromptModal';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
@@ -449,6 +450,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="Vision"
               component={VisionScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="DirectInquiry"
+              component={DirectInquiryScreen}
               options={{
                 presentation: 'card',
               }}

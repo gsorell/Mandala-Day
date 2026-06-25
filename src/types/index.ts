@@ -105,6 +105,7 @@ export type RootStackParamList = {
   Pranayama: undefined;
   SquareBreathing: undefined;
   Vision: undefined;
+  DirectInquiry: undefined;
 };
 
 export type MainTabParamList = {
