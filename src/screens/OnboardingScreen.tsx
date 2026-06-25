@@ -15,9 +15,10 @@ import { useNavigation } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
+import { setPendingPractice } from '../services/pendingPractice';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 
-type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing';
+type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing' | 'invitation';
 
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
@@ -60,6 +61,14 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    await updateAppSettings({ hasCompletedOnboarding: true });
+  };
+
+  const handleBeginDirectInquiry = async () => {
+    // Record the intent before swapping the navigator tree. Once onboarding is
+    // marked complete the main stack mounts and the Today screen consumes this,
+    // dropping the user straight into the practice.
+    setPendingPractice('DirectInquiry');
     await updateAppSettings({ hasCompletedOnboarding: true });
   };
 
@@ -235,9 +244,36 @@ export const OnboardingScreen: React.FC = () => {
         </TouchableOpacity>
       </ScrollView>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={handleComplete}>
-        <Text style={styles.primaryButtonText}>Begin Practice</Text>
+      <TouchableOpacity style={styles.primaryButton} onPress={() => setStep('invitation')}>
+        <Text style={styles.primaryButtonText}>Continue</Text>
       </TouchableOpacity>
+    </View>
+  );
+
+  const renderInvitation = () => (
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
+      <View style={styles.centerContent}>
+        <Text style={styles.stepTitle}>Begin Here</Text>
+
+        <View style={styles.welcomeDescription}>
+          <Text style={styles.descriptionText}>
+            Every practice begins with direct experience.
+          </Text>
+          <Text style={styles.invitationKeyLine}>Direct Inquiry</Text>
+          <Text style={styles.descriptionText}>
+            A ten-minute investigation into breath, body, mind, and self.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleBeginDirectInquiry}>
+          <Text style={styles.primaryButtonText}>Begin Direct Inquiry</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleComplete}>
+          <Text style={styles.secondaryButtonText}>Maybe later</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -247,6 +283,7 @@ export const OnboardingScreen: React.FC = () => {
       {step === 'schedule' && renderSchedule()}
       {step === 'notifications' && renderNotifications()}
       {step === 'framing' && renderFraming()}
+      {step === 'invitation' && renderInvitation()}
 
       {/* Time Picker Modal */}
       <Modal
@@ -367,6 +404,14 @@ const styles = StyleSheet.create({
   },
   welcomeDescription: {
     gap: spacing.md,
+  },
+  invitationKeyLine: {
+    color: colors.accent,
+    fontSize: typography.fontSizes.xl,
+    fontWeight: typography.fontWeights.semibold,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginVertical: spacing.sm,
   },
   descriptionText: {
     color: colors.textSecondary,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useApp } from '../context/AppContext';
 import { SessionCard } from '../components/SessionCard';
 import { MandalaComplete } from '../components/MandalaComplete';
 import { getSessionById } from '../data/sessions';
+import { consumePendingPractice } from '../services/pendingPractice';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList, SessionStatus } from '../types';
 import { MAX_SNOOZE_COUNT, DEFAULT_SNOOZE_OPTIONS } from '../utils/theme';
@@ -36,6 +37,15 @@ export const TodayScreen: React.FC = () => {
       refreshTodayInstances();
     }, [refreshTodayInstances])
   );
+
+  // If onboarding handed off a practice to start (e.g. the closing Direct
+  // Inquiry invitation), launch it now that the main tree has mounted.
+  useEffect(() => {
+    const pending = consumePendingPractice();
+    if (pending) {
+      navigation.navigate(pending);
+    }
+  }, [navigation]);
 
   const handleStart = useCallback((instanceId: string) => {
     navigation.navigate('SessionPlayer', { instanceId });
