@@ -28,6 +28,7 @@ import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
 import { DirectInquiryScreen } from './src/screens/DirectInquiryScreen';
+import { ChakraCentersScreen } from './src/screens/ChakraCentersScreen';
 import { WebAppPromptModal } from './src/components/WebAppPromptModal';
 import { RootStackParamList, MainTabParamList } from './src/types';
 import { colors, typography, spacing } from './src/utils/theme';
@@ -457,6 +458,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="DirectInquiry"
               component={DirectInquiryScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="ChakraCenters"
+              component={ChakraCentersScreen}
               options={{
                 presentation: 'card',
               }}

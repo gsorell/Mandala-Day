@@ -125,6 +125,18 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed a Clear Seeing meditation',
       abbr: 'CS',
     },
+    extra_direct_inquiry: {
+      title: 'Direct Inquiry',
+      dedication: 'Who is asking?',
+      shareMessage: 'I completed a Direct Inquiry meditation',
+      abbr: 'DI',
+    },
+    extra_chakra_centers: {
+      title: 'The Chakra Centers',
+      dedication: 'Seven centers, one awareness.',
+      shareMessage: 'I completed The Chakra Centers meditation',
+      abbr: 'CC',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

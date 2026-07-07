@@ -106,6 +106,7 @@ export type RootStackParamList = {
   SquareBreathing: undefined;
   Vision: undefined;
   DirectInquiry: undefined;
+  ChakraCenters: undefined;
 };
 
 export type MainTabParamList = {
