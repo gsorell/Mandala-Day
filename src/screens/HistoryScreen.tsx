@@ -137,6 +137,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed The Chakra Centers meditation',
       abbr: 'CC',
     },
+    extra_geometry_of_attention: {
+      title: 'The Geometry of Attention',
+      dedication: 'Center without edge.',
+      shareMessage: 'I completed The Geometry of Attention meditation',
+      abbr: 'GA',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {
