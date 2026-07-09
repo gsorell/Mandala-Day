@@ -210,7 +210,7 @@ export const SettingsScreen: React.FC = () => {
             onPress={() => navigation.navigate('RecognizingThought')}
           >
             <Text style={styles.menuItemText}>Recognizing Thought</Text>
-            <Text style={styles.menuItemSubtext}>11 min guided</Text>
+            <Text style={styles.menuItemSubtext}>10 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
         </View>

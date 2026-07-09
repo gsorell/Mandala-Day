@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
 
-const RECOGNIZING_THOUGHT_DURATION_MIN = 11;
+const RECOGNIZING_THOUGHT_DURATION_MIN = 10;
 const RECOGNIZING_THOUGHT_DURATION_SEC = RECOGNIZING_THOUGHT_DURATION_MIN * 60;
 
 const getRecognizingThoughtAudio = () => require('../../assets/audio/recognizing-thought.mp3');
@@ -238,7 +238,7 @@ export const RecognizingThoughtScreen: React.FC = () => {
 
       <View style={styles.content}>
         <View style={styles.durationDisplay}>
-          <Text style={styles.durationNumber}>11</Text>
+          <Text style={styles.durationNumber}>10</Text>
           <Text style={styles.durationLabel}>minutes</Text>
         </View>
 
