@@ -143,6 +143,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed The Geometry of Attention meditation',
       abbr: 'GA',
     },
+    extra_recognizing_thought: {
+      title: 'Recognizing Thought',
+      dedication: 'Thoughts arise; awareness remains.',
+      shareMessage: 'I completed the Recognizing Thought meditation',
+      abbr: 'RT',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

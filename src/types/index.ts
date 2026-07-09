@@ -108,6 +108,7 @@ export type RootStackParamList = {
   DirectInquiry: undefined;
   ChakraCenters: undefined;
   GeometryOfAttention: undefined;
+  RecognizingThought: undefined;
 };
 
 export type MainTabParamList = {
