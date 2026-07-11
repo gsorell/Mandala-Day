@@ -64,6 +64,9 @@ Before sending a script, silently check it against the canon:
   tension/release) — without forcing it.
 - Nothing breaks the spell: no abrupt transition, no forced observation, no behavior the
   subject would not truly exhibit. When in doubt, cut the line.
+- No meditation-speak: no soothing clichés ("just this," "nothing to fix," "simply be
+  present"). Prefer a concrete observation or silence — a platitude weakens the pause after
+  it. Refrains rephrase subtly by default; verbatim repetition is rare and must be earned.
 - The warm register is present but shown, not told: diminutives and closeness (intimacy),
   hide-and-seek returns (playfulness), delight in small beauties (joy), unhurried
   tenderness and reassurance (care). The narrator never captions the feeling.

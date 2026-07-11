@@ -128,13 +128,16 @@ the silence answers it (Volume IV). This is the adult form of the children's lic
 question — but where children get one or two, an adult inquiry may be built almost entirely
 from a returning question, because for adults the question *is* the investigation.
 
-**Verbatim refrain.** Children vary their wording (motifs, not repetition — Volume III).
-Adults may do the opposite: an anchor phrase may return **word-for-word** as a resting place
-the listener learns to expect — "Let the body be as it is. Let the breath take care of
-itself." / "Thoughts may continue above the surface. Like ripples on water, they don't
-disturb the depth." The verbatim return is the adult analog of the child's motif: repetition
-as a place to rest, not a failure of variation. A small shared vocabulary of such refrains
-may recur across pieces.
+**Refrain — subtle rephrasing by default; verbatim only rarely.** A returning anchor phrase
+can give an adult investigation its cadence, but the standard is **subtle rephrasing** — the
+same return, worded a little differently each time (the children's motif principle, Volume
+III, holds for adults too). **Verbatim** repetition is a rare, deliberate exception, and
+must be *earned*: reserve it for a refrain with a concrete reason to return unchanged — one
+tied to a real, recurring event (the bell in *The Chakra Centers*: "At the sound of the
+bell, release the area."), never a soothing abstraction the listener is meant to find
+comforting. Use at most one verbatim refrain in a piece, if any. If a refrain is only there
+to reassure, cut it and let the silence carry the joint — a spoken platitude at a pause
+weakens the silence that follows it (see Volume V, "No meditation-speak").
 
 **Corrective imperative and the release of doing.** Adults, unlike children, may be told
 what *not* to do — "Don't cling. Don't push. Don't answer from memory." — always pointing
@@ -358,6 +361,15 @@ Do not write in:
 Internal truth outranks literal fact, but internal truth still requires each thing to
 behave as that kind of thing truly behaves. When any of these threatens, cut the line
 rather than force it. When in doubt, leave it out.
+
+**No meditation-speak.** The fastest way to break the spell is a soothing cliché — "just
+this," "simply be present," "nothing to fix," "let it all go." These are filler that a
+silence would say more forcefully; worse, a platitude placed at a pause **weakens the
+silence that follows it**, spending the moment emptiness would have held. Prefer a concrete,
+observed line — or nothing at all. Warmth and stillness are *shown* through what is really
+there (Volume I), never asserted through comfort-words. Test: if a line could appear
+unchanged on any meditation app, cut it. This applies with equal force to the author's own
+writing — familiarity is no license.
 
 **Choose phenomena that rhyme with the body.** When selecting which of the world's
 behaviors to observe, prefer those naturally analogous to breath, body, and mind — rising
