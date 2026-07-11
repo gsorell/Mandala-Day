@@ -376,7 +376,7 @@ behave as that kind of thing truly behaves. When any of these threatens, cut the
 rather than force it. When in doubt, leave it out.
 
 **No meditation-speak.** The fastest way to break the spell is a soothing cliché — "just
-this," "simply be present," "nothing to fix," "let it all go." These are filler that a
+this," "simply be present," "nothing to fix," "let it all go," "let it stay that way." These are filler that a
 silence would say more forcefully; worse, a platitude placed at a pause **weakens the
 silence that follows it**, spending the moment emptiness would have held. Prefer a concrete,
 observed line — or nothing at all. Warmth and stillness are *shown* through what is really

@@ -272,15 +272,7 @@ Stay here, in the whole body, for a few breaths.
 
 Toward the end, don't gather this into a conclusion.
 
-<break time="4s"/>
-
-The body was already here... already sensing... before we began.
-
-<break time="3s"/>
-
-Let it stay that way.
-
-<break time="4s"/>
+<break time="6s"/>
 
 When you're ready, let the eyes open.
 
@@ -293,6 +285,6 @@ And carry this awareness of the body into the rest of your day.
 
 ## Estimate (pre-render)
 
-- Break time sums to **≈279 s**; ~64 lines × ~4–5 s ≈ **255–320 s** → **~9:00–10:00**.
+- Break time sums to **≈274 s**; ~62 lines × ~4–5 s ≈ **250–310 s** → **~8:45–10:00**.
 - Roughly half speech (instruction-dense), with the single deep rest (25 s) at the whole-body field.
 - **Render, measure, adjust.** If short, lengthen the final hold rather than add words.
