@@ -70,13 +70,21 @@ Bands, if you prefer them: **2–2.5s continuation · 3–4s recognition · 5–
 
 ## Target length
 
-A children's Studio Master should run **about 7 minutes** of rendered audio. ElevenLabs
-delivers roughly **4 seconds per short line** (its own micro-pauses on "…" included) *on
-top of* the summed `<break>` time — so a score that reads spacious on paper still comes in
-short. Always **render, measure, and adjust.** If it lands under target, spend the room on
-genuine *deepening* — a second pass that revisits elements to reveal new relationships —
-and on longer final-third silences. Never pad arbitrarily. ("Where the Stars Turn" first
-rendered at 5:34; adding the Deepen pass shown below brought it to ≈7 min.)
+A children's Studio Master should run **about 7 minutes** of rendered audio. **Adult**
+Studio Masters aim for **about 10 minutes.** ElevenLabs delivers roughly **4 seconds per
+short line** (its own micro-pauses on "…" included) *on top of* the summed `<break>` time —
+so a score that reads spacious on paper still comes in short. Always **render, measure, and
+adjust.** If it lands under target, spend the room on genuine *deepening* — a second pass
+that revisits elements to reveal new relationships — and on longer final-third silences.
+Never pad arbitrarily. ("Where the Stars Turn" first rendered at 5:34; adding the Deepen
+pass shown below brought it to ≈7 min.)
+
+**How the ten minutes is filled varies with the piece.** An instruction-dense investigation
+(a body descent, a guided scan) spends most of it in *speech* — the Deepen pass carries the
+length. A sparser inquiry (attention, thought, dissolution) spends more of it in *silence* —
+long final-third holds carry the length. Same target; different balance of word and pause.
+Match the balance to what the piece is doing, and reach the target by deepening, never by
+restoring cut material to fill time.
 
 ---
 
