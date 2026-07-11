@@ -52,7 +52,9 @@ Before sending a script, silently check it against the canon:
 - One observation per line; behavior not psychology; living verbs.
 - One home, one anchor, one continuous guiding thread; three passes present.
 - Pauses follow the arc of trust; longest silences in the final third; frame at both ends.
-- Children's scripts end on the trademark line and return to the opening image.
+- Children's scripts end on the trademark line and return to the opening image; adult
+  scripts open by *arriving* into body/breath/present (not a world-observation) and end on
+  the trademark non-conclusion (refuse closure → carry the inquiry into the day).
 - Voice matches audience: children's is subjectless third person (with at most 0–2
   rhetorical questions, second half); adult uses the imperative command form, never the
   declarative "you feel / you see".
@@ -62,6 +64,9 @@ Before sending a script, silently check it against the canon:
   tension/release) — without forcing it.
 - Nothing breaks the spell: no abrupt transition, no forced observation, no behavior the
   subject would not truly exhibit. When in doubt, cut the line.
+- The warm register is present but shown, not told: diminutives and closeness (intimacy),
+  hide-and-seek returns (playfulness), delight in small beauties (joy), unhurried
+  tenderness and reassurance (care). The narrator never captions the feeling.
 
 This review is a quick pass, not a reason to delay. If something's off, fix it and send.
 

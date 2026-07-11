@@ -1,4 +1,4 @@
-# Mandala Day Canon — Master Reference (Framework v2.2)
+# Mandala Day Canon — Master Reference (Framework v2.3)
 
 This canon is the highest authority for Mandala Day. Individual scripts are expressions
 of the canon; they do not redefine it. The canon evolves by **expansion rather than
@@ -42,6 +42,31 @@ The objective is not merely stylistic consistency, but **consistency of experien
 - Never force the mirror. If a phenomenon does not rhyme with the body on its own,
   describe it truly rather than stretching it into an unnatural shape.
 
+**Register — joy, intimacy, playfulness, care**
+
+- Beneath the calm, Mandala Day is warm. The felt register is joy, intimacy, playfulness,
+  and care.
+- This register is **shown, never told.** It is carried by the world and by the quality of
+  attention — never by a performing narrator. The narrator never captions the feeling
+  ("isn't that lovely," "how wonderful"): that is the same error as the declarative "you
+  feel" — asserting an emotion instead of letting it be recognized. (Investigations, not
+  performances.)
+- In children's investigations it is carried by:
+  - **Intimacy** — smallness. Diminutives ("one little," "a tiny," "a single small") and
+    the closeness of attention to one small thing; the single licensed rhetorical question
+    is the moment of leaning in.
+  - **Playfulness** — the world's hide-and-seek. Things that appear and vanish, that
+    return "for only a moment." The play is in the behavior, not the narrator.
+  - **Joy** — quiet delight in small beauties. The shimmer, the glow, the shine, noticed
+    with affection but never captioned.
+  - **Care** — the unhurried tenderness of the attention, and the reassurance beneath the
+    whole form: the dark made gentle, small things always returning, the world continuing
+    safely into the soft, deep night. The peek-a-boo *is* the care — a thing vanishes and
+    comes back.
+- The adult manifestation of this register differs (warmth carried by the imperative voice
+  and unhurried care rather than childlike smallness); it is developed in Volume II under
+  **"The warm register, adult form."**
+
 **What success is** — the listener stops receiving narration and starts directly
 experiencing a world. The narrator disappears; the world continues.
 
@@ -82,6 +107,62 @@ the adult's living environment.
 
 **Earned lyricism.** See Volume IV. Adults can carry a longer sentence or a more developed
 metaphor than children — a longer breath — once the plain observations have earned it.
+
+**Opening — the arrival.** An adult investigation does not open on a world-observation
+(that is the children's rule, Volume III). It opens with a settling imperative that
+*arrives* into the body, the breath, or the present moment — "Begin by settling into a
+comfortable position. Allow the body to rest naturally." / "Let yourself arrive in the
+body." It commonly frames experience as **already underway**, so attention has only to
+notice what is already the case rather than produce anything: "Breathing is already
+happening. Sound is already here. The body is already known." — paired with the reassurance
+of nothing to add ("There is nothing to add, nothing to remove," "nothing to achieve").
+Experience precedes effort; the opening establishes it.
+
+**The recurring question as anchor.** Where a child's investigation returns to a recurring
+*object*, an adult investigation returns to a recurring **question form**. Each return
+applies the same question to a subtler or wider object of attention — this is how discovery
+sequences: "Where is it?" asked of the breath, then a sound, then one hand, both hands, the
+whole body, the space outside, the space inside — and then turned ("Not where. When?").
+"How is it known?" moved from body to mind to self. The narrator never answers the question;
+the silence answers it (Volume IV). This is the adult form of the children's licensed
+question — but where children get one or two, an adult inquiry may be built almost entirely
+from a returning question, because for adults the question *is* the investigation.
+
+**Verbatim refrain.** Children vary their wording (motifs, not repetition — Volume III).
+Adults may do the opposite: an anchor phrase may return **word-for-word** as a resting place
+the listener learns to expect — "Let the body be as it is. Let the breath take care of
+itself." / "Thoughts may continue above the surface. Like ripples on water, they don't
+disturb the depth." The verbatim return is the adult analog of the child's motif: repetition
+as a place to rest, not a failure of variation. A small shared vocabulary of such refrains
+may recur across pieces.
+
+**Corrective imperative and the release of doing.** Adults, unlike children, may be told
+what *not* to do — "Don't cling. Don't push. Don't answer from memory." — always pointing
+attention, never narrating inner state. Running alongside it is a recurring reassurance of
+non-doing: "nothing to add, nothing to remove," "nothing to solve," "nothing you need to
+hold together." These are not decoration; they are how the adult register is carried.
+
+**The warm register, adult form.** (Completing the note left open in Volume I.) Children
+carry warmth through smallness, hide-and-seek, and delight in small beauties. Adults carry
+the same warmth through **unhurried permission and reassurance** — "let it be as it is,"
+"let the breath take care of itself," "on its own," "by itself"; "there is nothing you need
+to resolve tonight," "whatever remains unfinished can rest," "nothing needs to be corrected."
+The felt register is care experienced as the **release of obligation**. As with children, it
+is shown by the quality of permission in the voice, never captioned.
+
+**Ending — the trademark non-conclusion.** Where a children's investigation closes the world
+down into the soft, deep night, an adult investigation does the inverse: it **refuses to
+conclude and hands the inquiry back to life.** The trademark ending has three beats:
+
+1. a signpost — "As we approach the end," "Toward the end,"
+2. a refusal of closure — "don't conclude the practice," "let it remain unfinished," "let
+   these questions remain open," "allow the practice to end without conclusion,"
+3. a carrying-forward — "carry this inquiry into the rest of your day," "let this awareness
+   continue as you move into the day."
+
+An evening or rest investigation substitutes rest for carrying-forward ("there's nothing you
+need to gather or carry forward… rest now, and give thanks for the day"). This non-conclusion
+is the adult trademark, as defining as the children's closing line.
 
 Design process for an adult investigation:
 
@@ -144,6 +225,8 @@ Treat this as the definitive guide for children's Studio Masters.
 - Time accumulates indirectly.
 - Use motifs (recurring elements) rather than repeated wording.
 - Living verbs. Hierarchy of discovery.
+- Carry the warm register — joy, intimacy, playfulness, care — through smallness,
+  the world's hide-and-seek, and delight in small beauties. Shown, never told (Volume I).
 
 **Voice and earned language**
 
@@ -206,6 +289,14 @@ placement rules live in **[NOTATION.md](NOTATION.md)**; this volume is the philo
 - Pause length grows naturally as familiarity grows.
 - The longest silences belong to the final third.
 - Silence should feel invited rather than imposed.
+
+**Arc of trust — adult calibration reference (observed, not a rule).** The finalized adult
+masters give rough magnitudes for the arc, offered only to calibrate the ear: opening pauses
+run ~2–5 seconds; the body of the investigation ~5–20 seconds; the deep inquiry silences of
+the final third run long — commonly 30–60 seconds, and occasionally beyond a minute at the
+very end (one master rests for over two minutes on its final "Rest here."). A deeper or
+subtler question earns a longer silence. These numbers calibrate; they never override the
+performance test below.
 
 **Earned lyricism (the arc of trust, applied to language)**
 
