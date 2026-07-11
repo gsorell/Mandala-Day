@@ -100,6 +100,19 @@ listener's inner state. Plain second person is acceptable but weaker. Avoid the
 **declarative** second person — "you feel," "you notice," "you see" — which presumes to
 know the listener's experience and replaces recognition with assertion.
 
+**Open the field; don't prescribe the sensation.** Direct attention by naming the *place*
+or the *dimension* to investigate — temperature, weight, movement, the edge, the point of
+contact — not the *value* the listener is meant to find (warm, heavy, tingling). A
+prescribed value turns attention into verification: the listener checks the adjective
+against experience, gets a yes or a no, and either way stops feeling. A dimension, an open
+question, or a plain pointing lets whatever is actually there be met — including sensation
+that has no name, or none at all. This is the sensory cousin of the declarative-second-
+person error: "the warmth of the skin" presumes the *content* of experience just as "you
+feel warm" presumes the *fact* of it. Adjectives are not banned — offer them as licensed
+possibilities ("perhaps heavier, perhaps lighter, perhaps no different at all"; "its weight,
+or the lack of it"), never as the answer. Where a descriptor only narrows, cut it and leave
+the silence to hold the room for what is really there.
+
 **The self, treated directly.** Where children meet the self indirectly, through
 recognition in the world (Volume III), adults may approach it directly, through the
 familiar objects of attention: **breath, body, space, and attention itself.** These are

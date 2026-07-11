@@ -16,13 +16,16 @@
 - **Home:** the seated or lying body. **Guiding thread:** one continuous descent, crown →
   face → jaw → throat → shoulders → arms/hands → chest/belly (the breath) → back → hips →
   legs → feet → whole field.
-- **De-mechanizing engine:** each region asks a *different facet* of sensation (weight →
-  temperature → holding/release → the edge → movement → contact); left/right symmetry is
-  broken into *comparison* ("does it answer differently?").
+- **De-mechanizing engine:** each region investigates a *different facet* (weight →
+  temperature → holding → the edge → movement → contact); left/right symmetry is broken into
+  *comparison* ("does it answer differently?").
+- **Open field:** name the *place* or *dimension*, never the *value* to find — leave room
+  for sensation that has no word, or none at all (CANON Vol II, "Open the field; don't
+  prescribe the sensation"). Adjectives appear only as licensed possibilities ("perhaps…").
 - **Three passes:** *Introduce* (arrival — the body is already sensing) · *Deepen* (a
-  faster second descent revealing that every region has already changed — impermanence,
-  shown through concrete comparison, never asserted) · *Whole* (widen to one field, the long
-  rest, non-conclusion ending that carries into the day).
+  faster second descent asking whether each region has already changed — impermanence, met
+  through open question, never asserted) · *Whole* (widen to one field, the long rest,
+  non-conclusion ending that carries into the day).
 - **No refrain** — the joints are marked by silence, not a spoken line (CANON Vol V, "No
   meditation-speak"; Vol II, refrains rephrase by default and verbatim must be earned).
 
@@ -63,19 +66,19 @@ Let attention fall to the face.
 
 <break time="3s"/>
 
-Notice its temperature — the cooler air, the warmth of the skin.
+Notice its temperature — the air against it, and the skin beneath.
 
 <break time="3s"/>
 
-The forehead, softening.
+The forehead.
 
 <break time="2.5s"/>
 
-The eyes, resting in their sockets.
+The eyes, in their sockets.
 
 <break time="4s"/>
 
-The jaw. Feel whatever it is holding... and let it be held less.
+The jaw — whatever it holds, or doesn't.
 
 <break time="8s"/>
 
@@ -87,7 +90,7 @@ The small effort of holding the head upright.
 
 <break time="4s"/>
 
-The shoulders. Feel what they have been carrying... and let them carry it less.
+The shoulders. If they've been carrying something, let them set a little of it down.
 
 <break time="6s"/>
 
@@ -99,7 +102,7 @@ The upper arm, the elbow, the forearm — all the way to the hand.
 
 <break time="4s"/>
 
-Feel the whole left hand at once. Each finger, warm, or cool.
+Feel the whole left hand at once — each finger, or the space between them.
 
 <break time="3s"/>
 
@@ -115,7 +118,7 @@ But notice if it answers differently.
 
 <break time="3s"/>
 
-The right hand, resting. Perhaps heavier. Perhaps lighter.
+The right hand, resting. Perhaps heavier. Perhaps lighter. Perhaps no different at all.
 
 <break time="8s"/>
 
@@ -143,7 +146,7 @@ Let it settle lower, into the belly.
 
 <break time="3s"/>
 
-The same rising... the same falling... softer, and deeper.
+The same rising... the same falling... only lower.
 
 <break time="6s"/>
 
@@ -151,7 +154,7 @@ Feel the back, resting against whatever holds it.
 
 <break time="3s"/>
 
-The spine — a single column of sensation, from top to base.
+The spine — from the top... down to the base.
 
 <break time="9s"/>
 
@@ -167,7 +170,7 @@ Travel down the left leg.
 
 <break time="3s"/>
 
-The thigh, heavy... the knee... the shin... the foot.
+The thigh... the knee... the shin... the foot.
 
 <break time="4s"/>
 
@@ -179,11 +182,11 @@ Does it feel the same? Or its own way?
 
 <break time="5s"/>
 
-Both feet now. Where they meet the floor.
+Both feet now.
 
 <break time="3s"/>
 
-Pressure, contact — the simple fact of the ground.
+Where they meet the floor — the simple fact of the ground.
 
 <break time="9s"/>
 
@@ -195,23 +198,19 @@ Whatever was there a moment ago —
 
 <break time="2.5s"/>
 
-notice it is not quite the same.
+is it the same now?
 
 <break time="4s"/>
 
-The face, the jaw —
-
-<break time="2.5s"/>
-
-already changed since you left them.
+The face, the jaw — as you left them? Or already different?
 
 <break time="4s"/>
 
-Down through the shoulders and arms —
+Down through the shoulders and arms.
 
 <break time="3s"/>
 
-warmth where there was none, a faint pulse in the hands.
+Perhaps something stirs where there was nothing. Perhaps not.
 
 <break time="4s"/>
 
@@ -219,15 +218,15 @@ The chest, still rising —
 
 <break time="2.5s"/>
 
-but no two breaths alike.
+has any breath been quite the same?
 
 <break time="4s"/>
 
-The belly, the back, the hips —
+The belly, the back, the hips.
 
 <break time="3s"/>
 
-each sensation arriving, and already leaving.
+Each sensation arriving, and already leaving.
 
 <break time="5s"/>
 
@@ -294,6 +293,6 @@ And carry this awareness of the body into the rest of your day.
 
 ## Estimate (pre-render)
 
-- Break time sums to **≈282 s**; 65 lines × ~4–5 s ≈ **260–320 s** → **~9:00–10:00**.
+- Break time sums to **≈279 s**; ~64 lines × ~4–5 s ≈ **255–320 s** → **~9:00–10:00**.
 - Roughly half speech (instruction-dense), with the single deep rest (25 s) at the whole-body field.
 - **Render, measure, adjust.** If short, lengthen the final hold rather than add words.
