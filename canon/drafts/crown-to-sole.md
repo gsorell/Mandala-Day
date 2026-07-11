@@ -1,9 +1,10 @@
-# Crown to Sole — Studio Master (draft)
+# Crown to Sole — Studio Master
 
 - **Audience:** adult
-- **Status:** draft — not yet rendered / measured / shipped
-- **Target length:** ~10 min rendered
-- **Replaces:** the current shipped *Vipassana* body scan (recreated under Framework v2.3)
+- **Status:** **rendered at 9:45** — the score below is the exact ElevenLabs cut (authoritative
+  wording). Audio encoded to `assets/audio/crown-to-sole.mp3`. Not yet wired into the app.
+- **Target length:** ~10 min rendered — met (9:45).
+- **Replaces:** the current shipped *Vipassana* body scan (recreated under Framework v2.3).
 - **On ship:** title goes on the screen header, the Extras row (`SettingsScreen`), the
   `SessionComplete` card (`sessionTitle`), and the YouTube visual preset. Keep the internal
   `templateId` / asset id decision for shipping time (see repo `CLAUDE.md` §0).
@@ -22,6 +23,8 @@
 - **Open field:** name the *place* or *dimension*, never the *value* to find — leave room
   for sensation that has no word, or none at all (CANON Vol II, "Open the field; don't
   prescribe the sensation"). Adjectives appear only as licensed possibilities ("perhaps…").
+- **Posture-aware:** the back line covers both the supported (sitting) and self-supporting
+  (lying) back — "resting against whatever holds it... or supporting its own weight."
 - **Three passes:** *Introduce* (arrival — the body is already sensing) · *Deepen* (a
   faster second descent asking whether each region has already changed — impermanence, met
   through open question, never asserted) · *Whole* (widen to one field, the long rest,
@@ -29,7 +32,7 @@
 - **No refrain** — the joints are marked by silence, not a spoken line (CANON Vol V, "No
   meditation-speak"; Vol II, refrains rephrase by default and verbatim must be earned).
 
-## Score (ElevenLabs, copy/paste-ready)
+## Score (exact ElevenLabs cut)
 
 ```
 <break time="1.5s"/>
@@ -106,7 +109,7 @@ Feel the whole left hand at once — each finger, or the space between them.
 
 <break time="3s"/>
 
-And the edge of it... where the hand ends, and the air begins.
+And the edge... where the hand ends, and the air begins.
 
 <break time="5s"/>
 
@@ -150,7 +153,7 @@ The same rising... the same falling... only lower.
 
 <break time="6s"/>
 
-Feel the back, resting against whatever holds it.
+Feel the back, resting against whatever holds it... or supporting its own weight.
 
 <break time="3s"/>
 
@@ -268,23 +271,26 @@ Nothing held apart from the rest.
 
 Stay here, in the whole body, for a few breaths.
 
-<break time="25s"/>
+<break time="40s"/>
 
 Toward the end, don't gather this into a conclusion.
 
-<break time="6s"/>
+<break time="4s"/>
 
 When you're ready, let the eyes open.
 
 <break time="3s"/>
 
-And carry this awareness of the body into the rest of your day.
+Carry this awareness of the body into the rest of your day.
 
 <break time="1.5s"/>
 ```
 
-## Estimate (pre-render)
+## Render
 
-- Break time sums to **≈274 s**; ~62 lines × ~4–5 s ≈ **250–310 s** → **~8:45–10:00**.
-- Roughly half speech (instruction-dense), with the single deep rest (25 s) at the whole-body field.
-- **Render, measure, adjust.** If short, lengthen the final hold rather than add words.
+- **Actual length: 9:45 (585 s).** On target for the adult ~10-min spec.
+- Two edits from the pre-render draft: the back line gained "…or supporting its own weight"
+  (posture), and the final whole-body hold went `25s → 40s`.
+- `transcripts/crown-to-sole.txt` holds the Whisper transcript — reliable for *measured*
+  pause lengths, but it drops words over the soft/long-silent passages, so **this score is
+  the wording of record**, not the transcript.
