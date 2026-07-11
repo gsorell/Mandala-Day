@@ -112,6 +112,7 @@ export type RootStackParamList = {
   ChakraCenters: undefined;
   GeometryOfAttention: undefined;
   RecognizingThought: undefined;
+  CrownToSole: undefined;
 };
 
 export type MainTabParamList = {

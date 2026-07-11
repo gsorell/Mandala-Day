@@ -33,6 +33,7 @@ import { VisionScreen } from './src/screens/VisionScreen';
 import { DirectInquiryScreen } from './src/screens/DirectInquiryScreen';
 import { ChakraCentersScreen } from './src/screens/ChakraCentersScreen';
 import { GeometryOfAttentionScreen } from './src/screens/GeometryOfAttentionScreen';
+import { CrownToSoleScreen } from './src/screens/CrownToSoleScreen';
 import { RecognizingThoughtScreen } from './src/screens/RecognizingThoughtScreen';
 import { WebAppPromptModal } from './src/components/WebAppPromptModal';
 import { RootStackParamList, MainTabParamList } from './src/types';
@@ -498,6 +499,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="GeometryOfAttention"
               component={GeometryOfAttentionScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="CrownToSole"
+              component={CrownToSoleScreen}
               options={{
                 presentation: 'card',
               }}

@@ -175,6 +175,14 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('CrownToSole')}
+          >
+            <Text style={styles.menuItemText}>Crown to Sole</Text>
+            <Text style={styles.menuItemSubtext}>10 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('Vision')}
           >
             <Text style={styles.menuItemText}>Clear Seeing</Text>

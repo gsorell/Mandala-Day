@@ -149,6 +149,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed the Recognizing Thought meditation',
       abbr: 'RT',
     },
+    extra_crown_to_sole: {
+      title: 'Crown to Sole',
+      dedication: 'One changing whole.',
+      shareMessage: 'I completed the Crown to Sole meditation',
+      abbr: 'CT',
+    },
     extra_marsh_creek: {
       title: 'Marsh Creek',
       dedication: 'May the gentle creek carry little ones to peaceful dreams.',
