@@ -1,0 +1,87 @@
+A quiet marsh rests beneath the evening sky.
+[pause 5.5s]
+Near the edge of the marsh, one little patch of tall grass grows beside a winding tidal creek.
+[pause 4.2s]
+The creek slips gently past the grass.
+[pause 3.9s]
+The water moves so slowly that it almost seems to be resting.
+[pause 4.9s]
+A tiny leaf floats with the gentle current.
+[pause 4.2s]
+It slips around one blade of grass.
+[pause 3.0s]
+Then another,
+[pause 6.0s]
+small ripples follow behind it.
+[pause 3.9s]
+They grow wider,
+[pause 3.4s]
+then quietly fade away.
+[pause 6.2s]
+A blue dragonfly settles on the tip of one tall blade.
+[pause 4.1s]
+Its wings shimmer in the evening light,
+[pause 4.5s]
+a moment later.
+[pause 3.0s]
+It lifts into the air again.
+[pause 7.7s]
+The winding creek continues through the marsh.
+[pause 4.3s]
+Its gentle current passes a tiny fiddler crab on the muddy bank.
+[pause 4.8s]
+Crab takes few careful steps.
+[pause 3.5s]
+Then disappears into a little round burrow.
+[pause 8.5s]
+The creek winds between long green reeds.
+[pause 4.5s]
+The breeze bends them all together.
+[pause 4.2s]
+A little later,
+[pause 3.3s]
+they stand tall again.
+[pause 6.9s]
+A small silver fish glides between the reeds.
+[pause 3.6s]
+It disappears,
+[pause 3.9s]
+then appears again.
+[pause 9.0s]
+The creek grows a little wider.
+[pause 4.5s]
+A white heron stands in the shallow water.
+[pause 5.1s]
+One slow step,
+[pause 13.3s]
+the water becomes still again.
+[pause 9.5s]
+The winding creek continues toward open water.
+[pause 3.6s]
+The evening breeze carries tiny ripples across its surface.
+[pause 4.6s]
+The ripples travel gently back through the winding creek.
+[pause 9.1s]
+The little patch of grass sways beside the winding creek.
+[pause 3.2s]
+The dragonfly returns for only a moment.
+[pause 3.9s]
+The fiddler crab rests inside its little burrow.
+[pause 3.4s]
+The reeds bend softly together.
+[pause 4.0s]
+The silver fish glides through the quiet water.
+[pause 4.3s]
+The heron stands where the creek becomes wide.
+[pause 11.2s]
+Seen together, the whole little marsh rests beneath the evening sky.
+[pause 9.9s]
+The winding creek finds its gentle way through the grass.
+[pause 3.4s]
+The breeze comes,
+[pause 10.5s]
+the water rises and
+[pause 3.1s]
+settles,
+[pause 10.8s]
+and the whole marsh drifts into the soft, deep night.

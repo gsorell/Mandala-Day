@@ -1,0 +1,113 @@
+[pause 1.5s]
+Evening has already settled across the prairie.
+[pause 4.4s]
+The sky stretches from one horizon to the other.
+[pause 4.1s]
+Below it, all grass moves together.
+[pause 4.9s]
+Long waves travel across the prairie.
+They never seem to reach the end,
+[pause 6.7s]
+winds through the grass.
+[pause 2.2s]
+It follows the gentle rise of the land, then disappears beyond it.
+[pause 4.9s]
+Beside the trail stands an old fence post.
+[pause 4.6s]
+A meadow lark rests quietly on top.
+[pause 6.3s]
+The grass leans,
+[pause 1.7s]
+then slowly stands again.
+[pause 5.2s]
+Another wave begins farther away.
+[pause 1.5s]
+It travels toward the trail, passes across it, and continues on.
+[pause 5.9s]
+A tiny grasshopper springs to a nearby stem.
+The stem bends beneath its weight and
+[pause 3.2s]
+becomes still.
+[pause 5.7s]
+A pale butterfly drifts above the grass.
+For a little while, it follows the trail,
+[pause 7.1s]
+it wanders away, while the trail keeps going,
+[pause 9.8s]
+near the horizon.
+[pause 5.0s]
+A herd of bison grazes where the prairie meets the sky.
+[pause 6.3s]
+Sometimes their backs rise above the grass, sometimes they disappear again.
+[pause 7.2s]
+The meadow lark lifts its head,
+[pause 4.0s]
+one clear song travels out across the prairie.
+[pause 8.0s]
+The bird becomes quiet.
+[pause 1.7s]
+The song seems to keep going,
+[pause 7.8s]
+until climbs another gentle rise.
+For a little while, it cannot be seen.
+[pause 6.5s]
+Beyond the hill, there it is again.
+[pause 7.0s]
+The grass keeps moving.
+[pause 1.8s]
+The trail keeps winding.
+[pause 8.2s]
+The fencepost waits quietly beside it.
+[pause 7.9s]
+The meadowlark has not moved.
+[pause 8.5s]
+The evening light grows softer.
+The shadows grow longer.
+[pause 6.8s]
+The distant herd gathers a little closer together.
+[pause 7.8s]
+The grass continues its quiet waves.
+[pause 3.7s]
+After another,
+[pause 1.6s]
+after another,
+[pause 8.2s]
+the last warm light slips below the horizon.
+[pause 8.7s]
+The first star appears,
+[pause 14.8s]
+then another.
+[pause 9.5s]
+Moonlight settles across the prairie.
+[pause 1.7s]
+The trail is still there.
+[pause 6.5s]
+The old fence post is still there.
+[pause 5.5s]
+The meadow lark is still there,
+[pause 7.8s]
+far beyond them, the ferry continues.
+[pause 10.0s]
+Long waves move through the silver grass.
+[pause 10.9s]
+Without stopping,
+[pause 7.5s]
+they reach the fence post and continue beyond it.
+[pause 7.6s]
+Seen from high above, the trail becomes a thin line.
+[pause 8.2s]
+The fence post becomes a tiny mark beside it.
+[pause 7.8s]
+Lark is almost too small to see.
+[pause 8.8s]
+Near the horizon, the bison becomes small dark shapes beneath the stars.
+[pause 9.8s]
+The trail continues farther than the eye can follow.
+[pause 10.7s]
+The grass continues farther still,
+[pause 9.7s]
+long quiet waves, moving together,
+[pause 1.6s]
+across the endless prairie,
+[pause 13.5s]
+and the whole prairie drifts into the soft, deep night.

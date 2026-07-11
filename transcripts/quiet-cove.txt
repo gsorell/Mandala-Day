@@ -1,0 +1,91 @@
+A quiet cove rests beneath the moon.
+[pause 4.5s]
+Near the middle of the cove, a little sailboat rocks on the water.
+[pause 2.0s]
+Its sail has been folded away for the night.
+[pause 1.6s]
+The mast sways with each small wave.
+[pause 8.1s]
+The boat never drifts very far.
+[pause 2.1s]
+A rope disappears into the water below.
+[pause 5.8s]
+The water is so clear that the rope can be followed for quite a distance.
+[pause 1.9s]
+Tiny bubbles cling to its sides.
+[pause 19.1s]
+The tide leans the rope to one side.
+Slowly,
+[pause 1.9s]
+it hangs straight again.
+[pause 8.7s]
+Just below, a jellyfish drifts through the clear water.
+[pause 2.4s]
+Its bell opens,
+[pause 5.2s]
+then closes.
+[pause 5.0s]
+Opens again.
+[pause 8.9s]
+A second jellyfish drifts nearby.
+[pause 1.8s]
+For a little while both move together, then, without hurrying, they slowly drift apart.
+[pause 9.4s]
+Farther down, long ribbons of seagrass grow from the sandy bottom.
+[pause 1.6s]
+The tide bends them all together.
+[pause 7.5s]
+They stand toward
+[pause 7.8s]
+tiny silver fish slips between the blades.
+[pause 1.9s]
+It disappears.
+[pause 3.7s]
+Then it appears again,
+[pause 6.6s]
+reaches a quiet reef.
+Small branches of coral spread in every direction.
+Tiny fish wanders through winding little passages that seem to have been there forever.
+[pause 8.1s]
+High above, the little sailboat still rocks with the waves.
+[pause 1.6s]
+Down here, the water hardly seems to change at all.
+[pause 9.3s]
+A sea turtle glides across the reef.
+In a slow stroke,
+[pause 13.3s]
+the turtle becomes smaller.
+[pause 2.1s]
+Soon only the blue water remains.
+[pause 11.9s]
+Near the end of the rope, a heavy anchor rests on the sandy floor.
+[pause 1.7s]
+Small shells have gathered around its arms.
+Tiny grains of sand drift slowly through the water.
+One settles,
+[pause 2.9s]
+then another,
+[pause 4.0s]
+then another.
+[pause 10.8s]
+Nothing here asks to be hurried.
+[pause 8.9s]
+Seen together, the whole little cove rests quietly beneath the moon.
+The little sailboat still rocks above.
+The rope reaches into the clear water.
+The jellyfish continue their slow opening and closing.
+The seagrass sways with the tide.
+Tiny fish wander among the coral.
+[pause 1.7s]
+Somewhere beyond the reef, the sea turtle continues its gentle journey.
+The anchor rests peacefully on the sandy floor.
+[pause 12.9s]
+Everything belongs to the same quiet Cove.
+[pause 11.0s]
+Above, the moon continues its quiet journey across the sky.
+Below, the sea keeps its gentle rhythm.
+[pause 1.9s]
+The little sailboat rocks softly on the water.
+The tide comes and goes,
+[pause 3.5s]
+Cove drifts quietly into the night.
