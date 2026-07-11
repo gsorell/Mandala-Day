@@ -149,6 +149,24 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed the Recognizing Thought meditation',
       abbr: 'RT',
     },
+    extra_marsh_creek: {
+      title: 'Marsh Creek',
+      dedication: 'May the gentle creek carry little ones to peaceful dreams.',
+      shareMessage: 'A marsh creek journey for the little ones',
+      abbr: 'MC',
+    },
+    extra_quiet_cove: {
+      title: 'The Quiet Cove',
+      dedication: 'May the quiet cove bring peaceful dreams to all little ones.',
+      shareMessage: 'A seaside cove journey for the little ones',
+      abbr: 'QC',
+    },
+    extra_prairie_wind: {
+      title: 'Prairie Wind',
+      dedication: 'May the prairie wind carry little ones to peaceful dreams.',
+      shareMessage: 'A prairie wind journey for the little ones',
+      abbr: 'PW',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

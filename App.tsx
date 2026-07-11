@@ -24,6 +24,9 @@ import { VipassanaScreen } from './src/screens/VipassanaScreen';
 import { ChildrensSleepScreen } from './src/screens/ChildrensSleepScreen';
 import { BodySeaVoyageScreen } from './src/screens/BodySeaVoyageScreen';
 import { StarryNightScreen } from './src/screens/StarryNightScreen';
+import { MarshCreekScreen } from './src/screens/MarshCreekScreen';
+import { QuietCoveScreen } from './src/screens/QuietCoveScreen';
+import { PrairieWindScreen } from './src/screens/PrairieWindScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
@@ -432,6 +435,27 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="StarryNight"
               component={StarryNightScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="MarshCreek"
+              component={MarshCreekScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="QuietCove"
+              component={QuietCoveScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="PrairieWind"
+              component={PrairieWindScreen}
               options={{
                 presentation: 'card',
               }}

@@ -241,6 +241,30 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>8 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('MarshCreek')}
+          >
+            <Text style={styles.menuItemText}>Marsh Creek</Text>
+            <Text style={styles.menuItemSubtext}>7 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('QuietCove')}
+          >
+            <Text style={styles.menuItemText}>The Quiet Cove</Text>
+            <Text style={styles.menuItemSubtext}>7 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('PrairieWind')}
+          >
+            <Text style={styles.menuItemText}>Prairie Wind</Text>
+            <Text style={styles.menuItemSubtext}>9 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
