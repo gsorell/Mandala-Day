@@ -105,7 +105,7 @@ export type RootStackParamList = {
   ScheduleSettings: undefined;
   History: undefined;
   Journal: undefined;
-  SimpleTimer: undefined;
+  SimpleTimer: { initialDuration?: number; autoStart?: boolean } | undefined;
   TheView: undefined;
   Firekeeper: undefined;
   Vipassana: undefined;

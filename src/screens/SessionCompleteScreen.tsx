@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,9 @@ import {
   Share,
   Image,
   Linking,
+  TextInput,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -20,6 +23,7 @@ import { colors, typography, spacing, borderRadius, shadows } from '../utils/the
 import { sessionSymbols } from '../utils/ritualSymbols';
 import { audioService } from '../services/audio';
 import { getGongSound, getGongUri } from '../data/audioAssets';
+import { addJournalEntry } from '../services/storage';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionComplete'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -30,6 +34,18 @@ export const SessionCompleteScreen: React.FC = () => {
   const { todayInstances } = useApp();
   const { instanceId, sessionTitle, dedication, shareMessage, completedAt, duration, playEndingGong } = route.params;
   const shareCardRef = useRef<View>(null);
+  const [noteText, setNoteText] = useState('');
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  const handleSaveNote = async () => {
+    const text = noteText.trim();
+    if (!text) return;
+    Keyboard.dismiss();
+    await addJournalEntry({ text, instanceId, sessionTitle });
+    setNoteText('');
+    setNoteSaved(true);
+  };
 
   // Use completedAt if provided (viewing past completion), otherwise use current time
   const isViewingPast = !!completedAt;
@@ -176,7 +192,11 @@ export const SessionCompleteScreen: React.FC = () => {
         </TouchableOpacity>
       )}
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Share Card - The shareable visual */}
         <View style={styles.shareCard} ref={shareCardRef}>
           {/* Subtle mandala watermark */}
@@ -229,6 +249,65 @@ export const SessionCompleteScreen: React.FC = () => {
           </Text>
         )}
 
+        {/* Sit longer — keep sitting with a silent timer (fresh completions only) */}
+        {!isViewingPast && (
+          <View style={styles.sitLonger}>
+            <Text style={styles.sitLongerLabel}>Sit longer</Text>
+            <View style={styles.sitLongerRow}>
+              {[5, 10, 20].map((minutes) => (
+                <TouchableOpacity
+                  key={minutes}
+                  style={styles.sitLongerChip}
+                  onPress={() => {
+                    audioService.stop();
+                    navigation.navigate('SimpleTimer', {
+                      initialDuration: minutes,
+                      autoStart: true,
+                    });
+                  }}
+                >
+                  <Text style={styles.sitLongerChipText}>{minutes} min</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Post-sitting note — saved to the running journal (fresh completions only) */}
+        {!isViewingPast && (
+          <View style={styles.noteBlock}>
+            {noteSaved ? (
+              <Text style={styles.noteSavedText}>Saved to your journal ✓</Text>
+            ) : noteOpen ? (
+              <>
+                <TextInput
+                  style={styles.noteInput}
+                  placeholder="Note this sitting…"
+                  placeholderTextColor={colors.textTertiary}
+                  value={noteText}
+                  onChangeText={setNoteText}
+                  multiline
+                  textAlignVertical="top"
+                  autoFocus
+                />
+                {noteText.trim().length > 0 && (
+                  <TouchableOpacity style={styles.noteSaveButton} onPress={handleSaveNote}>
+                    <Text style={styles.noteSaveButtonText}>Save note</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <TouchableOpacity
+                style={styles.noteLink}
+                onPress={() => setNoteOpen(true)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={styles.noteLinkText}>+ Note this sitting</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
         {/* Action buttons */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
@@ -246,7 +325,7 @@ export const SessionCompleteScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -266,11 +345,15 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: typography.fontSizes.md,
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
   shareCard: {
     width: '100%',
@@ -387,10 +470,81 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.lg,
   },
+  sitLonger: {
+    width: '100%',
+    maxWidth: 340,
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  sitLongerLabel: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.xs,
+    letterSpacing: typography.letterSpacing.spacious,
+    textTransform: 'uppercase',
+    marginBottom: spacing.sm,
+  },
+  sitLongerRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  sitLongerChip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.charcoal,
+    backgroundColor: colors.ritualSurface,
+  },
+  sitLongerChipText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+  },
+  noteBlock: {
+    width: '100%',
+    maxWidth: 340,
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  noteLink: {
+    paddingVertical: spacing.xs,
+  },
+  noteLinkText: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+  },
+  noteInput: {
+    width: '100%',
+    minHeight: 72,
+    backgroundColor: colors.ritualSurface,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.charcoal,
+    padding: spacing.md,
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.md,
+  },
+  noteSaveButton: {
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.ritualSurface,
+    borderWidth: 1,
+    borderColor: colors.charcoal,
+  },
+  noteSaveButtonText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+  },
+  noteSavedText: {
+    color: colors.accent,
+    fontSize: typography.fontSizes.sm,
+    fontStyle: 'italic',
+  },
   actions: {
     width: '100%',
     maxWidth: 340,
-    marginTop: spacing.xl,
+    marginTop: spacing.lg,
     gap: spacing.md,
   },
   shareButton: {

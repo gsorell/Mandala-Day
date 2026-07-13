@@ -13,7 +13,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format } from 'date-fns';
 import { RootStackParamList } from '../types';
@@ -76,11 +76,15 @@ const releaseWakeLock = async () => {
 
 export const SimpleTimerScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'SimpleTimer'>>();
   const insets = useSafeAreaInsets();
-  const [duration, setDuration] = useState(10); // minutes
+  // When launched from a completion card ("Sit longer"), start pre-set and running.
+  const initialDuration = route.params?.initialDuration ?? 10;
+  const shouldAutoStart = route.params?.autoStart ?? false;
+  const [duration, setDuration] = useState(initialDuration); // minutes
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(duration * 60); // seconds
+  const [timeRemaining, setTimeRemaining] = useState(initialDuration * 60); // seconds
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasPlayedGong = useRef(false);
   // Track wall-clock time to handle screen sleep correctly
@@ -296,6 +300,15 @@ export const SimpleTimerScreen: React.FC = () => {
     setIsRunning(true);
     setIsPaused(false);
   };
+
+  // Auto-start when launched from a completion card ("Sit longer"). Fire once.
+  const hasAutoStarted = useRef(false);
+  useEffect(() => {
+    if (shouldAutoStart && !hasAutoStarted.current) {
+      hasAutoStarted.current = true;
+      handleStart();
+    }
+  }, [shouldAutoStart]);
 
   const handlePause = async () => {
     // Save the current time remaining when pausing
