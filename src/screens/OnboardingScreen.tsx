@@ -176,7 +176,7 @@ export const OnboardingScreen: React.FC = () => {
           Would you like to receive notifications when it's time for each session?
         </Text>
         <Text style={styles.noteText}>
-          Notifications are gentle prompts, not demands. You can always snooze, skip, or turn them off.
+          Notifications are gentle prompts, not demands. You can always skip or turn them off.
         </Text>
       </View>
 

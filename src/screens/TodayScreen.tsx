@@ -18,7 +18,6 @@ import { getSessionById } from '../data/sessions';
 import { consumePendingPractice } from '../services/pendingPractice';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList, SessionStatus } from '../types';
-import { MAX_SNOOZE_COUNT, DEFAULT_SNOOZE_OPTIONS } from '../utils/theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -26,10 +25,8 @@ export const TodayScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const {
     todayInstances,
-    userSchedule,
     refreshTodayInstances,
     skipSession,
-    snoozeSession,
   } = useApp();
 
   useFocusEffect(
@@ -54,10 +51,6 @@ export const TodayScreen: React.FC = () => {
   const handleSkip = useCallback(async (instanceId: string) => {
     await skipSession(instanceId);
   }, [skipSession]);
-
-  const handleSnooze = useCallback(async (instanceId: string, minutes: number) => {
-    await snoozeSession(instanceId, minutes);
-  }, [snoozeSession]);
 
   const handleShare = useCallback((instanceId: string, templateId: string, endedAt?: string) => {
     const session = getSessionById(templateId);
@@ -133,10 +126,7 @@ export const TodayScreen: React.FC = () => {
               isNextSession={instance.id === nextSessionId}
               onStart={() => handleStart(instance.id)}
               onSkip={() => handleSkip(instance.id)}
-              onSnooze={(minutes) => handleSnooze(instance.id, minutes)}
               onShare={() => handleShare(instance.id, instance.templateId, instance.endedAt)}
-              snoozeOptions={userSchedule?.snoozeOptionsMin || DEFAULT_SNOOZE_OPTIONS}
-              maxSnoozeCount={MAX_SNOOZE_COUNT}
             />
           ))}
         </View>

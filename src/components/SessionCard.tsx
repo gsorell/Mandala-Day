@@ -17,10 +17,7 @@ interface SessionCardProps {
   isNextSession: boolean;
   onStart: () => void;
   onSkip: () => void;
-  onSnooze: (minutes: number) => void;
   onShare?: () => void;
-  snoozeOptions: number[];
-  maxSnoozeCount: number;
 }
 
 const getStatusColor = (status: SessionStatus): string => {
@@ -62,10 +59,7 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
   isNextSession,
   onStart,
   onSkip,
-  onSnooze,
   onShare,
-  snoozeOptions,
-  maxSnoozeCount,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
   const session = getSessionById(instance.templateId);
@@ -75,7 +69,6 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
   const isActive =
     instance.status === SessionStatus.DUE ||
     instance.status === SessionStatus.UPCOMING;
-  const canSnooze = instance.snoozeCount < maxSnoozeCount;
   const scheduledTime = format(new Date(instance.scheduledAt), 'h:mm a');
   const practiceInfo = getPracticeTypeInfo(session.practiceType);
 
@@ -136,20 +129,6 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
           </TouchableOpacity>
 
           <View style={styles.rightActions}>
-            {canSnooze && instance.status === SessionStatus.DUE && (
-              <View style={styles.snoozeContainer}>
-                {snoozeOptions.map((minutes) => (
-                  <TouchableOpacity
-                    key={minutes}
-                    style={styles.snoozeButton}
-                    onPress={() => onSnooze(minutes)}
-                  >
-                    <Text style={styles.snoozeText}>+{minutes}m</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
             <TouchableOpacity
               style={[styles.button, styles.buttonPrimary]}
               onPress={onStart}
@@ -330,20 +309,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.semibold,
-  },
-  snoozeContainer: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  snoozeButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.buttonSecondary,
-  },
-  snoozeText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSizes.sm,
   },
   skipButton: {
     paddingVertical: spacing.xs,

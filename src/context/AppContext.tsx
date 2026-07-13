@@ -50,7 +50,6 @@ interface AppContextType {
   startSession: (instanceId: string) => Promise<void>;
   completeSession: (instanceId: string) => Promise<void>;
   skipSession: (instanceId: string) => Promise<void>;
-  snoozeSession: (instanceId: string, minutes: number) => Promise<void>;
   getNextDueSession: () => DailySessionInstance | undefined;
 }
 
@@ -360,36 +359,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     [todayInstances]
   );
 
-  const snoozeSession = useCallback(
-    async (instanceId: string, minutes: number) => {
-      const instance = todayInstances.find((i) => i.id === instanceId);
-      if (!instance) return;
-
-      const newScheduledAt = new Date(
-        new Date().getTime() + minutes * 60 * 1000
-      ).toISOString();
-
-      const updatedInstance: DailySessionInstance = {
-        ...instance,
-        scheduledAt: newScheduledAt,
-        status: SessionStatus.UPCOMING,
-        snoozeCount: instance.snoozeCount + 1,
-      };
-
-      setTodayInstances((prev) =>
-        prev.map((i) => (i.id === instanceId ? updatedInstance : i))
-      );
-      await updateSessionInstance(updatedInstance);
-      await logEvent({
-        timestamp: new Date().toISOString(),
-        eventType: EventType.SNOOZE,
-        instanceId,
-        metadata: { minutes },
-      });
-    },
-    [todayInstances]
-  );
-
   const getNextDueSession = useCallback(() => {
     if (todayInstances.length === 0) return undefined;
 
@@ -444,7 +413,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         startSession,
         completeSession,
         skipSession,
-        snoozeSession,
         getNextDueSession,
       }}
     >
