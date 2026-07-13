@@ -4,6 +4,7 @@ import {
   AppSettings,
   DailySessionInstance,
   EventLog,
+  JournalEntry,
   SessionStatus,
 } from '../types';
 import { DEFAULT_SESSIONS } from '../data/sessions';
@@ -351,6 +352,61 @@ export const addExtraPracticeMinutes = async (date: string, minutes: number): Pr
   }
 };
 
+// Journal entries — a running log of post-meditation notes, newest-first.
+// Unlike sessions, these are never auto-pruned; the journal is meant to persist.
+export const getJournalEntries = async (): Promise<JournalEntry[]> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.JOURNAL_ENTRIES);
+    const entries: JournalEntry[] = data ? JSON.parse(data) : [];
+    return entries.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  } catch (error) {
+    console.error('Error loading journal entries:', error);
+    return [];
+  }
+};
+
+export const addJournalEntry = async (
+  entry: Omit<JournalEntry, 'id' | 'timestamp'> & { timestamp?: string }
+): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.JOURNAL_ENTRIES);
+    const entries: JournalEntry[] = data ? JSON.parse(data) : [];
+    const timestamp = entry.timestamp || new Date().toISOString();
+    entries.push({
+      id: `journal_${Date.now()}`,
+      timestamp,
+      text: entry.text,
+      instanceId: entry.instanceId,
+      sessionTitle: entry.sessionTitle,
+    });
+    await AsyncStorage.setItem(STORAGE_KEYS.JOURNAL_ENTRIES, JSON.stringify(entries));
+  } catch (error) {
+    console.error('Error adding journal entry:', error);
+  }
+};
+
+export const updateJournalEntry = async (id: string, text: string): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.JOURNAL_ENTRIES);
+    const entries: JournalEntry[] = data ? JSON.parse(data) : [];
+    const updated = entries.map((e) => (e.id === id ? { ...e, text } : e));
+    await AsyncStorage.setItem(STORAGE_KEYS.JOURNAL_ENTRIES, JSON.stringify(updated));
+  } catch (error) {
+    console.error('Error updating journal entry:', error);
+  }
+};
+
+export const deleteJournalEntry = async (id: string): Promise<void> => {
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEYS.JOURNAL_ENTRIES);
+    const entries: JournalEntry[] = data ? JSON.parse(data) : [];
+    const filtered = entries.filter((e) => e.id !== id);
+    await AsyncStorage.setItem(STORAGE_KEYS.JOURNAL_ENTRIES, JSON.stringify(filtered));
+  } catch (error) {
+    console.error('Error deleting journal entry:', error);
+  }
+};
+
 // Clear all data (for testing/reset)
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -360,6 +416,7 @@ export const clearAllData = async (): Promise<void> => {
       STORAGE_KEYS.DAILY_INSTANCES,
       STORAGE_KEYS.EVENT_LOG,
       STORAGE_KEYS.EXTRA_PRACTICE_MINUTES,
+      STORAGE_KEYS.JOURNAL_ENTRIES,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);

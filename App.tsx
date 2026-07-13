@@ -18,6 +18,7 @@ import { ScheduleSettingsScreen } from './src/screens/ScheduleSettingsScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
+import { JournalScreen } from './src/screens/JournalScreen';
 import { TheViewScreen } from './src/screens/TheViewScreen';
 import { FirekeeperScreen } from './src/screens/FirekeeperScreen';
 import { VipassanaScreen } from './src/screens/VipassanaScreen';
@@ -394,6 +395,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="SimpleTimer"
               component={SimpleTimerScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="Journal"
+              component={JournalScreen}
               options={{
                 presentation: 'card',
               }}

@@ -313,6 +313,14 @@ export const SettingsScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>Data</Text>
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('Journal')}
+          >
+            <Text style={styles.menuItemText}>Journal</Text>
+            <Text style={styles.menuItemSubtext}>Notes from your sittings</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('History')}
           >
             <Text style={styles.menuItemText}>History</Text>

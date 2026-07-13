@@ -68,6 +68,15 @@ export interface DailySessionInstance {
   duration?: number; // minutes (for extra practices like Pranayama, Simple Timer)
 }
 
+// A free-form journal note, optionally written right after a sitting
+export interface JournalEntry {
+  id: string;
+  timestamp: string; // ISO datetime
+  text: string;
+  instanceId?: string; // the session instance this note followed, if any
+  sessionTitle?: string; // the meditation this note followed, if any
+}
+
 // Event log entry for analytics
 export interface EventLog {
   id: string;
@@ -95,6 +104,7 @@ export type RootStackParamList = {
   Settings: undefined;
   ScheduleSettings: undefined;
   History: undefined;
+  Journal: undefined;
   SimpleTimer: undefined;
   TheView: undefined;
   Firekeeper: undefined;
