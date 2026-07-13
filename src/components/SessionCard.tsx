@@ -91,7 +91,7 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={[styles.infoButtonText, showInfo && styles.infoButtonActive]}>
-              {showInfo ? '−' : '○'}
+              {showInfo ? '−' : '+'}
             </Text>
           </TouchableOpacity>
           {instance.status === SessionStatus.COMPLETED && onShare ? (
