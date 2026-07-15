@@ -173,6 +173,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A prairie wind journey for the little ones',
       abbr: 'PW',
     },
+    extra_where_the_stars_turn: {
+      title: 'Where the Stars Turn',
+      dedication: 'May the turning stars carry little ones to peaceful dreams.',
+      shareMessage: 'A starlit journey for the little ones',
+      abbr: 'WS',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

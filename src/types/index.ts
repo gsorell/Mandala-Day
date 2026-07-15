@@ -115,6 +115,7 @@ export type RootStackParamList = {
   MarshCreek: undefined;
   QuietCove: undefined;
   PrairieWind: undefined;
+  WhereTheStarsTurn: undefined;
   Pranayama: undefined;
   SquareBreathing: undefined;
   Vision: undefined;

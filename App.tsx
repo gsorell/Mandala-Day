@@ -28,6 +28,7 @@ import { StarryNightScreen } from './src/screens/StarryNightScreen';
 import { MarshCreekScreen } from './src/screens/MarshCreekScreen';
 import { QuietCoveScreen } from './src/screens/QuietCoveScreen';
 import { PrairieWindScreen } from './src/screens/PrairieWindScreen';
+import { WhereTheStarsTurnScreen } from './src/screens/WhereTheStarsTurnScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
@@ -465,6 +466,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="PrairieWind"
               component={PrairieWindScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="WhereTheStarsTurn"
+              component={WhereTheStarsTurnScreen}
               options={{
                 presentation: 'card',
               }}
