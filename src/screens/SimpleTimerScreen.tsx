@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Platform,
   AppState,
   AppStateStatus,
@@ -369,39 +368,10 @@ export const SimpleTimerScreen: React.FC = () => {
   };
 
   const handleEnd = () => {
-    if (isPaused) {
-      // If already paused, just go back
-      handleReset();
-      navigation.goBack();
-    } else {
-      // If running, show confirmation with option to keep timer running in background
-      Alert.alert(
-        'End Timer',
-        'Would you like to end the meditation or let it continue in the background?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Continue in Background',
-            onPress: () => {
-              // On Android with foreground service, keep it running - it will play gong
-              // Clear local interval but let foreground service handle completion
-              if (timerRef.current) {
-                clearInterval(timerRef.current);
-              }
-              navigation.goBack();
-            },
-          },
-          {
-            text: 'End Timer',
-            style: 'destructive',
-            onPress: () => {
-              handleReset();
-              navigation.goBack();
-            },
-          },
-        ]
-      );
-    }
+    // Matches every other meditation screen: stop and go back immediately.
+    // (The old 3-button Alert.alert here was a no-op on web, so End did nothing.)
+    handleReset();
+    navigation.goBack();
   };
 
   const handleComplete = async () => {
