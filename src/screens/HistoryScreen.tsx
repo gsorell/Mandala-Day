@@ -179,6 +179,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A starlit journey for the little ones',
       abbr: 'WS',
     },
+    extra_the_first_snow: {
+      title: 'The First Snow',
+      dedication: 'May the falling snow carry little ones into a soft, deep sleep.',
+      shareMessage: 'A snowy bedtime journey for the little ones',
+      abbr: 'FS',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

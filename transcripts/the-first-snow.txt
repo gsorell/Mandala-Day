@@ -1,0 +1,265 @@
+<break time="1.5s"/>
+
+The pine woods stand quiet in the last gray light of evening.
+
+<break time="4s"/>
+
+At the edge of a small clearing, one little pine waits, its branches bare and still.
+
+<break time="3s"/>
+
+High above, the first snowflake drifts down through the dark trees.
+
+<break time="3s"/>
+
+It falls slowly...
+
+<break time="2.5s"/>
+
+and lands without a sound.
+
+<break time="5s"/>
+
+Then another follows.
+
+<break time="2.5s"/>
+
+And another.
+
+<break time="2.5s"/>
+
+Each one drifts down in its own slow way.
+
+<break time="5s"/>
+
+The snow settles softly on the little pine's branches.
+
+<break time="3s"/>
+
+One small branch holds a thin white line of snow.
+
+<break time="3s"/>
+
+It gathers there, slowly...
+
+<break time="2.5s"/>
+
+grain by grain.
+
+<break time="6s"/>
+
+A small red bird lands on a branch nearby.
+
+<break time="2.5s"/>
+
+It shakes the snow from its feathers.
+
+<break time="3s"/>
+
+It sits very still...
+
+<break time="2.5s"/>
+
+then lifts away into the trees.
+
+<break time="6s"/>
+
+Below the little pine, an old fallen log rests on the ground.
+
+<break time="3s"/>
+
+The snow settles gently along its length.
+
+<break time="2.5s"/>
+
+Slowly, its rough bark turns soft and white.
+
+<break time="6s"/>
+
+Across the clearing,
+
+a line of small tracks marks the snow.
+
+<break time="3s"/>
+
+A rabbit passed this way, a little while ago.
+
+<break time="3s"/>
+
+One flake at a time,
+
+the tracks begin to fill.
+
+<break time="3s"/>
+
+Softer...
+
+<break time="2.5s"/>
+
+and softer.
+
+<break time="7s"/>
+
+Beyond the clearing, the tall pines fade into the falling snow.
+
+<break time="3s"/>
+
+The far trees grow pale and dim.
+
+<break time="3s"/>
+
+The whole wood grows quieter...
+
+<break time="2.5s"/>
+
+and quieter.
+
+<break time="7s"/>
+
+The little pine holds more snow now.
+
+<break time="3s"/>
+
+One low branch bends slowly under its soft white weight.
+
+<break time="3s"/>
+
+Lower...
+
+<break time="2.5s"/>
+
+and lower.
+
+<break time="3s"/>
+
+Then the snow slips off, and the branch lifts up again.
+
+<break time="8s"/>
+
+High in the dark, a single flake drifts down alone.
+
+<break time="3s"/>
+
+It turns slowly as it falls...
+
+<break time="3s"/>
+
+and comes to rest on the tip of the smallest branch.
+
+<break time="4s"/>
+
+Can you see it resting there?
+
+<break time="6s"/>
+
+Somewhere in the branches, the little red bird has tucked itself away.
+
+<break time="3s"/>
+
+Only a soft spot of red shows through the falling snow.
+
+<break time="3s"/>
+
+Then the snow drifts across...
+
+<break time="2.5s"/>
+
+and even that is gone.
+
+<break time="7s"/>
+
+The old log's rough edges are gone now.
+
+<break time="3s"/>
+
+Its shape grows round, and soft, and low.
+
+<break time="6s"/>
+
+The little tracks are almost gone.
+
+<break time="3s"/>
+
+The snow has filled them, one flake at a time...
+
+<break time="2.5s"/>
+
+until the clearing lies smooth and white.
+
+<break time="7s"/>
+
+The tall pines beyond have slipped away into the white.
+
+<break time="3s"/>
+
+Only their soft gray shapes remain.
+
+<break time="3s"/>
+
+And the falling snow fills all the quiet space between.
+
+<break time="8s"/>
+
+The snow comes down without a sound.
+
+<break time="4s"/>
+
+A soft white blanket settles over the whole wood.
+
+<break time="8s"/>
+
+The little pine stands quiet, its branches soft with snow.
+
+<break time="2.5s"/>
+
+The old log rests, round and low.
+
+<break time="2.5s"/>
+
+The little red bird waits somewhere in the falling white.
+
+<break time="2.5s"/>
+
+The rabbit's tracks lie hidden beneath the snow.
+
+<break time="2.5s"/>
+
+The far pines fade, pale and still.
+
+<break time="2.5s"/>
+
+And the snow keeps drifting down, flake after flake.
+
+<break time="12s"/>
+
+Seen together,
+
+the whole snowy wood rests in the gray evening light.
+
+<break time="8s"/>
+
+High above, the first flakes are still falling.
+
+<break time="4s"/>
+
+A branch bows low...
+
+<break time="3s"/>
+
+and lifts.
+
+<break time="4s"/>
+
+The snow gathers...
+
+<break time="3s"/>
+
+and slips away.
+
+<break time="10s"/>
+
+And the whole snowy wood,
+
+ drifts into the soft, deep night.
+
+<break time="1.5s"/>
