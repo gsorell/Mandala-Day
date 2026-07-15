@@ -11,6 +11,7 @@ import {
   TextInput,
   Keyboard,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -34,9 +35,21 @@ export const SessionCompleteScreen: React.FC = () => {
   const { todayInstances } = useApp();
   const { instanceId, sessionTitle, dedication, shareMessage, completedAt, duration, playEndingGong } = route.params;
   const shareCardRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const [noteText, setNoteText] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+
+  // The note input sits below the share card, so the keyboard covers it on open.
+  // Scroll it into view once the keyboard has finished animating up.
+  useEffect(() => {
+    if (!noteOpen) return;
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const sub = Keyboard.addListener(showEvent, () => {
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+    });
+    return () => sub.remove();
+  }, [noteOpen]);
 
   const handleSaveNote = async () => {
     const text = noteText.trim();
@@ -192,10 +205,16 @@ export const SessionCompleteScreen: React.FC = () => {
         </TouchableOpacity>
       )}
 
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         {/* Share Card - The shareable visual */}
         <View style={styles.shareCard} ref={shareCardRef}>
@@ -326,6 +345,7 @@ export const SessionCompleteScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -344,6 +364,9 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: colors.primary,
     fontSize: typography.fontSizes.md,
+  },
+  flex: {
+    flex: 1,
   },
   scroll: {
     flex: 1,
