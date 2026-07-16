@@ -17,6 +17,13 @@ Only when the change is a *new guided meditation*. Source audio arrives in
    `src/screens/<Name>Screen.tsx`, swapping: title, in-session prompt, description,
    duration (min), the audio `require`, the `templateId` (`extra_<snake_name>`), and the
    `SessionComplete` navigation params (`sessionTitle`, `dedication`, `shareMessage`).
+   > **Header clip guard:** the begin-screen header title is a custom in-screen row,
+   > cloned per screen — always clone from a header-fixed screen (Geometry qualifies as
+   > of `758bca7`). The title `Text` must keep `numberOfLines={1} adjustsFontSizeToFit
+   > minimumFontScale={0.7}` and its style must keep `flex: 1` + `textAlign: 'center'`,
+   > or long titles clip off the right edge on narrower devices / larger text sizes.
+   > (The real fix is a shared `<ScreenHeader>` component; until that exists, don't drop
+   > these props when swapping the title.)
 3. **Route** — `App.tsx`: add the import and a `<Stack.Screen name="<Name>" …>`.
 4. **Type** — `src/types/index.ts`: add `<Name>: undefined;` to `RootStackParamList`.
 5. **Extras menu** — `src/screens/SettingsScreen.tsx`: add a `TouchableOpacity` row
