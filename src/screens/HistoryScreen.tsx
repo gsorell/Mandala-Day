@@ -217,9 +217,6 @@ export const HistoryScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} pinchGestureEnabled={false} maximumZoomScale={1} minimumZoomScale={1}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backButton}>← Back</Text>
-          </TouchableOpacity>
           <Text style={styles.title}>History</Text>
         </View>
 
@@ -352,11 +349,6 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
-  },
-  backButton: {
-    color: colors.primary,
-    fontSize: typography.fontSizes.md,
-    marginBottom: spacing.sm,
   },
   title: {
     color: colors.textPrimary,
