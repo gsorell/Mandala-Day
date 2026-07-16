@@ -232,7 +232,7 @@ export const RecognizingThoughtScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Recognizing Thought</Text>
+        <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>Recognizing Thought</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -280,9 +280,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.lg,
   },
   title: {
+    flex: 1,
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.medium,
+    textAlign: 'center',
+    marginHorizontal: spacing.sm,
   },
   headerSpacer: {
     width: 50,

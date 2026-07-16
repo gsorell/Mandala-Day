@@ -490,7 +490,7 @@ export const SquareBreathingScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Square Breathing</Text>
+        <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>Square Breathing</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -556,9 +556,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.lg,
   },
   title: {
+    flex: 1,
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.medium,
+    textAlign: 'center',
+    marginHorizontal: spacing.sm,
   },
   headerSpacer: {
     width: 50,
