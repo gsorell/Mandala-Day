@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Mandala Day pre-commit hook.
+# Blocks a commit whose audio assets don't match assets/audio/CHECKSUMS.sha256,
+# so a degraded / swapped / truncated .mp3 can't slip into a release.
+#
+# Enable (once per clone):  git config core.hooksPath .githooks
+#
+# Only runs the audio check when an audio file or the manifest is part of the
+# commit, so unrelated commits aren't slowed down.
+
+set -eu
+
+ROOT=$(git rev-parse --show-toplevel)
+
+if git diff --cached --name-only | grep -qE '^assets/audio/'; then
+  sh "$ROOT/scripts/check-audio.sh" || {
+    echo "" >&2
+    echo "pre-commit: audio integrity check failed — commit aborted." >&2
+    exit 1
+  }
+fi

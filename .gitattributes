@@ -1,0 +1,6 @@
+# Shell scripts and git hooks must stay LF, or the shebang breaks on checkout.
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# Checksum manifest is plain text; keep it LF for stable, cross-platform hashes.
+assets/audio/CHECKSUMS.sha256 text eol=lf

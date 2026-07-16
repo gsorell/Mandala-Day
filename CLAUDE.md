@@ -13,6 +13,16 @@ Only when the change is a *new guided meditation*. Source audio arrives in
    ```bash
    ffmpeg -y -i "<source>.mp3" -ac 1 -b:a 64k -codec:a libmp3lame assets/audio/<hyphen-name>.mp3
    ```
+   > **Always keep `-codec:a libmp3lame` and `-b:a 64k`.** A bare `ffmpeg -i in.mp3
+   > out.mp3` re-encode defaults to a low bitrate that auto-applies a ~10.5 kHz lowpass,
+   > audibly muffling the track (this is what happened to Cutting Through — a good
+   > 15.5 kHz master got re-encoded to a dull 40 kbps copy). After adding or changing
+   > **any** file in `assets/audio/`, refresh the integrity manifest and stage it:
+   > ```bash
+   > scripts/check-audio.sh --update && git add assets/audio/CHECKSUMS.sha256
+   > ```
+   > A pre-commit hook (`.githooks/pre-commit`) blocks commits whose audio no longer
+   > matches the manifest — see **Audio integrity guard** below.
 2. **Screen** — clone `src/screens/GeometryOfAttentionScreen.tsx` to
    `src/screens/<Name>Screen.tsx`, swapping: title, in-session prompt, description,
    duration (min), the audio `require`, the `templateId` (`extra_<snake_name>`), and the
@@ -125,6 +135,31 @@ eas submit --platform ios --latest
 Apple credentials (Apple ID, ASC App ID, team ID) are already in [eas.json](eas.json) under `submit.production.ios`. The build appears in TestFlight after Apple processing (~10–30 min).
 
 ---
+
+## Audio integrity guard
+
+`assets/audio/CHECKSUMS.sha256` records the SHA-256 of every known-good audio asset.
+`scripts/check-audio.sh` verifies the files still match it (and that no `.mp3` is
+missing from the manifest); it fails if a file was silently altered, truncated,
+swapped, or re-encoded to lower quality.
+
+- **One-time setup per clone** (points git at the tracked hooks dir):
+  ```bash
+  git config core.hooksPath .githooks
+  ```
+  The `.githooks/pre-commit` hook then runs the check automatically whenever a commit
+  touches `assets/audio/`, aborting the commit on any mismatch.
+- **Run it manually** anytime: `scripts/check-audio.sh`
+- **After a deliberate audio change** (new track, re-encode, replacement): regenerate
+  and stage the manifest so the hook accepts the new files:
+  ```bash
+  scripts/check-audio.sh --update && git add assets/audio/CHECKSUMS.sha256
+  ```
+
+> Background: this exists because a manual ffmpeg step once overwrote
+> `cutting-through.mp3` with a muffled 40 kbps / 10.5 kHz-lowpass re-encode (the master
+> is clean to ~15.5 kHz). The guard makes that class of regression fail loudly at commit
+> time instead of shipping.
 
 ## Quick reference
 
