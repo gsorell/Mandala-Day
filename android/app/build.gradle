@@ -124,6 +124,14 @@ android {
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }
+        // Side-by-side test variant: installs as com.mandaladay.app.dev alongside
+        // the production app so on-device testing never touches the real install.
+        releaseDev {
+            initWith release
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+            matchingFallbacks = ['release']
+        }
     }
     packagingOptions {
         jniLibs {
