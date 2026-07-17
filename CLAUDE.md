@@ -22,7 +22,10 @@ Only when the change is a *new guided meditation*. Source audio arrives in
    > scripts/check-audio.sh --update && git add assets/audio/CHECKSUMS.sha256
    > ```
    > A pre-commit hook (`.githooks/pre-commit`) blocks commits whose audio no longer
-   > matches the manifest — see **Audio integrity guard** below.
+   > matches the manifest — see **Audio integrity guard** below. Then run
+   > `scripts/check-audio-quality.sh` to confirm the new/changed file didn't lose
+   > high-end vs its master (catches a muffled re-encode, which the checksum can't) —
+   > see **Audio quality guard (vs. masters)** below.
 2. **Screen** — clone `src/screens/GeometryOfAttentionScreen.tsx` to
    `src/screens/<Name>Screen.tsx`, swapping: title, in-session prompt, description,
    duration (min), the audio `require`, the `templateId` (`extra_<snake_name>`), and the
@@ -161,10 +164,44 @@ swapped, or re-encoded to lower quality.
 > is clean to ~15.5 kHz). The guard makes that class of regression fail loudly at commit
 > time instead of shipping.
 
+## Audio quality guard (vs. masters)
+
+The checksum guard above answers *"did this file change since I blessed it?"* — byte
+identity against a snapshot it generated from the app files themselves. It **cannot**
+tell you whether a shipped file was a *good* re-encode in the first place: run
+`--update` on a muffled file and it will defend that muffled file forever. That
+judgment used to depend entirely on the ear.
+
+`scripts/check-audio-quality.sh` closes that gap. It compares every
+`assets/audio/*.mp3` against its high-quality **master** — an external reference the
+checksum guard never consults — and fails if a shipped file has lost high-frequency
+content its master had (the muffling cliff behind the Cutting Through incident).
+Overall loudness differences are cancelled (it compares spectral *shape* relative to
+each file's own 2–4 kHz midband), so a quieter/louder copy is never mistaken for a
+degraded one. Normal 64k-mono LAME loses ~1 dB here; a real lowpass cliff loses 15–40.
+
+```bash
+scripts/check-audio-quality.sh            # prints a per-file pass/fail table
+MASTERS=/path/to/masters scripts/check-audio-quality.sh   # override masters folder
+```
+
+- **Masters live at** `C:\Users\gsore\Desktop\Mandala Day Assets\Audio\MP3\` (default).
+  This is a **local** check — masters are not in the repo, so it can't run on a fresh
+  clone or in CI. Run it as a **release-step gate** (step 0, after any audio change),
+  not a hard pre-commit blocker.
+- **Utility sounds** (`gong.mp3`, `pranayama-muted.mp3`, `pranayama-sustain.mp3`) are
+  short non-spoken cues at source bitrate — intentionally *not* gated (spectral
+  comparison on a 0.5s chime is meaningless). The pranayama bells' sources live in
+  `…/Audio/Bells/` (`Hold.mp3`, `Sustained chime.mp3`).
+- **Unverified:** `integration-motion.mp3` has no exported MP3 master (its source is
+  the Audacity project `…/Audio/AUP3/Integration in Motion.aup3`). Export a
+  full-quality MP3 into the masters folder to bring it under the guard.
+
 ## Quick reference
 
 | Asset | Location |
 |---|---|
+| Audio masters (quality guard) | `C:\Users\gsore\Desktop\Mandala Day Assets\Audio\MP3` |
 | Android builds folder | `C:\Users\gsore\Desktop\Mandala Day Assets\Builds` |
 | Android keystore | `android-keystore.jks` (repo root, gitignored) |
 | EAS dashboard | https://expo.dev/accounts/gsorell/projects/mandala-day/builds |
