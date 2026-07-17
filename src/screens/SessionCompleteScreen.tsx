@@ -46,7 +46,13 @@ export const SessionCompleteScreen: React.FC = () => {
     if (!noteOpen) return;
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const sub = Keyboard.addListener(showEvent, () => {
-      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+      const scroll = () => scrollRef.current?.scrollToEnd({ animated: true });
+      requestAnimationFrame(scroll);
+      // On Android the KeyboardAvoidingView resizes over a couple of frames, so a
+      // single rAF can fire before the layout settles — scroll again once it lands.
+      if (Platform.OS === 'android') {
+        setTimeout(scroll, 150);
+      }
     });
     return () => sub.remove();
   }, [noteOpen]);
@@ -207,7 +213,7 @@ export const SessionCompleteScreen: React.FC = () => {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
       <ScrollView
         ref={scrollRef}
