@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mandala Day",
     "slug": "mandala-day",
-    "version": "1.0.27",
+    "version": "1.0.28",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mandaladay.app",
-      "buildNumber": "20",
+      "buildNumber": "21",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio",
