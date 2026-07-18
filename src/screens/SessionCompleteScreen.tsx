@@ -285,9 +285,20 @@ export const SessionCompleteScreen: React.FC = () => {
                   style={styles.sitLongerChip}
                   onPress={() => {
                     audioService.stop();
-                    navigation.navigate('SimpleTimer', {
-                      initialDuration: minutes,
-                      autoStart: true,
+                    // This screen is a fullScreenModal. Pushing a card-presentation
+                    // screen on top of it via navigate() presents *under* the modal
+                    // on iOS (react-native-screens), so the tap appeared to do
+                    // nothing. Reset the stack instead — the completion modal has
+                    // served its purpose, so drop it and land on the timer over Main.
+                    navigation.reset({
+                      index: 1,
+                      routes: [
+                        { name: 'Main' },
+                        {
+                          name: 'SimpleTimer',
+                          params: { initialDuration: minutes, autoStart: true },
+                        },
+                      ],
                     });
                   }}
                 >
