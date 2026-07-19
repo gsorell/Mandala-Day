@@ -185,6 +185,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A snowy bedtime journey for the little ones',
       abbr: 'FS',
     },
+    extra_play_fort: {
+      title: 'The Play Fort',
+      dedication: 'May the little fort’s warm glow carry little ones into a soft, deep sleep.',
+      shareMessage: 'A cozy pillow-fort bedtime journey for the little ones',
+      abbr: 'PF',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

@@ -30,6 +30,7 @@ import { QuietCoveScreen } from './src/screens/QuietCoveScreen';
 import { PrairieWindScreen } from './src/screens/PrairieWindScreen';
 import { WhereTheStarsTurnScreen } from './src/screens/WhereTheStarsTurnScreen';
 import { TheFirstSnowScreen } from './src/screens/TheFirstSnowScreen';
+import { PlayFortScreen } from './src/screens/PlayFortScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
@@ -481,6 +482,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="TheFirstSnow"
               component={TheFirstSnowScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="PlayFort"
+              component={PlayFortScreen}
               options={{
                 presentation: 'card',
               }}
