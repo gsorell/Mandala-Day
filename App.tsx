@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ActivityIndicator, Platform, Image, TouchableOpacity, BackHandler } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,6 +49,25 @@ import {
   addNotificationResponseListener,
   removeNotificationSubscription,
 } from './src/services/notifications';
+
+// Global font-scale clamp. Without this, the device's system text-size /
+// accessibility "Larger Text" setting multiplies every <Text> at full strength
+// (up to ~3.5x), overflowing our fixed layouts (breathing-pattern rows wrap to
+// many lines, header badges collide, etc.). We still honor the setting so
+// low-vision users get larger text — just capped so layouts stay intact.
+const MAX_FONT_SCALE = 1.2;
+// @ts-expect-error defaultProps is untyped on these host components but valid at runtime.
+Text.defaultProps = Text.defaultProps || {};
+// @ts-expect-error see above.
+Text.defaultProps.allowFontScaling = true;
+// @ts-expect-error see above.
+Text.defaultProps.maxFontSizeMultiplier = MAX_FONT_SCALE;
+// @ts-expect-error see above.
+TextInput.defaultProps = TextInput.defaultProps || {};
+// @ts-expect-error see above.
+TextInput.defaultProps.allowFontScaling = true;
+// @ts-expect-error see above.
+TextInput.defaultProps.maxFontSizeMultiplier = MAX_FONT_SCALE;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createMaterialTopTabNavigator<MainTabParamList>();
