@@ -4,11 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
-  Alert,
   Modal,
   Image,
   ScrollView,
+  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -18,7 +17,19 @@ import { DEFAULT_SESSIONS } from '../data/sessions';
 import { setPendingPractice } from '../services/pendingPractice';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 
-type OnboardingStep = 'welcome' | 'schedule' | 'notifications' | 'framing' | 'invitation';
+// Three-screen arc: lead with the idea (the whole day is one practice), then a
+// single light-touch setup, then drop the user into experience. Notification
+// permission is deferred to the end of the schedule step — after the value has
+// landed and the user has opted in via the inline toggle — rather than fired as
+// a cold system prompt mid-flow.
+type OnboardingStep = 'welcome' | 'schedule' | 'invitation';
+const STEP_ORDER: OnboardingStep[] = ['welcome', 'schedule', 'invitation'];
+
+// Time-of-day phase for each of the six sessions (by order). The opening screen
+// shows the day turning through these phases — dawn to night — instead of clock
+// times, so "comprehensive" reads as a journey, not a timetable. Actual times
+// are set on the next screen.
+const PHASE_LABELS = ['Dawn', 'Morning', 'Midday', 'Afternoon', 'Evening', 'Night'];
 
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
@@ -28,36 +39,29 @@ export const OnboardingScreen: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [tempHour, setTempHour] = useState(7);
   const [tempMinute, setTempMinute] = useState(0);
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
 
-  const handleRequestNotifications = async () => {
+  // Fired when leaving the schedule step. If the user left the inline reminders
+  // toggle on, request OS permission here (between screens, not at practice
+  // start) and record the outcome; otherwise persist that reminders are off.
+  const handleScheduleContinue = async () => {
     try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+      if (remindersEnabled) {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        await updateAppSettings({ notificationsEnabled: finalStatus === 'granted' });
+      } else {
+        await updateAppSettings({ notificationsEnabled: false });
       }
-
-      if (finalStatus !== 'granted') {
-        Alert.alert(
-          'Notifications',
-          'You can enable notifications later in Settings. The app will still work, but won\'t remind you of sessions.',
-          [{ text: 'OK' }]
-        );
-      }
-
-      await updateAppSettings({ notificationsEnabled: finalStatus === 'granted' });
-      setStep('framing');
     } catch (error) {
       console.error('Error requesting notifications:', error);
-      setStep('framing');
+      await updateAppSettings({ notificationsEnabled: false });
     }
-  };
-
-  const handleSkipNotifications = async () => {
-    await updateAppSettings({ notificationsEnabled: false });
-    setStep('framing');
+    setStep('invitation');
   };
 
   const handleComplete = async () => {
@@ -102,24 +106,66 @@ export const OnboardingScreen: React.FC = () => {
     return userSchedule?.sessionTimes[sessionId] || defaultTime;
   };
 
+  const goBack = () => {
+    const idx = STEP_ORDER.indexOf(step);
+    if (idx > 0) setStep(STEP_ORDER[idx - 1]);
+  };
+
+  const renderProgress = () => {
+    const activeIndex = STEP_ORDER.indexOf(step);
+    return (
+      <View style={styles.progressRow}>
+        {step !== 'welcome' && (
+          <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+            <Text style={styles.backButtonText}>‹</Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.dotsRow}>
+          {STEP_ORDER.map((s, i) => (
+            <View
+              key={s}
+              style={[styles.dot, i === activeIndex ? styles.dotActive : styles.dotInactive]}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderWelcome = () => (
-    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.centerContent}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg }]}>
+      {renderProgress()}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.welcomeScrollContent}>
         <Image
           source={require('../../assets/mandala-logo.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
-        <Text style={styles.welcomeSubtitle}>
-          Six daily moments of recognition
+        <Text style={styles.welcomeTitle}>A day, complete.</Text>
+        <Text style={styles.reliefText}>
+          Not a library of sessions to sort through — the whole arc of a practice day, already built.
         </Text>
 
-        <View style={styles.welcomeDescription}>
-          <Text style={styles.descriptionText}>
-            A simple structure for daily practice.
-          </Text>
+        <View style={styles.arc}>
+          <View style={styles.arcLine} />
+          {DEFAULT_SESSIONS.map((session, i) => (
+            <View key={session.id} style={styles.arcRow}>
+              <Text style={styles.arcPhase}>{PHASE_LABELS[i]}</Text>
+              <View style={styles.arcRail}>
+                <View style={styles.arcNode} />
+              </View>
+              <Text style={styles.arcTitle}>{session.title}</Text>
+            </View>
+          ))}
         </View>
-      </View>
+
+        <View style={styles.closer}>
+          <View style={styles.closerRule} />
+          <Text style={styles.closerLine}>No extra hours — the day you already have.</Text>
+          <Text style={styles.closerLine}>Complete it once and the day is whole.</Text>
+          <Text style={styles.closerLineFinal}>Return to it daily, and it becomes a life.</Text>
+        </View>
+      </ScrollView>
 
       <TouchableOpacity style={styles.primaryButton} onPress={() => setStep('schedule')}>
         <Text style={styles.primaryButtonText}>Begin</Text>
@@ -128,11 +174,12 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   const renderSchedule = () => (
-    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.topContent}>
-        <Text style={styles.stepTitle}>Your Daily Mandala</Text>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg }]}>
+      {renderProgress()}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scheduleScrollContent}>
+        <Text style={styles.stepTitle}>Make it yours</Text>
         <Text style={styles.stepDescription}>
-          Tap any time to adjust it. You can also change these later in Settings.
+          These six anchor your day. The times below are a gentle default — tap any to adjust, or change them later in Settings.
         </Text>
 
         <View style={styles.sessionsPreview}>
@@ -157,103 +204,38 @@ export const OnboardingScreen: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
 
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={() => setStep('notifications')}
-      >
-        <Text style={styles.primaryButtonText}>Continue</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderNotifications = () => (
-    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.centerContent}>
-        <Text style={styles.stepTitle}>Gentle Reminders</Text>
-        <Text style={styles.stepDescription}>
-          Would you like to receive notifications when it's time for each session?
-        </Text>
-        <Text style={styles.noteText}>
-          Notifications are gentle prompts, not demands. You can always skip or turn them off.
-        </Text>
-      </View>
-
-      <View style={styles.buttonGroup}>
         <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={handleRequestNotifications}
+          style={styles.reminderRow}
+          onPress={() => setRemindersEnabled((v) => !v)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.primaryButtonText}>Enable Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleSkipNotifications}
-        >
-          <Text style={styles.secondaryButtonText}>Not Now</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const renderFraming = () => (
-    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
-      <ScrollView style={styles.framingScroll} contentContainerStyle={styles.framingScrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.framingTitle}>Practice is Life</Text>
-
-        {/* Section 1: The structure */}
-        <View style={styles.framingSection}>
-          <Text style={styles.framingBody}>
-            Each day is a mandala — a complete cycle.
-          </Text>
-          <Text style={styles.framingBody}>
-            Six short sessions follow the rhythm of the day: morning stillness, awareness of the body, the heart, clear seeing, movement, and rest.
-          </Text>
-          <Text style={styles.framingBody}>
-            Each session is small. Each one returns you to awareness.
-          </Text>
-        </View>
-
-        <View style={styles.framingDivider} />
-
-        {/* Section 2: The orientation */}
-        <View style={styles.framingSection}>
-          <Text style={styles.framingBody}>The orientation is simple:</Text>
-          <Text style={styles.framingKeyLine}>remain attentive.</Text>
-          <Text style={styles.framingBody}>
-            Tend the quiet fire of awareness through the turns of the day — not perfectly, just sincerely.
-          </Text>
-        </View>
-
-        <View style={styles.framingDivider} />
-
-        {/* Section 3: The permission */}
-        <View style={styles.framingSection}>
-          <Text style={styles.framingBody}>There are no streaks here. Life interrupts.</Text>
-          <Text style={styles.framingBody}>When you miss a session, you simply return.</Text>
-          <Text style={styles.framingBody}>Each return completes the mandala.</Text>
-        </View>
-
-        <Text style={styles.framingQuote}>
-          "Practice without edges."
-        </Text>
-
-        <TouchableOpacity onPress={() => navigation.navigate('TheView')} style={styles.viewLink}>
-          <Text style={styles.viewLinkText}>Explore the philosophy →</Text>
+          <View style={styles.reminderText}>
+            <Text style={styles.reminderTitle}>Gentle reminders</Text>
+            <Text style={styles.reminderSubtitle}>
+              A soft prompt at each time. No streaks, no pressure — turn off anytime.
+            </Text>
+          </View>
+          <Switch
+            value={remindersEnabled}
+            onValueChange={setRemindersEnabled}
+            trackColor={{ false: colors.charcoal, true: colors.accent }}
+            thumbColor={colors.white}
+          />
         </TouchableOpacity>
       </ScrollView>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={() => setStep('invitation')}>
+      <TouchableOpacity style={styles.primaryButton} onPress={handleScheduleContinue}>
         <Text style={styles.primaryButtonText}>Continue</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderInvitation = () => (
-    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }]}>
+    <View style={[styles.stepContainer, { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg }]}>
+      {renderProgress()}
       <View style={styles.centerContent}>
-        <Text style={styles.stepTitle}>Begin Here</Text>
+        <Text style={styles.stepTitle}>Begin here</Text>
 
         <View style={styles.welcomeDescription}>
           <Text style={styles.descriptionText}>
@@ -264,6 +246,14 @@ export const OnboardingScreen: React.FC = () => {
             A ten-minute investigation into breath, body, mind, and self.
           </Text>
         </View>
+
+        <Text style={styles.reassuranceLine}>
+          No streaks here. Miss a session — simply return. Each return completes the mandala.
+        </Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate('TheView')} style={styles.viewLink}>
+          <Text style={styles.viewLinkText}>Explore the philosophy →</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.buttonGroup}>
@@ -271,7 +261,7 @@ export const OnboardingScreen: React.FC = () => {
           <Text style={styles.primaryButtonText}>Begin Direct Inquiry</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleComplete}>
-          <Text style={styles.secondaryButtonText}>Maybe later</Text>
+          <Text style={styles.secondaryButtonText}>Explore on my own</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -281,8 +271,6 @@ export const OnboardingScreen: React.FC = () => {
     <View style={styles.container}>
       {step === 'welcome' && renderWelcome()}
       {step === 'schedule' && renderSchedule()}
-      {step === 'notifications' && renderNotifications()}
-      {step === 'framing' && renderFraming()}
       {step === 'invitation' && renderInvitation()}
 
       {/* Time Picker Modal */}
@@ -378,30 +366,141 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  topContent: {
-    flex: 1,
-    paddingTop: spacing.xl,
+  // Progress / back
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 28,
+    marginBottom: spacing.sm,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
+  backButtonText: {
+    color: colors.textSecondary,
+    fontSize: 30,
+    lineHeight: 30,
+    fontWeight: typography.fontWeights.light,
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: borderRadius.full,
+  },
+  dotActive: {
+    backgroundColor: colors.accent,
+  },
+  dotInactive: {
+    backgroundColor: colors.charcoal,
+  },
+  // Welcome
+  welcomeScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
   },
   logoImage: {
-    width: 280,
-    height: 280,
+    width: 96,
+    height: 96,
     alignSelf: 'center',
     marginBottom: spacing.md,
   },
   welcomeTitle: {
     color: colors.textPrimary,
-    fontSize: 42,
+    fontSize: typography.fontSizes.xxl,
     fontWeight: typography.fontWeights.bold,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
-  welcomeSubtitle: {
-    color: colors.accent,
-    fontSize: typography.fontSizes.lg,
+  reliefText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
     textAlign: 'center',
-    fontStyle: 'italic',
-    marginBottom: spacing.xxl,
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.sm,
   },
+  // Six-session arc — the day turning through its phases, as a vertical timeline.
+  arc: {
+    position: 'relative',
+    marginBottom: spacing.xl,
+  },
+  arcLine: {
+    position: 'absolute',
+    left: 104,
+    top: 22,
+    bottom: 22,
+    width: 1,
+    backgroundColor: colors.charcoal,
+  },
+  arcRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+  },
+  arcPhase: {
+    width: 96,
+    textAlign: 'right',
+    color: colors.accent,
+    fontSize: typography.fontSizes.xs,
+    fontWeight: typography.fontWeights.medium,
+    letterSpacing: typography.letterSpacing.relaxed,
+    textTransform: 'uppercase',
+  },
+  arcRail: {
+    width: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arcNode: {
+    width: 7,
+    height: 7,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.accent,
+  },
+  arcTitle: {
+    flex: 1,
+    marginLeft: spacing.sm,
+    color: colors.textPrimary,
+    fontSize: typography.fontSizes.lg,
+    fontWeight: typography.fontWeights.medium,
+  },
+  // Closing tercet — the inspirational turn (day -> whole -> a life).
+  closer: {
+    alignItems: 'center',
+  },
+  closerRule: {
+    width: 40,
+    height: 1,
+    backgroundColor: colors.charcoal,
+    marginBottom: spacing.lg,
+  },
+  closerLine: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.md,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+  },
+  closerLineFinal: {
+    color: colors.accent,
+    fontSize: typography.fontSizes.md,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
+    marginTop: spacing.xs,
+  },
+  // Shared step chrome
   welcomeDescription: {
     gap: spacing.md,
   },
@@ -419,6 +518,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
   },
+  reassuranceLine: {
+    color: colors.textMuted,
+    fontSize: typography.fontSizes.sm,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: typography.fontSizes.sm * typography.lineHeights.relaxed,
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.md,
+  },
   stepTitle: {
     color: colors.textPrimary,
     fontSize: typography.fontSizes.xxl,
@@ -433,12 +541,10 @@ const styles = StyleSheet.create({
     lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
     marginBottom: spacing.lg,
   },
-  noteText: {
-    color: colors.textMuted,
-    fontSize: typography.fontSizes.sm,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    lineHeight: typography.fontSizes.sm * typography.lineHeights.relaxed,
+  // Schedule
+  scheduleScrollContent: {
+    flexGrow: 1,
+    paddingBottom: spacing.md,
   },
   sessionsPreview: {
     gap: spacing.sm,
@@ -477,58 +583,47 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.medium,
   },
-  sessionTime: {
-    color: colors.textSecondary,
+  timeButton: {
+    flexShrink: 0,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.primary + '20',
+    borderRadius: borderRadius.sm,
+  },
+  sessionTimeEditable: {
+    color: colors.primary,
     fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
   },
-  framingScroll: {
+  // Inline reminders toggle
+  reminderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.lg,
+  },
+  reminderText: {
     flex: 1,
+    marginRight: spacing.md,
   },
-  framingScrollContent: {
-    paddingVertical: spacing.md,
-  },
-  framingTitle: {
+  reminderTitle: {
     color: colors.textPrimary,
-    fontSize: typography.fontSizes.xxl,
-    fontWeight: typography.fontWeights.bold,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  framingSection: {
-    marginBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  framingBody: {
-    color: colors.textSecondary,
     fontSize: typography.fontSizes.md,
-    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
-    textAlign: 'center',
+    fontWeight: typography.fontWeights.medium,
+    marginBottom: spacing.hair,
   },
-  framingKeyLine: {
-    color: colors.accent,
-    fontSize: typography.fontSizes.md,
-    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
-    fontStyle: 'italic',
-    textAlign: 'center',
-  },
-  framingDivider: {
-    height: 1,
-    backgroundColor: colors.charcoal,
-    marginHorizontal: spacing.xl,
-    marginBottom: spacing.xl,
-  },
-  framingQuote: {
+  reminderSubtitle: {
     color: colors.textMuted,
-    fontSize: typography.fontSizes.md,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
+    fontSize: typography.fontSizes.sm,
+    lineHeight: typography.fontSizes.sm * typography.lineHeights.normal,
   },
+  // Invitation
   viewLink: {
     alignSelf: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
+    marginTop: spacing.lg,
   },
   viewLinkText: {
     color: colors.primary,
@@ -556,18 +651,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.fontSizes.md,
   },
-  timeButton: {
-    flexShrink: 0,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.primary + '20',
-    borderRadius: borderRadius.sm,
-  },
-  sessionTimeEditable: {
-    color: colors.primary,
-    fontSize: typography.fontSizes.sm,
-    fontWeight: typography.fontWeights.medium,
-  },
+  // Time picker modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
