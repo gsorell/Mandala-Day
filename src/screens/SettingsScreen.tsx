@@ -297,6 +297,14 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>7 min guided</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('FireflyMeadow')}
+          >
+            <Text style={styles.menuItemText}>The Firefly Meadow</Text>
+            <Text style={styles.menuItemSubtext}>7 min guided</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>

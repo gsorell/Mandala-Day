@@ -1,0 +1,183 @@
+<break time="1.5s"/>
+
+A wide meadow lies dark and still at the edge of a quiet pond.
+
+<break time="4s"/>
+
+Low over the water, the moon hangs round and pale.
+
+<break time="3s"/>
+
+It rests on the still pond too, a second moon in the dark water.
+
+<break time="3s"/>
+
+A breath of warm air moves across the meadow.
+
+<break time="2.5s"/>
+
+The tall grass leans...
+
+<break time="2.5s"/>
+
+then settles again.
+
+<break time="6s"/>
+
+Low in the grass, a single firefly glows.
+
+<break time="3s"/>
+
+Its small green light brightens...
+
+<break time="2.5s"/>
+
+and slowly fades away.
+
+<break time="6s"/>
+
+Then, far across the field, another light answers.
+
+<break time="2.5s"/>
+
+And another, off in the dark.
+
+<break time="3s"/>
+
+Each one glows for a moment, and is gone.
+
+<break time="6s"/>
+
+Near the water, a small rabbit rests in the grass.
+
+<break time="3s"/>
+
+It sits very still, its ears folded soft against its back.
+
+<break time="6s"/>
+
+The sky grows darker now, and the moon burns clear and bright.
+
+<break time="3s"/>
+
+On the pond below, the second moon shines just as clear.
+
+<break time="6s"/>
+
+The one firefly lifts, and drifts out low over the grass.
+
+<break time="3s"/>
+
+Its light winks out in the dark...
+
+<break time="2.5s"/>
+
+and for a moment, the grass goes dark.
+
+<break time="3s"/>
+
+Then it glows again, closer now, and turns back toward the water.
+
+<break time="7s"/>
+
+All across the meadow, the little lights blink on and off.
+
+<break time="3s"/>
+
+And every one of them shines again in the still, dark pond.
+
+<break time="3s"/>
+
+Can you see them, above and below?
+
+<break time="6s"/>
+
+Out on the water, a ring spreads slowly across the pond.
+
+<break time="3s"/>
+
+Something stirred beneath the surface, then went still.
+
+<break time="3s"/>
+
+The ring widens...
+
+<break time="2.5s"/>
+
+and smooths away.
+
+<break time="7s"/>
+
+The little rabbit shifts in the grass.
+
+<break time="3s"/>
+
+It settles lower, and grows still again.
+
+<break time="8s"/>
+
+The one firefly drifts back across the dark field.
+
+<break time="3s"/>
+
+It comes to rest on a tall stem of grass, close beside the resting rabbit.
+
+<break time="3s"/>
+
+Its light glows slow, like a small green star fallen into the grass.
+
+<break time="8s"/>
+
+The moon rests bright on the quiet pond.
+
+<break time="2.5s"/>
+
+The tall grass stands soft and still.
+
+<break time="2.5s"/>
+
+The little lights glow and fade across the dark field.
+
+<break time="2.5s"/>
+
+The rabbit sleeps low in the grass.
+
+<break time="2.5s"/>
+
+And one small firefly glows steady, close beside it.
+
+<break time="2.5s"/>
+
+The still pond holds the whole meadow, moon and all.
+
+<break time="12s"/>
+
+Seen together, the wide meadow rests quiet in the pale moonlight.
+
+<break time="8s"/>
+
+A breath of warm air moves across the grass.
+
+<break time="3s"/>
+
+The grass leans...
+
+<break time="3s"/>
+
+and settles.
+
+<break time="4s"/>
+
+A single firefly glows in the dark...
+
+<break time="3s"/>
+
+and softly fades.
+
+<break time="10s"/>
+
+And the whole dark meadow
+
+ drifts into the soft, deep night.
+
+<break time="1.5s"/>

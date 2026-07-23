@@ -31,6 +31,7 @@ import { PrairieWindScreen } from './src/screens/PrairieWindScreen';
 import { WhereTheStarsTurnScreen } from './src/screens/WhereTheStarsTurnScreen';
 import { TheFirstSnowScreen } from './src/screens/TheFirstSnowScreen';
 import { PlayFortScreen } from './src/screens/PlayFortScreen';
+import { FireflyMeadowScreen } from './src/screens/FireflyMeadowScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
@@ -508,6 +509,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="PlayFort"
               component={PlayFortScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="FireflyMeadow"
+              component={FireflyMeadowScreen}
               options={{
                 presentation: 'card',
               }}

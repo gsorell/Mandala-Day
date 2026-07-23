@@ -12,7 +12,12 @@ realistic, appropriately-paced narration.
 
 One observation per line. A break tag sits **between every observation** — and before the
 first line and after the last. Blank lines around each element keep the score readable;
-ElevenLabs ignores the whitespace and reads only the text and the break tags.
+between two complete observations ElevenLabs ignores the whitespace and reads only the text
+and the break tags.
+
+**One exception, and it is a tool:** a blank line placed *inside* a single sentence is not
+ignored — it produces a real, unmeasured breath. See **The closing caesura** below, the only
+place the form uses it.
 
 ## Pause vocabulary
 
@@ -65,8 +70,33 @@ Bands, if you prefer them: **2–2.5s continuation · 3–4s recognition · 5–
 - **Pass 3 — Whole / gather:** list the elements together in quick echoed beats (`2.5s`),
   then a deep `10s` immersion — "Seen together, the whole …".
 - **Ending:** return to the opening image, the trademark line
-  *"And the whole [environment] drifts into the soft, deep night."*, then a closing
-  `1.5s` frame.
+  *"And the whole [environment] drifts into the soft, deep night."* — split by **the closing
+  caesura** (below) — then a closing `1.5s` frame.
+
+## The closing caesura
+
+The trademark final line carries more weight than any other sentence in the score, and read
+straight through it lands flat — it goes by as just one more observation. Break it across an
+**untagged blank line**, between the subject and the verb:
+
+```
+And the whole dark meadow
+
+ drifts into the soft, deep night.
+```
+
+The blank line inside the sentence produces ElevenLabs' own paragraph breath — an
+**unmeasured caesura**, not a timed stop. That difference is the whole point:
+
+- A `<break time="2s"/>` there reads as the gap *between two sentences*. The line breaks in
+  half and the gravitas leaks out.
+- A bare blank line reads as **one sentence breathing**. The environment is named and held;
+  then the verb descends onto it as a separate movement, and the world goes down into sleep.
+
+**Use it only here** — on the final trademark line. Its power is that nothing else in the
+score does it. Everywhere else, one observation per line with a measured break between.
+
+> Established on *The Firefly Meadow*. The rendered close is the reference performance.
 
 ## Target length
 

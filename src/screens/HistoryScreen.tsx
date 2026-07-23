@@ -191,6 +191,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A cozy pillow-fort bedtime journey for the little ones',
       abbr: 'PF',
     },
+    extra_firefly_meadow: {
+      title: 'The Firefly Meadow',
+      dedication: 'May the meadow’s small lights carry little ones into a soft, deep sleep.',
+      shareMessage: 'A firefly-lit meadow bedtime journey for the little ones',
+      abbr: 'FM',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {
