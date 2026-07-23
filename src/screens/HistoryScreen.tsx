@@ -220,6 +220,7 @@ export const HistoryScreen: React.FC = () => {
         instanceId: instance.id,
         sessionTitle: session.title,
         dedication: session.dedication,
+        shareMessage: session.shareMessage,
         completedAt: instance.endedAt,
       });
     }

@@ -59,6 +59,7 @@ export const TodayScreen: React.FC = () => {
         instanceId,
         sessionTitle: session.title,
         dedication: session.dedication,
+        shareMessage: session.shareMessage,
         completedAt: endedAt,
       });
     }
