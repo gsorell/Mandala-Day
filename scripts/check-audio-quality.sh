@@ -53,16 +53,25 @@ norm() {
     | sed -e 's/\.mp3$//' -e 's/[^a-z0-9]\+/-/g' -e 's/^-//' -e 's/-$//'
 }
 
-# Find the master file for an app basename (tries exact, and with/without
-# a leading "the-", since app names are inconsistent: the-chakra-centers vs
-# quiet-cove for "The Quiet Cove").
+# Drop connective stopword tokens so app names that omit them still match
+# their masters (e.g. app "integration-motion" vs master "Integration in
+# Motion" -> "integration-in-motion"; also strips the/a/of/and/to).
+nostop() {
+  printf '%s' "$1" | sed -E 's/(^|-)(the|a|an|of|in|on|to|and|for)(-|$)/\1/g' \
+    | sed -e 's/--\+/-/g' -e 's/^-//' -e 's/-$//'
+}
+
+# Find the master file for an app basename. Compares both raw and
+# stopword-stripped forms, since app names are inconsistent about leading
+# "the-" and dropped connectives (the-chakra-centers vs quiet-cove for
+# "The Quiet Cove"; integration-motion for "Integration in Motion").
 find_master() {
-  want="$1"; want_nothe=$(printf '%s' "$want" | sed 's/^the-//')
+  want="$1"; want_ns=$(nostop "$want")
   for m in "$MASTERS"/*.mp3; do
     [ -e "$m" ] || continue
-    n=$(norm "$(basename "$m")"); n_nothe=$(printf '%s' "$n" | sed 's/^the-//')
-    if [ "$n" = "$want" ] || [ "$n" = "$want_nothe" ] \
-       || [ "$n_nothe" = "$want" ] || [ "$n_nothe" = "$want_nothe" ]; then
+    n=$(norm "$(basename "$m")"); n_ns=$(nostop "$n")
+    if [ "$n" = "$want" ] || [ "$n_ns" = "$want" ] \
+       || [ "$n" = "$want_ns" ] || [ "$n_ns" = "$want_ns" ]; then
       printf '%s' "$m"; return 0
     fi
   done

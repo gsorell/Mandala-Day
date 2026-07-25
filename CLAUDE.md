@@ -193,9 +193,10 @@ MASTERS=/path/to/masters scripts/check-audio-quality.sh   # override masters fol
   short non-spoken cues at source bitrate — intentionally *not* gated (spectral
   comparison on a 0.5s chime is meaningless). The pranayama bells' sources live in
   `…/Audio/Bells/` (`Hold.mp3`, `Sustained chime.mp3`).
-- **Unverified:** `integration-motion.mp3` has no exported MP3 master (its source is
-  the Audacity project `…/Audio/AUP3/Integration in Motion.aup3`). Export a
-  full-quality MP3 into the masters folder to bring it under the guard.
+- `integration-motion.mp3` is under the guard: its master is
+  `…/Audio/MP3/Integration in Motion.mp3` (matched despite the app name dropping the
+  "in", via the stopword-stripping in `find_master`). Its higher-quality source of
+  record is the Audacity project `…/Audio/AUP3/Integration in Motion.aup3`.
 
 ## Quick reference
 
