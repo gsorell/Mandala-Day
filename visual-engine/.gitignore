@@ -1,0 +1,12 @@
+# Rendered output
+output/
+*.mp4
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/

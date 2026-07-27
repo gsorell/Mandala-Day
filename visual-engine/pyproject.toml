@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mandala-visual-engine"
+version = "1.0.0"
+description = "Preset-driven renderer for Mandala Day contemplative visuals."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "moderngl>=5.8",
+    "numpy>=1.24",
+]
+
+[project.scripts]
+render = "mandala_engine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mandala_engine = ["shaders/*.glsl", "shaders/*.vert", "shaders/*.frag"]

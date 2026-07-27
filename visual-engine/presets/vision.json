@@ -1,0 +1,23 @@
+{
+  "name": "vision",
+  "audio": "../../assets/audio/vision.mp3",
+  "seed": 45.38,
+  "background_color": "#0d1017",
+  "field_color": "#b58a45",
+  "brightness": 0.92,
+  "field_radius": 0.38,
+  "field_softness": 1.35,
+  "drift_speed": 0.8,
+  "drift_amount": 0.08,
+  "breathing_amount": 0.2,
+  "time_scale": 0.05,
+  "noise_intensity": 0.24,
+  "warp_amount": 0.2,
+  "warp_scale": 0.85,
+  "coalesce_start": 0.2,
+  "coalesce_end": 0.85,
+  "expand": 0.5,
+  "clarify": 0.6,
+  "vignette": 0.4,
+  "grain_amount": 0.018
+}

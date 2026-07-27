@@ -45,3 +45,12 @@ credentials.json
 # generated native folders
 /ios
 /android
+
+# JetBrains IDE workspace state
+.idea/
+
+# Stray Chrome/Google updater log dumped into the repo root
+debug.log
+
+# Claude Code per-machine settings (name says local; keep it local)
+.claude/settings.local.json

@@ -1,0 +1,23 @@
+{
+  "name": "waking_the_view",
+  "audio": "../../assets/audio/waking-the-view.mp3",
+  "seed": 48.55,
+  "background_color": "#0d1017",
+  "field_color": "#a97f38",
+  "brightness": 0.90,
+  "field_radius": 0.42,
+  "field_softness": 1.40,
+  "drift_speed": 0.8,
+  "drift_amount": 0.08,
+  "breathing_amount": 0.20,
+  "time_scale": 0.045,
+  "noise_intensity": 0.16,
+  "warp_amount": 0.12,
+  "warp_scale": 0.85,
+  "node_count": 1,
+  "expand": 0.55,
+  "coalesce_start": 0.0,
+  "coalesce_end": 0.90,
+  "vignette": 0.40,
+  "grain_amount": 0.018
+}

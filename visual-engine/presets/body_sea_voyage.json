@@ -1,0 +1,21 @@
+{
+  "name": "body_sea_voyage",
+  "audio": "../../assets/audio/body-sea-voyage.mp3",
+  "seed": 4.17,
+  "background_color": "#0d1017",
+  "field_color": "#a8823f",
+  "brightness": 0.88,
+  "field_radius": 0.34,
+  "field_softness": 1.38,
+  "drift_speed": 0.8,
+  "drift_amount": 0.10,
+  "breathing_amount": 0.22,
+  "time_scale": 0.05,
+  "noise_intensity": 0.16,
+  "warp_amount": 0.14,
+  "warp_scale": 0.85,
+  "node_count": 1,
+  "sway": 0.22,
+  "vignette": 0.40,
+  "grain_amount": 0.018
+}

@@ -1,0 +1,23 @@
+{
+  "name": "cutting_through",
+  "audio": "../../assets/audio/cutting-through.mp3",
+  "seed": 10.51,
+  "background_color": "#0d1017",
+  "field_color": "#a97f38",
+  "brightness": 0.82,
+  "field_radius": 0.30,
+  "field_softness": 1.30,
+  "drift_speed": 0.7,
+  "drift_amount": 0.05,
+  "breathing_amount": 0.16,
+  "time_scale": 0.05,
+  "noise_intensity": 0.30,
+  "warp_amount": 0.30,
+  "warp_scale": 0.95,
+  "node_count": 1,
+  "clarify": 1.0,
+  "coalesce_start": 0.40,
+  "coalesce_end": 0.58,
+  "vignette": 0.42,
+  "grain_amount": 0.018
+}
