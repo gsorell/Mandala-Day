@@ -119,6 +119,8 @@ export type RootStackParamList = {
   TheFirstSnow: undefined;
   PlayFort: undefined;
   FireflyMeadow: undefined;
+  SleepyZoo: undefined;
+  CityOfLights: undefined;
   Pranayama: undefined;
   SquareBreathing: undefined;
   Vision: undefined;

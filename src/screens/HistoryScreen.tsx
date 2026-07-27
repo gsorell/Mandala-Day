@@ -197,6 +197,18 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A firefly-lit meadow bedtime journey for the little ones',
       abbr: 'FM',
     },
+    extra_sleepy_zoo: {
+      title: 'The Sleepy Zoo',
+      dedication: 'May the sleeping zoo carry little ones into a soft, deep sleep.',
+      shareMessage: 'A sleepy-zoo bedtime journey for the little ones',
+      abbr: 'SZ',
+    },
+    extra_city_of_lights: {
+      title: 'The City of Lights',
+      dedication: 'May the city’s quiet lights carry little ones into a soft, deep sleep.',
+      shareMessage: 'A city-at-night bedtime journey for the little ones',
+      abbr: 'CL',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {
