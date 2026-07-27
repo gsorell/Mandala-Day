@@ -10,9 +10,11 @@ not what is expected, but what is actually perceived,
 how it draws in
 [pause 1.6s]
 and releases,
-[pause 11.1s]
-rising and falling.
-[pause 16.1s]
+[pause 12.7s]
+rising,
+[pause 2.7s]
+and falling.
+[pause 14.1s]
 Can breath move without the body?
 [pause 8.7s]
 Observe the body as it breathes.
@@ -38,15 +40,13 @@ Don't answer from memory.
 Just look.
 [pause 28.1s]
 Observe sensation.
-[pause 4.1s]
-Pressure.
+[pause 3.2s]
 Warmth.
+[pause 4.2s]
 Movement.
-[pause 2.8s]
+[pause 4.0s]
 Tension.
-[pause 3.1s]
-Sound.
-[pause 9.2s]
+[pause 12.6s]
 They are all welcome in this space.
 [pause 11.2s]
 arising,
