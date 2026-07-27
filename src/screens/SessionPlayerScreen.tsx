@@ -61,6 +61,33 @@ export const SessionPlayerScreen: React.FC = () => {
   const completionHandledRef = useRef(false);
   // Track the total audio duration in ms (for audio-position-based timer)
   const audioDurationMsRef = useRef<number>((session?.durationSec || 600) * 1000);
+  // Latest timeRemaining, readable from callbacks that outlive their closure
+  // (the audio-service option handlers are captured once, at preload time)
+  const timeRemainingRef = useRef<number>(session?.durationSec || 600);
+  timeRemainingRef.current = timeRemaining;
+
+  // Playback was started or stopped from outside the app — the iOS lock screen
+  // / Control Center, the Android media notification, or an OS interruption
+  // (a call, another app taking audio focus). Mirror it into the UI; never call
+  // back into the audio service, since the OS has already applied the change to
+  // the player. The Android keep-alive service is deliberately left running
+  // through an external pause, so the process survives to be resumed.
+  const syncRemotePlaybackState = ({ isPaused: pausedNow }: { isPlaying: boolean; isPaused: boolean }) => {
+    if (isSilentMode) return;
+    if (pausedNow) {
+      pausedTimeRemainingRef.current = timeRemainingRef.current;
+      startTimeRef.current = null;
+      setIsPlaying(false);
+      setIsPaused(true);
+      try { deactivateKeepAwake('guided-meditation'); } catch (_e) {}
+    } else {
+      startTimeRef.current = null;
+      endTimeRef.current = Date.now() + timeRemainingRef.current * 1000;
+      setIsPlaying(true);
+      setIsPaused(false);
+      activateKeepAwakeAsync('guided-meditation').catch(() => {});
+    }
+  };
 
   // Ensure the timer-gong notification channel exists on Android
   const ensureNotificationChannel = async () => {
@@ -180,13 +207,26 @@ export const SessionPlayerScreen: React.FC = () => {
             if (remaining === 0) {
               // Audio played to end while in background
               handleComplete();
-            } else if (!actualStatus.isPlaying) {
-              // Audio was suspended/interrupted — resync timer and resume playback
+            } else if (!actualStatus.isPlaying && !audioService.getIsPaused()) {
+              // Audio was suspended/interrupted — resync timer and resume playback.
+              // getIsPaused() distinguishes that from a deliberate pause on the
+              // lock screen / Control Center, which must stay paused: both look
+              // identical here (isPlaying === false), and resuming a deliberate
+              // pause is what made the lock-screen pause button "get stuck".
               pausedTimeRemainingRef.current = remaining;
               startTimeRef.current = Date.now();
               endTimeRef.current = Date.now() + remaining * 1000;
               setTimeRemaining(remaining);
               await audioService.play();
+            } else if (!actualStatus.isPlaying) {
+              // Deliberately paused from the OS controls — surface that in the
+              // UI instead of leaving the screen showing a running session.
+              pausedTimeRemainingRef.current = remaining;
+              startTimeRef.current = null;
+              endTimeRef.current = null;
+              setTimeRemaining(remaining);
+              setIsPlaying(false);
+              setIsPaused(true);
             } else {
               // Audio still playing — just resync timer to audio position
               setTimeRemaining(remaining);
@@ -409,6 +449,7 @@ export const SessionPlayerScreen: React.FC = () => {
                 audioDurationMsRef.current = status.durationMillis;
               }
             },
+            onRemoteStateChange: syncRemotePlaybackState,
             onComplete: () => {
               handleComplete();
             },

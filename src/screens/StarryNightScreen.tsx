@@ -102,6 +102,7 @@ export const StarryNightScreen: React.FC = () => {
       await audioService.loadAndPlay(getStarryNightAudio(), {
         title: 'Starry Night',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const StarryNightScreen: React.FC = () => {
         await audioService.preload(getStarryNightAudio(), {
           title: 'Starry Night',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

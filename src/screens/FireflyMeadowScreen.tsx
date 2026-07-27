@@ -102,6 +102,7 @@ export const FireflyMeadowScreen: React.FC = () => {
       await audioService.loadAndPlay(getTheFireflyMeadowAudio(), {
         title: 'The Firefly Meadow',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const FireflyMeadowScreen: React.FC = () => {
         await audioService.preload(getTheFireflyMeadowAudio(), {
           title: 'The Firefly Meadow',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

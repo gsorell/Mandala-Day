@@ -102,6 +102,7 @@ export const QuietCoveScreen: React.FC = () => {
       await audioService.loadAndPlay(getQuietCoveAudio(), {
         title: 'The Quiet Cove',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const QuietCoveScreen: React.FC = () => {
         await audioService.preload(getQuietCoveAudio(), {
           title: 'The Quiet Cove',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

@@ -102,6 +102,7 @@ export const BodySeaVoyageScreen: React.FC = () => {
       await audioService.loadAndPlay(getBodySeaVoyageAudio(), {
         title: 'Sea Voyage',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const BodySeaVoyageScreen: React.FC = () => {
         await audioService.preload(getBodySeaVoyageAudio(), {
           title: 'Sea Voyage',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

@@ -94,6 +94,7 @@ export const ChakraCentersScreen: React.FC = () => {
       await audioService.loadAndPlay(getChakraCentersAudio(), {
         title: 'The Chakra Centers',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const ChakraCentersScreen: React.FC = () => {
         await audioService.preload(getChakraCentersAudio(), {
           title: 'The Chakra Centers',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

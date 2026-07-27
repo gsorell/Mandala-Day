@@ -102,6 +102,7 @@ export const MarshCreekScreen: React.FC = () => {
       await audioService.loadAndPlay(getMarshCreekAudio(), {
         title: 'Marsh Creek',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const MarshCreekScreen: React.FC = () => {
         await audioService.preload(getMarshCreekAudio(), {
           title: 'Marsh Creek',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

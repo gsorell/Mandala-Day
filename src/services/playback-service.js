@@ -1,7 +1,9 @@
 // Headless playback service for react-native-track-player.
-// Runs in a separate JS context from the main app — only wires lock-screen /
-// Control Center remote commands so they work even when the main context is
-// frozen. UI-sync handlers live in audio.ts on the main context.
+// Wires the lock-screen / Control Center remote commands straight to the
+// player, so they work even when the app's UI is not running. These calls
+// deliberately bypass AudioService — the app learns what happened from the
+// Event.PlaybackState listener in audio.ts, which treats the native player as
+// the source of truth for play/pause. Don't add UI or app-state logic here.
 const TrackPlayer = require('react-native-track-player').default;
 const { Event } = require('react-native-track-player');
 

@@ -102,6 +102,7 @@ export const CityOfLightsScreen: React.FC = () => {
       await audioService.loadAndPlay(getTheCityOfLightsAudio(), {
         title: 'The City of Lights',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const CityOfLightsScreen: React.FC = () => {
         await audioService.preload(getTheCityOfLightsAudio(), {
           title: 'The City of Lights',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

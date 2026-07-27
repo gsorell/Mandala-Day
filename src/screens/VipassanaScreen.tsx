@@ -105,6 +105,7 @@ export const VipassanaScreen: React.FC = () => {
       await audioService.loadAndPlay(getVipassanaAudio(), {
         title: 'Body Scan',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -126,6 +127,7 @@ export const VipassanaScreen: React.FC = () => {
         await audioService.preload(getVipassanaAudio(), {
           title: 'Body Scan',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

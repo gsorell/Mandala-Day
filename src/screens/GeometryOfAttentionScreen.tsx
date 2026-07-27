@@ -94,6 +94,7 @@ export const GeometryOfAttentionScreen: React.FC = () => {
       await audioService.loadAndPlay(getGeometryOfAttentionAudio(), {
         title: 'The Geometry of Attention',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const GeometryOfAttentionScreen: React.FC = () => {
         await audioService.preload(getGeometryOfAttentionAudio(), {
           title: 'The Geometry of Attention',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

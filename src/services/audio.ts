@@ -28,6 +28,11 @@ export interface AudioPlaybackOptions {
   title?: string;
   artist?: string;
   artwork?: number | string;
+  // Fired whenever playback starts/stops from outside the app — the iOS lock
+  // screen / Control Center, the Android media notification, headphone buttons,
+  // or an OS interruption. Native only. Screens use it to keep their own
+  // play/pause UI in sync with what the OS actually did.
+  onRemoteStateChange?: (state: { isPlaying: boolean; isPaused: boolean }) => void;
 }
 
 class AudioService {
@@ -47,7 +52,9 @@ class AudioService {
   private tpStateSub: { remove: () => void } | null = null;
   private tpEndSub: { remove: () => void } | null = null;
   private tpErrorSub: { remove: () => void } | null = null;
+  private tpDuckSub: { remove: () => void } | null = null;
   private tpSuppressEnd = false;
+  private tpEnded = false;
 
   private isNative(): boolean {
     return Platform.OS !== 'web';
@@ -160,10 +167,65 @@ class AudioService {
     }
   }
 
+  // Adopt a playback change the app did not initiate: OS transport controls, or
+  // an interruption the player handled itself. Both are no-ops when they only
+  // confirm what we already believe, so our own play()/pause() never echo back.
+  private tpSyncPlaying(): void {
+    if (this.tpEnded || !this.tpLoaded) return;
+    if (this.isPlaying && !this.isPaused) return;
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.tpStartProgressPoll();
+    this.options.onRemoteStateChange?.({ isPlaying: true, isPaused: false });
+  }
+
+  private tpSyncPaused(): void {
+    if (this.tpEnded || !this.tpLoaded) return;
+    if (this.isPaused) return;
+    this.isPaused = true;
+    this.isPlaying = true; // still loaded mid-session, just not advancing
+    this.tpStopProgressPoll();
+    // One last status at the true paused position so the UI settles there.
+    TP.getProgress()
+      .then((p: any) => this.tpEmitStatus(Math.round(p.position * 1000), false))
+      .catch(() => {});
+    this.options.onRemoteStateChange?.({ isPlaying: false, isPaused: true });
+  }
+
   private tpAttachListeners(): void {
     this.tpDetachListeners();
+    // The native player is the single source of truth for play/pause. The
+    // lock screen and Control Center route through the headless service
+    // (src/services/playback-service.js), which calls TrackPlayer directly and
+    // never touches this class — without this listener our isPlaying/isPaused
+    // flags silently drift out of sync with reality, which is what made a
+    // lock-screen pause fail to stick (SessionPlayerScreen would treat the
+    // paused player as an iOS suspension and force-resume it) and made the
+    // in-app play button need two taps afterwards.
+    this.tpStateSub = TP.addEventListener(TP_Event.PlaybackState, (e: any) => {
+      // Ignore the tail states emitted while a track finishes or is torn down;
+      // those are handled by PlaybackQueueEnded / stop().
+      const state = e?.state;
+      if (state === TP_State.Playing) {
+        this.tpSyncPlaying();
+      } else if (state === TP_State.Paused) {
+        this.tpSyncPaused();
+      }
+    });
+    // Interruptions: a call, another app taking audio focus. The player is set
+    // up with autoHandleInterruptions, so it decides what to do and reports it
+    // here — the same desync as the lock screen, reached a different way. Belt
+    // and braces with PlaybackState above: on Android a permanent focus loss
+    // can stop rather than pause the player, so the state we get is not always
+    // Paused, but this event fires either way. Purely observational — it only
+    // records a pause the player already made. An interruption it chose to duck
+    // under (paused: false) is still playing, so it is left alone.
+    this.tpDuckSub = TP.addEventListener(TP_Event.RemoteDuck, (e: any) => {
+      if (e?.paused || e?.permanent) this.tpSyncPaused();
+    });
     this.tpEndSub = TP.addEventListener(TP_Event.PlaybackQueueEnded, async () => {
       if (this.tpSuppressEnd) { this.tpSuppressEnd = false; return; }
+      this.tpEnded = true;
       this.isPlaying = false;
       this.isPaused = false;
       this.tpStopProgressPoll();
@@ -181,9 +243,11 @@ class AudioService {
     try { this.tpEndSub?.remove(); } catch (_e) {}
     try { this.tpErrorSub?.remove(); } catch (_e) {}
     try { this.tpStateSub?.remove(); } catch (_e) {}
+    try { this.tpDuckSub?.remove(); } catch (_e) {}
     this.tpEndSub = null;
     this.tpErrorSub = null;
     this.tpStateSub = null;
+    this.tpDuckSub = null;
   }
 
   private async tpAddTrack(audioSource: number | { uri: string }): Promise<void> {
@@ -206,6 +270,7 @@ class AudioService {
       artwork,
     });
     this.tpDurationMs = 0;
+    this.tpEnded = false;
   }
 
   // ---------- Public API ----------
@@ -301,9 +366,11 @@ class AudioService {
     try {
       if (this.isNative()) {
         if (!this.tpLoaded) return;
-        await TP.play();
+        // Set flags before the call, like pause() does, so the PlaybackState
+        // listener recognises this as our own change and stays quiet.
         this.isPlaying = true;
         this.isPaused = false;
+        await TP.play();
         this.tpStartProgressPoll();
         return;
       }
@@ -340,15 +407,24 @@ class AudioService {
   }
 
   async resume(): Promise<void> {
-    if (!this.isPaused) return;
     try {
       if (this.isNative()) {
-        await TP.play();
+        if (!this.tpLoaded || this.tpEnded) return;
+        // Don't gate this on our own isPaused flag alone. If a state event was
+        // ever missed, the player can be sitting paused while we still think
+        // it is playing — the old early-return then swallowed the tap, which is
+        // why resuming after an interruption took two presses. Ask the player.
+        if (!this.isPaused) {
+          const state = await TP.getPlaybackState();
+          if (state?.state === TP_State.Playing) return;
+        }
         this.isPaused = false;
         this.isPlaying = true;
+        await TP.play();
         this.tpStartProgressPoll();
         return;
       }
+      if (!this.isPaused) return;
       if (this.sound) {
         this.startWebAudioKeepalive();
         await this.sound.playAsync();
@@ -377,6 +453,7 @@ class AudioService {
       this.tpDetachListeners();
       this.tpLoaded = false;
       this.tpDurationMs = 0;
+      this.tpEnded = false;
       return;
     }
 

@@ -102,6 +102,7 @@ export const TheFirstSnowScreen: React.FC = () => {
       await audioService.loadAndPlay(getTheFirstSnowAudio(), {
         title: 'The First Snow',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const TheFirstSnowScreen: React.FC = () => {
         await audioService.preload(getTheFirstSnowAudio(), {
           title: 'The First Snow',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

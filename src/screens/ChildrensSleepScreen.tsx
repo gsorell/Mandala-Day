@@ -104,6 +104,7 @@ export const ChildrensSleepScreen: React.FC = () => {
       await audioService.loadAndPlay(getChildrensSleepAudio(), {
         title: 'Jungle Safari',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -125,6 +126,7 @@ export const ChildrensSleepScreen: React.FC = () => {
         await audioService.preload(getChildrensSleepAudio(), {
           title: 'Jungle Safari',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

@@ -102,6 +102,7 @@ export const PlayFortScreen: React.FC = () => {
       await audioService.loadAndPlay(getThePlayFortAudio(), {
         title: 'The Play Fort',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const PlayFortScreen: React.FC = () => {
         await audioService.preload(getThePlayFortAudio(), {
           title: 'The Play Fort',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

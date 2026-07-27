@@ -94,6 +94,7 @@ export const RecognizingThoughtScreen: React.FC = () => {
       await audioService.loadAndPlay(getRecognizingThoughtAudio(), {
         title: 'Recognizing Thought',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const RecognizingThoughtScreen: React.FC = () => {
         await audioService.preload(getRecognizingThoughtAudio(), {
           title: 'Recognizing Thought',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

@@ -94,6 +94,7 @@ export const CrownToSoleScreen: React.FC = () => {
       await audioService.loadAndPlay(getCrownToSoleAudio(), {
         title: 'Crown to Sole',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const CrownToSoleScreen: React.FC = () => {
         await audioService.preload(getCrownToSoleAudio(), {
           title: 'Crown to Sole',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

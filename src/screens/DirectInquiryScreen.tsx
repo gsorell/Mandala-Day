@@ -94,6 +94,7 @@ export const DirectInquiryScreen: React.FC = () => {
       await audioService.loadAndPlay(getDirectInquiryAudio(), {
         title: 'Direct Inquiry',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const DirectInquiryScreen: React.FC = () => {
         await audioService.preload(getDirectInquiryAudio(), {
           title: 'Direct Inquiry',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

@@ -102,6 +102,7 @@ export const PrairieWindScreen: React.FC = () => {
       await audioService.loadAndPlay(getPrairieWindAudio(), {
         title: 'Prairie Wind',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const PrairieWindScreen: React.FC = () => {
         await audioService.preload(getPrairieWindAudio(), {
           title: 'Prairie Wind',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

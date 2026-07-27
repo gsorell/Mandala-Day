@@ -102,6 +102,7 @@ export const WhereTheStarsTurnScreen: React.FC = () => {
       await audioService.loadAndPlay(getWhereTheStarsTurnAudio(), {
         title: 'Where the Stars Turn',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const WhereTheStarsTurnScreen: React.FC = () => {
         await audioService.preload(getWhereTheStarsTurnAudio(), {
           title: 'Where the Stars Turn',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

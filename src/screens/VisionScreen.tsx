@@ -94,6 +94,7 @@ export const VisionScreen: React.FC = () => {
       await audioService.loadAndPlay(getVisionAudio(), {
         title: 'Clear Seeing',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -114,6 +115,7 @@ export const VisionScreen: React.FC = () => {
         await audioService.preload(getVisionAudio(), {
           title: 'Clear Seeing',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);

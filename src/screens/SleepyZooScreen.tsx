@@ -102,6 +102,7 @@ export const SleepyZooScreen: React.FC = () => {
       await audioService.loadAndPlay(getTheSleepyZooAudio(), {
         title: 'The Sleepy Zoo',
         artist: 'Mandala Day',
+        onRemoteStateChange: (state) => setIsPaused(state.isPaused),
         onPlaybackStatusUpdate: handlePlaybackStatus,
         onComplete: () => {
           setIsPlaying(false);
@@ -123,6 +124,7 @@ export const SleepyZooScreen: React.FC = () => {
         await audioService.preload(getTheSleepyZooAudio(), {
           title: 'The Sleepy Zoo',
           artist: 'Mandala Day',
+          onRemoteStateChange: (state) => setIsPaused(state.isPaused),
           onPlaybackStatusUpdate: handlePlaybackStatus,
           onComplete: () => {
             setIsPlaying(false);
