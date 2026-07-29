@@ -30,6 +30,7 @@ export const TheViewScreen: React.FC = () => {
           <Image
             source={require('../../assets/mandala-logo.png')}
             style={styles.logo}
+            resizeMode="contain"
           />
           <Text style={styles.title}>The View</Text>
         </View>
