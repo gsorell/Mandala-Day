@@ -155,10 +155,21 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   logo: {
-    width: 240,
-    height: 240,
+    // The old asset carried its own whitespace inside the PNG: in a 240 box its
+    // transparent padding rendered as 36.5px above the artwork and 16px below —
+    // asymmetric, and invisible from here. Trimming the asset removed it, and
+    // since `contain` centers what's left, matching the mark's *size* alone
+    // still sat it 10.4px high with a correspondingly larger gap underneath.
+    //
+    // So the box is now the artwork's own size (213x188 renders the mark at
+    // 213x187.7, matching the previous 212.7x187.4) and that whitespace is
+    // explicit margin instead of baked-in transparency. Same geometry as
+    // before, within a pixel — but now it's visible in code and adjustable.
+    width: 213,
+    height: 188,
+    marginTop: 37,
+    marginBottom: spacing.md + spacing.xs,
     alignSelf: 'center',
-    marginBottom: spacing.xs,
     opacity: 0.9,
   },
   header: {
