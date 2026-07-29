@@ -84,7 +84,7 @@ printf -- "---------------------------------------------------------------------
 # Utility sounds (bell markers / gong): short non-spoken cues, at source
 # bitrate, with no muffling risk. Spectral comparison on a 0.5s chime is
 # meaningless, so we intentionally don't quality-gate these.
-UTILITY=" gong.mp3 pranayama-muted.mp3 pranayama-sustain.mp3 "
+UTILITY=" gong.mp3 pranayama-muted.mp3 pranayama-sustain.mp3 keisu-bell.mp3 "
 
 fail=0; checked=0; skipped=0; utility=0
 for f in "$AUDIO_DIR"/*.mp3; do

@@ -167,6 +167,22 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('SittingWalking')}
+          >
+            <Text style={styles.menuItemText}>Sitting &amp; Walking</Text>
+            <Text style={styles.menuItemSubtext}>zazen &amp; kinhin timer</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('VipassanaTimer')}
+          >
+            <Text style={styles.menuItemText}>Vipassana</Text>
+            <Text style={styles.menuItemSubtext}>silent sit · 60 min</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => navigation.navigate('Vipassana')}
           >
             <Text style={styles.menuItemText}>Body Scan</Text>
@@ -403,6 +419,13 @@ export const SettingsScreen: React.FC = () => {
             Six daily sessions for awareness and compassion.
           </Text>
           <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://freesound.org/people/milivolt/sounds/367128/')}
+          >
+            <Text style={styles.creditText}>
+              Keisu bell: "Keisu temple bell" by milivolt, CC BY 4.0 ↗
+            </Text>
+          </TouchableOpacity>
           {Platform.OS !== 'ios' && (
             <TouchableOpacity
               onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
@@ -533,6 +556,13 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.sm,
     marginTop: spacing.md,
     opacity: 0.7,
+  },
+  creditText: {
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.xs,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    opacity: 0.6,
   },
   gentleMessage: {
     alignItems: 'center',

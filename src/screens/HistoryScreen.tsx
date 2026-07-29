@@ -101,6 +101,18 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'I completed a pranayama breathing meditation',
       abbr: 'P',
     },
+    extra_vipassana_timer: {
+      title: 'Vipassana',
+      dedication: 'Sensation arises, is noted, passes.',
+      shareMessage: 'I completed a vipassana sitting',
+      abbr: 'VP',
+    },
+    extra_sitting_walking: {
+      title: 'Sitting & Walking',
+      dedication: 'Sitting, walking, sitting. Nothing added.',
+      shareMessage: 'I completed a zazen and kinhin sitting',
+      abbr: 'SW',
+    },
     extra_square_breathing: {
       title: 'Square Breathing',
       dedication: 'May your steady breath bring balance to all beings.',

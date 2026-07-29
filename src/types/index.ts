@@ -123,6 +123,8 @@ export type RootStackParamList = {
   CityOfLights: undefined;
   Pranayama: undefined;
   SquareBreathing: undefined;
+  SittingWalking: undefined;
+  VipassanaTimer: undefined;
   Vision: undefined;
   DirectInquiry: undefined;
   ChakraCenters: undefined;

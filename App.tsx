@@ -36,6 +36,8 @@ import { SleepyZooScreen } from './src/screens/SleepyZooScreen';
 import { CityOfLightsScreen } from './src/screens/CityOfLightsScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
+import { SittingWalkingScreen } from './src/screens/SittingWalkingScreen';
+import { VipassanaTimerScreen } from './src/screens/VipassanaTimerScreen';
 import { VisionScreen } from './src/screens/VisionScreen';
 import { DirectInquiryScreen } from './src/screens/DirectInquiryScreen';
 import { ChakraCentersScreen } from './src/screens/ChakraCentersScreen';
@@ -546,6 +548,20 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="SquareBreathing"
               component={SquareBreathingScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="SittingWalking"
+              component={SittingWalkingScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="VipassanaTimer"
+              component={VipassanaTimerScreen}
               options={{
                 presentation: 'card',
               }}
