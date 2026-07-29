@@ -26,6 +26,19 @@
       #root { display: flex; height: 100%; flex: 1; }
       /* Ensure content doesn't hide behind iOS status bar */
       body { padding-top: env(safe-area-inset-top); }
+      /* This is a touch app, not a document. Tapping a stepper button was
+         double-click-selecting the label beside it (the KINHIN caption came up
+         highlighted in browser blue), which reads as a rendering fault. Inputs
+         keep selection so journal notes stay editable. */
+      #root {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      input, textarea, [contenteditable="true"] {
+        -webkit-user-select: text;
+        user-select: text;
+      }
     </style>
   </head>
   <body>
