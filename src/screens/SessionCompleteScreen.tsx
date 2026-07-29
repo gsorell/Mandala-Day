@@ -40,6 +40,17 @@ export const SessionCompleteScreen: React.FC = () => {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
 
+  // The share card is a fixed 4:5 box, so its HEIGHT shrinks with the screen
+  // while the type inside it would not — on a 344px-wide device that left the
+  // content ~45px taller than the card, and the date row printed on top of the
+  // branding line. Scaling the card's type and vertical rhythm by its own width
+  // keeps the composition proportional at any size, which is also what you want
+  // from something rendered out as a share image.
+  const CARD_DESIGN_WIDTH = 340;
+  const [cardWidth, setCardWidth] = useState(CARD_DESIGN_WIDTH);
+  const cardScale = Math.min(1, cardWidth / CARD_DESIGN_WIDTH);
+  const sc = (n: number) => Math.round(n * cardScale);
+
   // The note input sits below the share card, so the keyboard covers it on open.
   // Scroll it into view once the keyboard has finished animating up.
   useEffect(() => {
@@ -223,7 +234,11 @@ export const SessionCompleteScreen: React.FC = () => {
         keyboardDismissMode="interactive"
       >
         {/* Share Card - The shareable visual */}
-        <View style={styles.shareCard} ref={shareCardRef}>
+        <View
+          style={styles.shareCard}
+          ref={shareCardRef}
+          onLayout={(e) => setCardWidth(e.nativeEvent.layout.width)}
+        >
           {/* Subtle mandala watermark */}
           <Image
             source={require('../../assets/mandala-icon-display.png')}
@@ -232,38 +247,60 @@ export const SessionCompleteScreen: React.FC = () => {
           />
 
           {/* Content overlay */}
-          <View style={styles.cardContent}>
+          <View style={[styles.cardContent, { paddingHorizontal: sc(spacing.xl), paddingTop: sc(spacing.lg), paddingBottom: sc(spacing.lg) }]}>
             <View style={styles.cardContentInner}>
               {/* Session symbol */}
-              <Text style={styles.sessionSymbol}>{sessionSymbol}</Text>
+              <Text style={[styles.sessionSymbol, { fontSize: sc(28), marginBottom: sc(spacing.sm) }]}>{sessionSymbol}</Text>
 
-              <Text style={styles.completedLabel}>Session Complete</Text>
+              <Text style={[styles.completedLabel, { fontSize: sc(typography.fontSizes.xs), marginBottom: sc(spacing.md) }]}>Session Complete</Text>
 
-              <Text style={styles.sessionTitle}>{sessionTitle}</Text>
+              <Text
+                style={[styles.sessionTitle, {
+                  fontSize: sc(typography.fontSizes.xxl),
+                  lineHeight: sc(typography.fontSizes.xxl * typography.lineHeights.tight),
+                  marginBottom: sc(spacing.md),
+                }]}
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+              >
+                {sessionTitle}
+              </Text>
 
               {duration && (
-                <Text style={styles.durationText}>{duration} min</Text>
+                <Text style={[styles.durationText, { fontSize: sc(typography.fontSizes.sm), marginBottom: sc(spacing.md), marginTop: -sc(spacing.sm) }]}>{duration} min</Text>
               )}
 
               {/* Decorative divider */}
-              <View style={styles.divider}>
+              <View style={[styles.divider, { marginBottom: sc(spacing.md) }]}>
                 <View style={styles.dividerLine} />
                 <Text style={styles.dividerOrnament}>✦</Text>
                 <View style={styles.dividerLine} />
               </View>
 
               {dedication && (
-                <Text style={styles.dedication}>"{dedication}"</Text>
+                <Text
+                  style={[styles.dedication, {
+                    fontSize: sc(typography.fontSizes.md),
+                    lineHeight: sc(typography.fontSizes.md * typography.lineHeights.normal),
+                    marginBottom: sc(spacing.md),
+                  }]}
+                  numberOfLines={3}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  "{dedication}"
+                </Text>
               )}
 
               <View style={styles.dateContainer}>
-                <Text style={styles.dateText}>{displayDate}</Text>
-                <Text style={styles.timeSeparator}>•</Text>
-                <Text style={styles.dateText}>{displayTime}</Text>
+                <Text style={[styles.dateText, { fontSize: sc(typography.fontSizes.xs) }]}>{displayDate}</Text>
+                <Text style={[styles.timeSeparator, { fontSize: sc(typography.fontSizes.xs) }]}>•</Text>
+                <Text style={[styles.dateText, { fontSize: sc(typography.fontSizes.xs) }]}>{displayTime}</Text>
               </View>
             </View>
 
-            <Text style={styles.branding}>mandaladay.netlify.app</Text>
+            <Text style={[styles.branding, { fontSize: sc(typography.fontSizes.xs), marginTop: sc(spacing.md) }]}>mandaladay.netlify.app</Text>
           </View>
         </View>
 
@@ -427,6 +464,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    // The card is a fixed 4:5 box, so this stack can outgrow it on narrow
+    // screens (a two-line title at 344px was enough). minHeight lets it
+    // actually shrink instead of spilling, and overflow keeps any residual
+    // spill clipped inside its own box rather than painted over the branding
+    // line below — clipped is recoverable, overlapped is unreadable.
+    minHeight: 0,
+    overflow: 'hidden',
   },
   sessionSymbol: {
     fontSize: 28,
@@ -446,20 +490,20 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.xxl,
     fontWeight: typography.fontWeights.medium,
     textAlign: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: typography.fontSizes.xxl * typography.lineHeights.tight,
   },
   durationText: {
     color: colors.textTertiary,
     fontSize: typography.fontSizes.sm,
     letterSpacing: typography.letterSpacing.spacious,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     marginTop: -spacing.sm,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     width: '60%',
   },
   dividerLine: {
@@ -478,8 +522,8 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: typography.fontSizes.md * typography.lineHeights.relaxed,
-    marginBottom: spacing.lg,
+    lineHeight: typography.fontSizes.md * typography.lineHeights.normal,
+    marginBottom: spacing.md,
     paddingHorizontal: spacing.md,
     opacity: 0.9,
   },
@@ -502,6 +546,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.xs,
     letterSpacing: typography.letterSpacing.relaxed,
     marginTop: spacing.md,
+    flexShrink: 0,
   },
   mandalaCompleteText: {
     color: colors.accent,
