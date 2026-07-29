@@ -31,6 +31,10 @@ const STEP_ORDER: OnboardingStep[] = ['welcome', 'schedule', 'invitation'];
 // are set on the next screen.
 const PHASE_LABELS = ['Dawn', 'Morning', 'Midday', 'Afternoon', 'Evening', 'Night'];
 
+// Width of the timeline block: 96 phase column + 16 rail + 8 gutter, plus enough
+// room for the longest title ("Compassion Activation") to stay on one line.
+const ARC_WIDTH = 340;
+
 export const OnboardingScreen: React.FC = () => {
   const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
   const insets = useSafeAreaInsets();
@@ -431,8 +435,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   // Six-session arc — the day turning through its phases, as a vertical timeline.
+  // Everything else on this step centers via textAlign, which holds at any width.
+  // The arc can't: it's a fixed-column row (96px phase + 16px rail + title), so
+  // an unbounded block pins the whole timeline to the left edge while the copy
+  // above it stays centered — obvious on a wide window. Bounding the box and
+  // centering it keeps the column geometry intact and the block under the copy.
   arc: {
     position: 'relative',
+    width: '100%',
+    maxWidth: ARC_WIDTH,
+    alignSelf: 'center',
     marginBottom: spacing.xl,
   },
   arcLine: {
