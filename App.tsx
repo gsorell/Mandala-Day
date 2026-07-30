@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -56,6 +56,8 @@ import {
   scheduleTeachingNotifications,
   addNotificationResponseListener,
   removeNotificationSubscription,
+  setActivePractice,
+  isPracticeRoute,
 } from './src/services/notifications';
 
 // Global font-scale clamp. Without this, the device's system text-size /
@@ -355,6 +357,21 @@ const AppNavigator: React.FC = () => {
     userSchedule?.quietHours.end,
   ]);
 
+  // Track whether the visible screen is a practice, so a reminder to sit never
+  // lands on top of someone already sitting. One wiring point covers every
+  // practice screen, and anything newly added is protected by default —
+  // isPracticeRoute works off a list of the screens that are *not* practices.
+  const handleRouteChange = useCallback(() => {
+    const route = navigationRef.current?.getCurrentRoute();
+    if (!route || !isPracticeRoute(route.name)) {
+      setActivePractice(null);
+      return;
+    }
+
+    const params = route.params as { instanceId?: string } | undefined;
+    setActivePractice({ route: route.name, instanceId: params?.instanceId });
+  }, []);
+
   // Handle notification responses (only on native platforms)
   useEffect(() => {
     if (Platform.OS === 'web') return; // Skip notifications on web
@@ -415,7 +432,7 @@ const AppNavigator: React.FC = () => {
   const showOnboarding = !appSettings?.hasCompletedOnboarding;
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} onStateChange={handleRouteChange}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,

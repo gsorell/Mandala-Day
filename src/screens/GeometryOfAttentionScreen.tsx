@@ -19,6 +19,7 @@ import { audioService } from '../services/audio';
 import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
+import { usePracticeNotificationGuard } from '../hooks/usePracticeNotificationGuard';
 
 const GEOMETRY_OF_ATTENTION_DURATION_MIN = 10;
 const GEOMETRY_OF_ATTENTION_DURATION_SEC = GEOMETRY_OF_ATTENTION_DURATION_MIN * 60;
@@ -36,6 +37,9 @@ export const GeometryOfAttentionScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
   const hasCompleted = useRef(false);
+
+  // Do not interrupt a sitting with a reminder to sit.
+  usePracticeNotificationGuard(isPlaying, GEOMETRY_OF_ATTENTION_DURATION_MIN);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {

@@ -19,6 +19,7 @@ import { audioService } from '../services/audio';
 import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
+import { usePracticeNotificationGuard } from '../hooks/usePracticeNotificationGuard';
 
 const CHAKRA_CENTERS_DURATION_MIN = 11;
 const CHAKRA_CENTERS_DURATION_SEC = CHAKRA_CENTERS_DURATION_MIN * 60;
@@ -36,6 +37,9 @@ export const ChakraCentersScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const hasStarted = useRef(false);
   const hasCompleted = useRef(false);
+
+  // Do not interrupt a sitting with a reminder to sit.
+  usePracticeNotificationGuard(isPlaying, CHAKRA_CENTERS_DURATION_MIN);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {

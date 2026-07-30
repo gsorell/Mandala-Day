@@ -30,6 +30,13 @@ Only when the change is a *new guided meditation*. Source audio arrives in
    `src/screens/<Name>Screen.tsx`, swapping: title, in-session prompt, description,
    duration (min), the audio `require`, the `templateId` (`extra_<snake_name>`), and the
    `SessionComplete` navigation params (`sessionTitle`, `dedication`, `shareMessage`).
+   > **Notification guard:** the cloned screen carries a
+   > `usePracticeNotificationGuard(isPlaying, <NAME>_DURATION_MIN)` call — swap the
+   > duration constant along with everything else. It stops a session reminder from
+   > firing on top of the meditation. `isPracticeRoute` in `src/services/notifications.ts`
+   > treats any route it does not know as a practice, so a new screen is protected by
+   > default and needs no entry there.
+   >
    > **Header clip guard:** the begin-screen header title is a custom in-screen row,
    > cloned per screen — always clone from a header-fixed screen (Geometry qualifies as
    > of `758bca7`). The title `Text` must keep `numberOfLines={1} adjustsFontSizeToFit

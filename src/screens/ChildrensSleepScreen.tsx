@@ -19,6 +19,7 @@ import { audioService } from '../services/audio';
 import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
+import { usePracticeNotificationGuard } from '../hooks/usePracticeNotificationGuard';
 
 const CHILDRENS_SLEEP_DURATION_MIN = 9; // ~8:45 rounded up
 const CHILDRENS_SLEEP_DURATION_SEC = CHILDRENS_SLEEP_DURATION_MIN * 60;
@@ -39,6 +40,9 @@ export const ChildrensSleepScreen: React.FC = () => {
   const hasCompleted = useRef(false);
 
   // Handle app state changes (background/foreground)
+  // Do not interrupt a sitting with a reminder to sit.
+  usePracticeNotificationGuard(isPlaying, CHILDRENS_SLEEP_DURATION_MIN);
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       // Audio continues in background - no special handling needed

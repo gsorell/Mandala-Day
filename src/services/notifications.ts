@@ -1,10 +1,11 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import { parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { DailySessionInstance, UserSchedule } from '../types';
 import { getSessionById } from '../data/sessions';
 import { TEACHINGS, teachingIndexForDate } from '../data/teachings';
+import { getDailyInstances, getUserSchedule } from './storage';
 
 // How many days of teachings to keep queued. Each day is its own one-shot trigger
 // because a repeating DAILY trigger can only carry fixed content, and the teaching
@@ -18,15 +19,95 @@ const TEACHING_QUEUE_DAYS = 14;
 // as sessions.
 type NotificationKind = 'session' | 'teaching';
 
+// ── Active practice ────────────────────────────────────────────────────────
+//
+// Nobody should be interrupted mid-practice by a reminder to practice. Tracking
+// that lives at module scope rather than in React context because the handler
+// below is registered at import time, outside the tree, and has to read the
+// answer synchronously.
+//
+// `instanceId` is present only for scheduled mandala sessions (SessionPlayer
+// passes it); the extras and timers set just the route.
+
+type ActivePractice = {
+  route: string;
+  instanceId?: string;
+};
+
+let activePractice: ActivePractice | null = null;
+
+export const setActivePractice = (practice: ActivePractice | null): void => {
+  activePractice = practice;
+};
+
+export const getActivePractice = (): ActivePractice | null => activePractice;
+
+// Routes that are not a practice: chrome, review screens, settings. Anything not
+// listed here counts as a practice, so a newly added meditation screen defaults
+// to being protected rather than to interrupting.
+const NON_PRACTICE_ROUTES = new Set([
+  'Main',
+  'Onboarding',
+  'Settings',
+  'ScheduleSettings',
+  'History',
+  'Journal',
+  'DailyTeaching',
+  'SessionComplete',
+  'MandalaComplete',
+  // TheView and Firekeeper are reading screens - no audio, nothing to interrupt.
+  'TheView',
+  'Firekeeper',
+]);
+
+export const isPracticeRoute = (routeName: string | undefined): boolean =>
+  !!routeName && !NON_PRACTICE_ROUTES.has(routeName);
+
+const SHOW = {
+  shouldShowAlert: true,
+  shouldPlaySound: true,
+  shouldSetBadge: false,
+  shouldShowBanner: true,
+  shouldShowList: true,
+};
+
+// Suppressed entirely — no banner, no sound, not even a row in the shade.
+const DROP = {
+  shouldShowAlert: false,
+  shouldPlaySound: false,
+  shouldSetBadge: false,
+  shouldShowBanner: false,
+  shouldShowList: false,
+};
+
+// Kept in the shade but never thrown over what someone is doing.
+const QUIET = { ...SHOW, shouldShowAlert: false, shouldPlaySound: false, shouldShowBanner: false };
+
 // Configure notification behavior
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const data = notification.request.content.data as
+      | { kind?: NotificationKind; instanceId?: string }
+      | undefined;
+    const active = activePractice;
+
+    if (!active) return SHOW;
+
+    // A teaching asks nothing and keeps all day, so it just waits in the shade.
+    if (data?.kind === 'teaching') return QUIET;
+
+    // The reminder for the very session being sat: it has served its purpose.
+    if (data?.instanceId && data.instanceId === active.instanceId) {
+      console.log(`Dropping reminder for ${data.instanceId} - already sitting it`);
+      return DROP;
+    }
+
+    // A different session came due mid-practice. Push it out rather than lose it.
+    if (data?.instanceId) {
+      await deferSessionNotification(data.instanceId);
+    }
+    return DROP;
+  },
 });
 
 // Check if notifications are available
@@ -80,6 +161,116 @@ export const areNotificationsAvailable = async (): Promise<boolean> => {
   }
 
   return true;
+};
+
+// Re-schedule a session reminder that landed mid-practice, or drop it if pushing it
+// out would carry it past the point of being useful.
+//
+// Deferring by one snooze step rather than to a computed practice end-time means it
+// works for open-ended sitting too: if the practice is still running when the
+// reminder comes back, it simply defers again. The grace window terminates the loop
+// — once the session would be MISSED anyway, the reminder is dropped.
+export const deferSessionNotification = async (
+  instanceId: string,
+  deferUntil?: Date
+): Promise<void> => {
+  try {
+    const [schedule, instances] = await Promise.all([
+      getUserSchedule(),
+      getDailyInstances(format(new Date(), 'yyyy-MM-dd')),
+    ]);
+
+    const instance = instances.find((i) => i.id === instanceId);
+    if (!instance) return;
+
+    const session = getSessionById(instance.templateId);
+    if (!session) return;
+
+    const deferMin = schedule.snoozeOptionsMin[0] ?? 5;
+    const nextAt = deferUntil ?? new Date(Date.now() + deferMin * 60_000);
+    const staleAfter = new Date(
+      parseISO(instance.scheduledAt).getTime() + schedule.graceWindowMin * 60_000
+    );
+
+    if (nextAt > staleAfter) {
+      console.log(`Not deferring ${instanceId} - past its ${schedule.graceWindowMin}min grace window`);
+      return;
+    }
+
+    if (isInQuietHours(nextAt, schedule.quietHours)) {
+      console.log(`Not deferring ${instanceId} - would land in quiet hours`);
+      return;
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: session.title,
+        body: session.shortPrompt,
+        data: { kind: 'session', instanceId: instance.id, templateId: instance.templateId },
+        sound: true,
+        categoryIdentifier: 'session',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: nextAt,
+      },
+    });
+
+    console.log(`Deferred ${instanceId} to ${nextAt.toLocaleTimeString()}`);
+  } catch (error) {
+    console.error('Error deferring session notification:', error);
+  }
+};
+
+// Clear the runway before a practice starts.
+//
+// The handler above only runs while the app is foregrounded — if someone sits with
+// the screen off, the OS delivers straight to the shade and we never get a say. So
+// the decision is made up front instead, while we still can: any session reminder
+// due to fire before this practice ends is dealt with now.
+//
+// `instanceId` is the session being sat, if it is one of the scheduled six; its own
+// reminder is cancelled outright rather than deferred. Everything else is pushed to
+// just after the practice ends.
+export const clearNotificationsForPractice = async (
+  durationMin: number,
+  instanceId?: string
+): Promise<void> => {
+  try {
+    const endsAt = new Date(Date.now() + durationMin * 60_000);
+    const resumeAt = new Date(endsAt.getTime() + 60_000); // a minute to come back
+    const pending = await Notifications.getAllScheduledNotificationsAsync();
+
+    let dismissed = 0;
+    let deferred = 0;
+
+    for (const notification of pending) {
+      const data = notification.content.data as
+        | { kind?: NotificationKind; instanceId?: string }
+        | undefined;
+      if ((data?.kind ?? 'session') !== 'session' || !data?.instanceId) continue;
+
+      // Only those landing inside the practice window are our business.
+      const trigger = notification.trigger as { date?: number | string } | null;
+      const fireAt = trigger?.date ? new Date(trigger.date) : null;
+      if (!fireAt || fireAt > endsAt) continue;
+
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+
+      if (data.instanceId === instanceId) {
+        dismissed++;
+      } else {
+        await deferSessionNotification(data.instanceId, resumeAt);
+        deferred++;
+      }
+    }
+
+    if (dismissed || deferred) {
+      console.log(`Practice runway cleared: ${dismissed} dismissed, ${deferred} deferred`);
+    }
+  } catch (error) {
+    console.error('Error clearing notifications for practice:', error);
+  }
 };
 
 // Shared quiet-hours test. Handles windows that span midnight (e.g. 22:00–07:00).

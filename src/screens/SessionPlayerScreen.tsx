@@ -23,6 +23,7 @@ import { audioService } from '../services/audio';
 import { getSessionAudioFile, getSessionAudioUri } from '../data/audioAssets';
 import { trackMeditationStart, trackMeditationComplete, trackMeditationEndEarly } from '../services/analytics';
 import { backgroundTimer } from '../services/backgroundTimer';
+import { clearNotificationsForPractice } from '../services/notifications';
 import { BreathingMandalaButton } from '../components/BreathingMandalaButton';
 
 type RouteProps = RouteProp<RootStackParamList, 'SessionPlayer'>;
@@ -266,6 +267,13 @@ export const SessionPlayerScreen: React.FC = () => {
       setIsPlaying(true);
       setCountdown(null);
       playPreloadedAudio();
+
+      // Settle any session reminder due to land before this one ends. Done here,
+      // up front, because the in-app handler cannot intervene once the screen goes
+      // dark and the OS delivers straight to the shade.
+      if (session) {
+        void clearNotificationsForPractice(Math.ceil(session.durationSec / 60), instanceId);
+      }
     }
   }, [countdown]);
 

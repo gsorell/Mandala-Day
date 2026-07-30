@@ -19,6 +19,7 @@ import { audioService } from '../services/audio';
 import { format } from 'date-fns';
 import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storage';
 import { SessionStatus } from '../types';
+import { usePracticeNotificationGuard } from '../hooks/usePracticeNotificationGuard';
 
 const THE_CITY_OF_LIGHTS_DURATION_MIN = 8; // ~7:42
 const THE_CITY_OF_LIGHTS_DURATION_SEC = THE_CITY_OF_LIGHTS_DURATION_MIN * 60;
@@ -39,6 +40,9 @@ export const CityOfLightsScreen: React.FC = () => {
   const hasCompleted = useRef(false);
 
   // Handle app state changes (background/foreground)
+  // Do not interrupt a sitting with a reminder to sit.
+  usePracticeNotificationGuard(isPlaying, THE_CITY_OF_LIGHTS_DURATION_MIN);
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       // Audio continues in background - no special handling needed
