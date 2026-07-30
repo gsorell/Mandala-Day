@@ -51,6 +51,10 @@ export interface UserSchedule {
     end: string; // "HH:mm"
     enabled: boolean;
   };
+  dailyTeaching: {
+    enabled: boolean;
+    time: string; // "HH:mm"
+  };
   snoozeOptionsMin: number[];
   graceWindowMin: number;
 }
@@ -103,6 +107,7 @@ export type RootStackParamList = {
   MandalaComplete: { date: string };
   Settings: undefined;
   ScheduleSettings: undefined;
+  DailyTeaching: { index?: number } | undefined;
   History: undefined;
   Journal: undefined;
   SimpleTimer: { initialDuration?: number; autoStart?: boolean } | undefined;

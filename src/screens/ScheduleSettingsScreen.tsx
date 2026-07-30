@@ -15,6 +15,10 @@ import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 
+// Sentinel for the shared time-picker modal, which is keyed on a session id.
+// The daily teaching has a time but is not a session, so it borrows the same modal.
+const TEACHING_TIME_KEY = '__dailyTeaching__';
+
 export const ScheduleSettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { userSchedule, updateUserSchedule } = useApp();
@@ -41,6 +45,13 @@ export const ScheduleSettingsScreen: React.FC = () => {
     setSelectedSession(sessionId);
   };
 
+  const handleTeachingTimePress = () => {
+    const [hours, minutes] = userSchedule.dailyTeaching.time.split(':').map(Number);
+    setTempHour(hours);
+    setTempMinute(minutes);
+    setSelectedSession(TEACHING_TIME_KEY);
+  };
+
   const handleTimeSave = async () => {
     if (!selectedSession) return;
 
@@ -48,14 +59,29 @@ export const ScheduleSettingsScreen: React.FC = () => {
       .toString()
       .padStart(2, '0')}`;
 
-    await updateUserSchedule({
-      sessionTimes: {
-        ...userSchedule.sessionTimes,
-        [selectedSession]: timeString,
-      },
-    });
+    if (selectedSession === TEACHING_TIME_KEY) {
+      await updateUserSchedule({
+        dailyTeaching: { ...userSchedule.dailyTeaching, time: timeString },
+      });
+    } else {
+      await updateUserSchedule({
+        sessionTimes: {
+          ...userSchedule.sessionTimes,
+          [selectedSession]: timeString,
+        },
+      });
+    }
 
     setSelectedSession(null);
+  };
+
+  const handleDailyTeachingToggle = async () => {
+    await updateUserSchedule({
+      dailyTeaching: {
+        ...userSchedule.dailyTeaching,
+        enabled: !userSchedule.dailyTeaching.enabled,
+      },
+    });
   };
 
   const handleQuietHoursToggle = async () => {
@@ -150,6 +176,32 @@ export const ScheduleSettingsScreen: React.FC = () => {
                 {formatTime(userSchedule.quietHours.end)}
               </Text>
             </View>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Daily Teaching</Text>
+          <Text style={styles.sectionDescription}>
+            A single line each day from the contemplative traditions. It arrives
+            silently and asks nothing of you.
+          </Text>
+
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Enable Daily Teaching</Text>
+            <Switch
+              value={userSchedule.dailyTeaching.enabled}
+              onValueChange={handleDailyTeachingToggle}
+              trackColor={{ false: colors.surface, true: colors.primary }}
+              thumbColor={colors.white}
+            />
+          </View>
+
+          {userSchedule.dailyTeaching.enabled && (
+            <TouchableOpacity style={styles.quietHoursRange} onPress={handleTeachingTimePress}>
+              <Text style={styles.quietHoursText}>
+                {formatTime(userSchedule.dailyTeaching.time)}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
       </ScrollView>

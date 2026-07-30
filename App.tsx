@@ -15,6 +15,7 @@ import { SessionCompleteScreen } from './src/screens/SessionCompleteScreen';
 import { MandalaCompleteScreen } from './src/screens/MandalaCompleteScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { ScheduleSettingsScreen } from './src/screens/ScheduleSettingsScreen';
+import { DailyTeachingScreen } from './src/screens/DailyTeachingScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SimpleTimerScreen } from './src/screens/SimpleTimerScreen';
@@ -52,6 +53,7 @@ import { getSessionById } from './src/data/sessions';
 import {
   areNotificationsAvailable,
   scheduleAllSessionNotifications,
+  scheduleTeachingNotifications,
   addNotificationResponseListener,
   removeNotificationSubscription,
 } from './src/services/notifications';
@@ -332,13 +334,42 @@ const AppNavigator: React.FC = () => {
     };
   }, [appSettings?.notificationsEnabled, todayInstances, userSchedule]);
 
+  // Top up the daily-teaching queue. Kept separate from session scheduling: it does
+  // not depend on today's instances, only on the teaching settings, and the two
+  // cancel independently (see cancelNotificationsByKind).
+  useEffect(() => {
+    if (Platform.OS === 'web') return; // web teachings ride along with scheduleAllWebNotifications
+    if (!userSchedule) return;
+    if (!appSettings?.notificationsEnabled) return;
+
+    void (async () => {
+      if (!(await areNotificationsAvailable())) return;
+      await scheduleTeachingNotifications(userSchedule);
+    })();
+  }, [
+    appSettings?.notificationsEnabled,
+    userSchedule?.dailyTeaching.enabled,
+    userSchedule?.dailyTeaching.time,
+    userSchedule?.quietHours.enabled,
+    userSchedule?.quietHours.start,
+    userSchedule?.quietHours.end,
+  ]);
+
   // Handle notification responses (only on native platforms)
   useEffect(() => {
     if (Platform.OS === 'web') return; // Skip notifications on web
 
     notificationListener.current = addNotificationResponseListener((response) => {
-      const data = response.notification.request.content.data as { instanceId?: string };
-      if (data.instanceId && navigationRef.current) {
+      const data = response.notification.request.content.data as {
+        kind?: string;
+        instanceId?: string;
+        index?: number;
+      };
+      if (!navigationRef.current) return;
+
+      if (data.kind === 'teaching') {
+        navigationRef.current.navigate('DailyTeaching', { index: data.index });
+      } else if (data.instanceId) {
         navigationRef.current.navigate('SessionPlayer', { instanceId: data.instanceId });
       }
     });
@@ -416,6 +447,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="ScheduleSettings"
               component={ScheduleSettingsScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="DailyTeaching"
+              component={DailyTeachingScreen}
               options={{
                 presentation: 'card',
               }}

@@ -133,9 +133,15 @@ async function checkAndShowNotifications() {
     let hasChanges = false;
 
     for (const notification of notifications) {
-      // Show if it's due and hasn't been shown yet
-      // Allow a 5-minute grace window for notifications that were slightly missed
-      const graceWindow = 5 * 60 * 1000;
+      // Show if it's due and hasn't been shown yet.
+      // Sessions get a 5-minute grace window — a reminder to sit at 10:00 is
+      // useless at noon. A teaching is not time-critical, so its window runs to
+      // the end of its own day: you get it whenever you next open the app, but
+      // yesterday's teaching never surfaces today.
+      const isTeaching = notification.kind === 'teaching';
+      const graceWindow = isTeaching
+        ? new Date(notification.scheduledTime).setHours(24, 0, 0, 0) - notification.scheduledTime
+        : 5 * 60 * 1000;
       const isDue = notification.scheduledTime <= now;
       const withinGrace = (now - notification.scheduledTime) < graceWindow;
 
@@ -147,10 +153,14 @@ async function checkAndShowNotifications() {
             badge: '/icon-192.png',
             tag: notification.id,
             requireInteraction: false,
-            vibrate: [200, 100, 200],
+            // Teachings arrive quietly: no buzz, no sound.
+            silent: isTeaching,
+            vibrate: isTeaching ? [] : [200, 100, 200],
             data: {
+              kind: notification.kind,
               instanceId: notification.instanceId,
               templateId: notification.templateId,
+              teachingIndex: notification.teachingIndex,
             },
           });
 

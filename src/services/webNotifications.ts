@@ -4,20 +4,42 @@
 
 import { DailySessionInstance, UserSchedule } from '../types';
 import { getSessionById } from '../data/sessions';
+import { TEACHINGS, teachingIndexForDate } from '../data/teachings';
 import { parseISO } from 'date-fns';
 
 const NOTIFICATION_CHECK_INTERVAL = 60000; // Check every minute
 const SCHEDULED_NOTIFICATIONS_KEY = 'scheduled_web_notifications';
 
+// Days of teachings to queue. Mirrors TEACHING_QUEUE_DAYS in notifications.ts.
+const TEACHING_QUEUE_DAYS = 14;
+
 interface ScheduledNotification {
   id: string;
-  instanceId: string;
-  templateId: string;
+  kind: 'session' | 'teaching';
+  instanceId?: string; // sessions only
+  templateId?: string; // sessions only
+  teachingIndex?: number; // teachings only
   title: string;
   body: string;
   scheduledTime: number; // timestamp
   shown: boolean;
 }
+
+// Shared quiet-hours test. Handles windows that span midnight (e.g. 22:00–07:00).
+const isInQuietHours = (time: Date, quietHours: UserSchedule['quietHours']): boolean => {
+  if (!quietHours.enabled) return false;
+
+  const [startHour, startMin] = quietHours.start.split(':').map(Number);
+  const [endHour, endMin] = quietHours.end.split(':').map(Number);
+
+  const atMin = time.getHours() * 60 + time.getMinutes();
+  const startInMin = startHour * 60 + startMin;
+  const endInMin = endHour * 60 + endMin;
+
+  return startInMin > endInMin
+    ? atMin >= startInMin || atMin <= endInMin
+    : atMin >= startInMin && atMin <= endInMin;
+};
 
 // Send notifications to service worker for background delivery
 const sendNotificationsToServiceWorker = async (notifications: ScheduledNotification[]): Promise<boolean> => {
@@ -153,33 +175,14 @@ const scheduleWebNotification = (
   }
 
   // Check quiet hours
-  if (schedule.quietHours.enabled) {
-    const [quietStartHour, quietStartMin] = schedule.quietHours.start.split(':').map(Number);
-    const [quietEndHour, quietEndMin] = schedule.quietHours.end.split(':').map(Number);
-
-    const scheduledHour = scheduledTime.getHours();
-    const scheduledMin = scheduledTime.getMinutes();
-    const scheduledTimeInMin = scheduledHour * 60 + scheduledMin;
-    const quietStartInMin = quietStartHour * 60 + quietStartMin;
-    const quietEndInMin = quietEndHour * 60 + quietEndMin;
-
-    let isInQuietHours = false;
-    
-    // Handle quiet hours that span across midnight
-    if (quietStartInMin > quietEndInMin) {
-      isInQuietHours = scheduledTimeInMin >= quietStartInMin || scheduledTimeInMin <= quietEndInMin;
-    } else {
-      isInQuietHours = scheduledTimeInMin >= quietStartInMin && scheduledTimeInMin <= quietEndInMin;
-    }
-
-    if (isInQuietHours) {
-      console.log(`Notification for ${session.title} skipped - in quiet hours`);
-      return null;
-    }
+  if (isInQuietHours(scheduledTime, schedule.quietHours)) {
+    console.log(`Notification for ${session.title} skipped - in quiet hours`);
+    return null;
   }
 
   return {
     id: `${instance.id}_${scheduledTime.getTime()}`,
+    kind: 'session',
     instanceId: instance.id,
     templateId: instance.templateId,
     title: session.title,
@@ -187,6 +190,39 @@ const scheduleWebNotification = (
     scheduledTime: scheduledTime.getTime(),
     shown: false,
   };
+};
+
+// Build the queued daily teachings. Returned rather than sent on their own: the
+// service worker's SCHEDULE_NOTIFICATIONS replaces the whole stored list, so
+// teachings and sessions have to go over in one batch or the second call wipes the
+// first.
+const buildTeachingNotifications = (schedule: UserSchedule): ScheduledNotification[] => {
+  if (!schedule.dailyTeaching.enabled) return [];
+
+  const [hour, minute] = schedule.dailyTeaching.time.split(':').map(Number);
+  const now = new Date();
+  const notifications: ScheduledNotification[] = [];
+
+  for (let dayOffset = 0; dayOffset < TEACHING_QUEUE_DAYS; dayOffset++) {
+    const fireAt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hour, minute, 0, 0);
+
+    if (fireAt <= now) continue;
+    if (isInQuietHours(fireAt, schedule.quietHours)) continue;
+
+    const teachingIndex = teachingIndexForDate(fireAt);
+    const teaching = TEACHINGS[teachingIndex];
+    notifications.push({
+      id: `teaching_${fireAt.getTime()}`,
+      kind: 'teaching',
+      teachingIndex,
+      title: teaching.source,
+      body: teaching.teaching,
+      scheduledTime: fireAt.getTime(),
+      shown: false,
+    });
+  }
+
+  return notifications;
 };
 
 // Schedule all notifications for today's sessions
@@ -215,13 +251,20 @@ export const scheduleAllWebNotifications = async (
     }
   }
 
+  // Daily teachings go in the same batch — see buildTeachingNotifications.
+  const teachings = buildTeachingNotifications(schedule);
+  notifications.push(...teachings);
+
   // Save to localStorage as fallback
   saveScheduledNotifications(notifications);
 
   // Send to Service Worker for background delivery
   const sentToSW = await sendNotificationsToServiceWorker(notifications);
 
-  console.log(`[WebNotifications] Scheduled ${notifications.length} notifications (SW: ${sentToSW})`);
+  console.log(
+    `[WebNotifications] Scheduled ${notifications.length} notifications ` +
+      `(${teachings.length} teachings, SW: ${sentToSW})`
+  );
 };
 
 // Show a notification
@@ -238,6 +281,8 @@ const showNotification = async (notification: ScheduledNotification): Promise<vo
         badge: '/icon-192.png',
         tag: notification.id,
         requireInteraction: false,
+        silent: notification.kind === 'teaching',
+        data: { kind: notification.kind, teachingIndex: notification.teachingIndex },
       });
     } else {
       // Fallback to regular notification
@@ -261,12 +306,24 @@ const checkAndShowNotifications = async (): Promise<void> => {
   let hasChanges = false;
 
   for (const notification of notifications) {
-    if (!notification.shown && notification.scheduledTime <= now) {
-      await showNotification(notification);
-      notification.shown = true;
-      hasChanges = true;
-      console.log(`Showed notification: ${notification.title}`);
+    if (notification.shown || notification.scheduledTime > now) continue;
+
+    // A teaching is only worth showing on its own day. Later in the day is fine —
+    // you get it whenever you next look — but yesterday's teaching should not
+    // surface if the tab was closed overnight.
+    if (notification.kind === 'teaching') {
+      const scheduledDay = new Date(notification.scheduledTime).toDateString();
+      if (scheduledDay !== new Date(now).toDateString()) {
+        notification.shown = true;
+        hasChanges = true;
+        continue;
+      }
     }
+
+    await showNotification(notification);
+    notification.shown = true;
+    hasChanges = true;
+    console.log(`Showed notification: ${notification.title}`);
   }
 
   if (hasChanges) {

@@ -47,6 +47,14 @@ const getDefaultUserSchedule = (): UserSchedule => ({
     end: '07:00',
     enabled: false,
   },
+  // On by default. 08:30 avoids every session slot (07/10/12/15/18/21) and sits
+  // outside the default quiet-hours window, so enabling quiet hours does not
+  // silently swallow it. Still gated by appSettings.notificationsEnabled, and
+  // switched off per-user in Schedule → Daily Teaching.
+  dailyTeaching: {
+    enabled: true,
+    time: '08:30',
+  },
   snoozeOptionsMin: DEFAULT_SNOOZE_OPTIONS,
   graceWindowMin: DEFAULT_GRACE_WINDOW,
 });

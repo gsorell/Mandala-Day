@@ -4,6 +4,19 @@ import { Platform } from 'react-native';
 import { parseISO } from 'date-fns';
 import { DailySessionInstance, UserSchedule } from '../types';
 import { getSessionById } from '../data/sessions';
+import { TEACHINGS, teachingIndexForDate } from '../data/teachings';
+
+// How many days of teachings to keep queued. Each day is its own one-shot trigger
+// because a repeating DAILY trigger can only carry fixed content, and the teaching
+// changes every day. iOS caps pending notifications at 64 per app; sessions use up
+// to 6/day, so 14 leaves plenty of room and still covers someone who does not open
+// the app for two weeks.
+const TEACHING_QUEUE_DAYS = 14;
+
+// Every notification we schedule carries a `kind` so it can be cancelled without
+// disturbing the other kind. Untagged notifications predate this and are treated
+// as sessions.
+type NotificationKind = 'session' | 'teaching';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -53,9 +66,36 @@ export const areNotificationsAvailable = async (): Promise<boolean> => {
         contentType: Notifications.AndroidAudioContentType.SONIFICATION,
       },
     });
+
+    // Daily teaching gets its own channel, deliberately quieter than 'sessions':
+    // DEFAULT importance, no vibration, no sound. A teaching asks nothing of you,
+    // so it should not buzz a pocket — and a separate channel lets it be tuned in
+    // system settings without touching session reminders.
+    await Notifications.setNotificationChannelAsync('teachings', {
+      name: 'Daily Teaching',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      enableVibrate: false,
+      lightColor: '#C49040',
+    });
   }
 
   return true;
+};
+
+// Shared quiet-hours test. Handles windows that span midnight (e.g. 22:00–07:00).
+const isInQuietHours = (time: Date, quietHours: UserSchedule['quietHours']): boolean => {
+  if (!quietHours.enabled) return false;
+
+  const [startHour, startMin] = quietHours.start.split(':').map(Number);
+  const [endHour, endMin] = quietHours.end.split(':').map(Number);
+
+  const atMin = time.getHours() * 60 + time.getMinutes();
+  const startInMin = startHour * 60 + startMin;
+  const endInMin = endHour * 60 + endMin;
+
+  return startInMin > endInMin
+    ? atMin >= startInMin || atMin <= endInMin
+    : atMin >= startInMin && atMin <= endInMin;
 };
 
 // Request notification permissions
@@ -87,31 +127,9 @@ export const scheduleSessionNotification = async (
   }
 
   // Check quiet hours
-  if (schedule.quietHours.enabled) {
-    const [quietStartHour, quietStartMin] = schedule.quietHours.start.split(':').map(Number);
-    const [quietEndHour, quietEndMin] = schedule.quietHours.end.split(':').map(Number);
-
-    const scheduledHour = scheduledTime.getHours();
-    const scheduledMin = scheduledTime.getMinutes();
-    const scheduledTimeInMin = scheduledHour * 60 + scheduledMin;
-    const quietStartInMin = quietStartHour * 60 + quietStartMin;
-    const quietEndInMin = quietEndHour * 60 + quietEndMin;
-
-    let isInQuietHours = false;
-    
-    // Handle quiet hours that span across midnight
-    if (quietStartInMin > quietEndInMin) {
-      // Quiet hours like 22:00 to 07:00
-      isInQuietHours = scheduledTimeInMin >= quietStartInMin || scheduledTimeInMin <= quietEndInMin;
-    } else {
-      // Normal quiet hours like 13:00 to 14:00
-      isInQuietHours = scheduledTimeInMin >= quietStartInMin && scheduledTimeInMin <= quietEndInMin;
-    }
-
-    if (isInQuietHours) {
-      console.log(`Notification for ${session.title} skipped - in quiet hours`);
-      return null;
-    }
+  if (isInQuietHours(scheduledTime, schedule.quietHours)) {
+    console.log(`Notification for ${session.title} skipped - in quiet hours`);
+    return null;
   }
 
   try {
@@ -119,7 +137,7 @@ export const scheduleSessionNotification = async (
       content: {
         title: session.title,
         body: session.shortPrompt,
-        data: { instanceId: instance.id, templateId: instance.templateId },
+        data: { kind: 'session', instanceId: instance.id, templateId: instance.templateId },
         sound: true,
         categoryIdentifier: 'session',
       },
@@ -137,9 +155,25 @@ export const scheduleSessionNotification = async (
   }
 };
 
-// Cancel all scheduled notifications
+// Cancel all scheduled notifications, of every kind
 export const cancelAllNotifications = async (): Promise<void> => {
   await Notifications.cancelAllScheduledNotificationsAsync();
+};
+
+// Cancel only the notifications of one kind, leaving the other kind pending.
+// Rescheduling sessions must not wipe the queued teachings (and vice versa), which
+// is what a blanket cancelAllScheduledNotificationsAsync() would do.
+export const cancelNotificationsByKind = async (kind: NotificationKind): Promise<void> => {
+  const pending = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of pending) {
+    const data = notification.content.data as { kind?: NotificationKind } | undefined;
+    // Untagged notifications were scheduled before `kind` existed; they are sessions.
+    const notificationKind = data?.kind ?? 'session';
+    if (notificationKind === kind) {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
 };
 
 // Cancel specific notification
@@ -153,10 +187,10 @@ export const scheduleAllSessionNotifications = async (
   schedule: UserSchedule
 ): Promise<void> => {
   console.log(`Scheduling notifications for ${instances.length} sessions...`);
-  
-  // Cancel existing notifications first
-  await cancelAllNotifications();
-  console.log('Cancelled all existing notifications');
+
+  // Cancel existing *session* notifications only — queued teachings stay put.
+  await cancelNotificationsByKind('session');
+  console.log('Cancelled existing session notifications');
 
   let scheduledCount = 0;
   // Schedule new notifications
@@ -168,6 +202,57 @@ export const scheduleAllSessionNotifications = async (
   }
   
   console.log(`Successfully scheduled ${scheduledCount} notifications`);
+};
+
+// Queue the next TEACHING_QUEUE_DAYS days of daily teachings, one trigger per day.
+// Safe to call repeatedly: it clears the existing teaching queue first, so opening
+// the app simply tops the window back up.
+export const scheduleTeachingNotifications = async (schedule: UserSchedule): Promise<void> => {
+  await cancelNotificationsByKind('teaching');
+
+  if (!schedule.dailyTeaching.enabled) {
+    console.log('Daily teaching disabled - nothing queued');
+    return;
+  }
+
+  const [hour, minute] = schedule.dailyTeaching.time.split(':').map(Number);
+  const now = new Date();
+  let queued = 0;
+
+  for (let dayOffset = 0; dayOffset < TEACHING_QUEUE_DAYS; dayOffset++) {
+    const fireAt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hour, minute, 0, 0);
+
+    if (fireAt <= now) continue;
+    if (isInQuietHours(fireAt, schedule.quietHours)) continue;
+
+    const index = teachingIndexForDate(fireAt);
+    const teaching = TEACHINGS[index];
+
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          // Source as the title, teaching as the body: the teaching is the content,
+          // and a long title would be clipped to one line in the collapsed shade.
+          title: teaching.source,
+          body: teaching.teaching,
+          data: { kind: 'teaching', index },
+          // Deliberately silent. The teaching is there when you next look at the
+          // phone; it does not interrupt to announce itself.
+          sound: false,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: fireAt,
+          channelId: 'teachings',
+        },
+      });
+      queued++;
+    } catch (error) {
+      console.error('Error scheduling teaching notification:', error);
+    }
+  }
+
+  console.log(`Queued ${queued} daily teachings from ${schedule.dailyTeaching.time}`);
 };
 
 // Get all pending notifications
