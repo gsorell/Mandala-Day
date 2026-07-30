@@ -221,6 +221,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A city-at-night bedtime journey for the little ones',
       abbr: 'CL',
     },
+    extra_rain_on_the_roof: {
+      title: 'Rain on the Roof',
+      dedication: 'May the quiet rain carry little ones into a soft, deep sleep.',
+      shareMessage: 'A rainy-night bedtime journey for the little ones',
+      abbr: 'RR',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {
