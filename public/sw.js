@@ -1,7 +1,10 @@
 // Service Worker for Mandala Day PWA
 // Handles notification display, background scheduling, and network-first caching
 
-const CACHE_NAME = 'mandala-day-v4';
+// Bump on any audio replacement: audio URLs are stable (non-hashed), so an old
+// pre-cached copy would otherwise linger as the offline fallback. Activation
+// deletes every cache that isn't the current name.
+const CACHE_NAME = 'mandala-day-v5';
 
 // Audio and app shell assets to pre-cache on install
 // Audio URLs are stable (non-hashed) so safe to hardcode here
