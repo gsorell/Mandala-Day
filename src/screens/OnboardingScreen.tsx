@@ -36,14 +36,24 @@ const PHASE_LABELS = ['Dawn', 'Morning', 'Midday', 'Afternoon', 'Evening', 'Nigh
 const ARC_WIDTH = 340;
 
 export const OnboardingScreen: React.FC = () => {
-  const { updateAppSettings, updateUserSchedule, userSchedule } = useApp();
+  const { updateAppSettings, updateUserSchedule, userSchedule, appSettings } = useApp();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+
+  // Revisit mode: the same screen reached from Extras -> Data after setup is
+  // already done. Derived from the flag rather than a route param so the two
+  // can't drift. In this mode the flow doesn't "complete" anything — it edits
+  // schedule/reminders in place and exits by popping back to Extras.
+  const isRevisit = !!appSettings?.hasCompletedOnboarding;
+
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [tempHour, setTempHour] = useState(7);
   const [tempMinute, setTempMinute] = useState(0);
-  const [remindersEnabled, setRemindersEnabled] = useState(true);
+  // First run opts in by default; a revisit shows the setting as it stands.
+  const [remindersEnabled, setRemindersEnabled] = useState(
+    isRevisit ? !!appSettings?.notificationsEnabled : true
+  );
 
   // Fired when leaving the schedule step. If the user left the inline reminders
   // toggle on, request OS permission here (between screens, not at practice
@@ -69,10 +79,21 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    if (isRevisit) {
+      navigation.goBack();
+      return;
+    }
     await updateAppSettings({ hasCompletedOnboarding: true });
   };
 
   const handleBeginDirectInquiry = async () => {
+    if (isRevisit) {
+      // Main stack is already mounted, so go straight there. `replace` rather
+      // than `navigate` so finishing the practice returns to Extras, not to
+      // this orientation card sitting underneath it.
+      navigation.replace('DirectInquiry');
+      return;
+    }
     // Record the intent before swapping the navigator tree. Once onboarding is
     // marked complete the main stack mounts and the Today screen consumes this,
     // dropping the user straight into the practice.
@@ -132,6 +153,17 @@ export const OnboardingScreen: React.FC = () => {
             />
           ))}
         </View>
+        {/* On a revisit the user came here on purpose and may leave at any
+            step — first run has no exit until the flow is finished. */}
+        {isRevisit && (
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.closeButton}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -265,7 +297,9 @@ export const OnboardingScreen: React.FC = () => {
           <Text style={styles.primaryButtonText}>Begin Direct Inquiry</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleComplete}>
-          <Text style={styles.secondaryButtonText}>Explore on my own</Text>
+          <Text style={styles.secondaryButtonText}>
+            {isRevisit ? 'Done' : 'Explore on my own'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -390,6 +424,19 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 30,
     lineHeight: 30,
+    fontWeight: typography.fontWeights.light,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
+  closeButtonText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.lg,
     fontWeight: typography.fontWeights.light,
   },
   dotsRow: {

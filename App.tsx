@@ -408,8 +408,14 @@ const AppNavigator: React.FC = () => {
 
       const currentRoute = state.routes[state.index];
 
+      // First-run onboarding is the root route (index 0) and must not be
+      // backed out of. A revisit from Extras is pushed on top of Main, so
+      // index > 0 — there it behaves like any other stack screen.
+      const isFirstRunOnboarding =
+        currentRoute.name === 'Onboarding' && state.index === 0;
+
       // If we're on a stack screen (not Main), go back
-      if (currentRoute.name !== 'Main' && currentRoute.name !== 'Onboarding') {
+      if (currentRoute.name !== 'Main' && !isFirstRunOnboarding) {
         navigationRef.current.goBack();
         return true;
       }
@@ -452,6 +458,15 @@ const AppNavigator: React.FC = () => {
         ) : (
           <>
             <Stack.Screen name="Main" component={MainTabs} />
+            {/* Orientation is also reachable after setup (Extras -> Data ->
+                Revisit Orientation). The screen detects the revisit via
+                hasCompletedOnboarding and exits by going back instead of
+                flipping the flag. */}
+            <Stack.Screen
+              name="Onboarding"
+              component={OnboardingScreen}
+              options={{ presentation: 'card' }}
+            />
             <Stack.Screen
               name="SessionPlayer"
               component={SessionPlayerScreen}
