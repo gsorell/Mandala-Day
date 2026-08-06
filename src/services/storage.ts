@@ -415,6 +415,26 @@ export const deleteJournalEntry = async (id: string): Promise<void> => {
   }
 };
 
+// Extras tab: which practice group the segmented strip was left on. Pure UI
+// state, kept out of AppSettings so it never rides along with settings the
+// rest of the app reacts to. Null = fall back to the first group.
+export const getSelectedPracticeGroup = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem(STORAGE_KEYS.EXTRAS_GROUP);
+  } catch (error) {
+    console.error('Error getting practice group:', error);
+    return null;
+  }
+};
+
+export const saveSelectedPracticeGroup = async (id: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.EXTRAS_GROUP, id);
+  } catch (error) {
+    console.error('Error saving practice group:', error);
+  }
+};
+
 // Clear all data (for testing/reset)
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -425,6 +445,7 @@ export const clearAllData = async (): Promise<void> => {
       STORAGE_KEYS.EVENT_LOG,
       STORAGE_KEYS.EXTRA_PRACTICE_MINUTES,
       STORAGE_KEYS.JOURNAL_ENTRIES,
+      STORAGE_KEYS.EXTRAS_GROUP,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);

@@ -46,8 +46,12 @@ Only when the change is a *new guided meditation*. Source audio arrives in
    > these props when swapping the title.)
 3. **Route** — `App.tsx`: add the import and a `<Stack.Screen name="<Name>" …>`.
 4. **Type** — `src/types/index.ts`: add `<Name>: undefined;` to `RootStackParamList`.
-5. **Extras menu** — `src/screens/SettingsScreen.tsx`: add a `TouchableOpacity` row
-   (`navigation.navigate('<Name>')`, "`N min guided`").
+5. **Extras menu** — `src/screens/SettingsScreen.tsx`: add one entry to the `GUIDED`
+   array near the top of the file (`{ route: '<Name>', title: '…', subtitle: 'N min
+   guided' }`). The rows are data-driven now — no JSX to clone — and `route` is typed
+   against `RootStackParamList`, so step 4 must come first or this won't typecheck.
+   Kids' meditations go in the `KIDS` array instead. Both sections are collapsible in
+   the UI; the count in the header updates itself.
 6. **History meta** — `src/screens/HistoryScreen.tsx`: add an `EXTRA_SESSION_META`
    entry keyed by the **same** `extra_<snake_name>` templateId, with a 2-letter `abbr`.
 

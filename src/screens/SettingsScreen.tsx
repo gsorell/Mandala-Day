@@ -18,7 +18,12 @@ import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { colors, typography, spacing, borderRadius } from '../utils/theme';
 import { RootStackParamList, SessionStatus } from '../types';
-import { clearAllData, getExtraPracticeMinutes } from '../services/storage';
+import {
+  clearAllData,
+  getExtraPracticeMinutes,
+  getSelectedPracticeGroup,
+  saveSelectedPracticeGroup,
+} from '../services/storage';
 import { debugNotifications } from '../utils/notificationDebug';
 import { scheduleAllSessionNotifications } from '../services/notifications';
 import { getSessionById } from '../data/sessions';
@@ -32,10 +37,121 @@ import {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// Routes reachable with no params — the only ones these rows can link to,
+// since they navigate on a bare name. A screen that needs params (SessionPlayer,
+// MandalaComplete) is excluded at compile time rather than failing on tap.
+type ParamlessRoute = {
+  [K in keyof RootStackParamList]: undefined extends RootStackParamList[K] ? K : never;
+}[keyof RootStackParamList];
+
+// A row in one of the practice lists. `route` is keyed to RootStackParamList,
+// so a typo'd or removed screen fails typecheck instead of dead-ending at a
+// tap. Adding a meditation is one entry here — no JSX to clone.
+type PracticeRow = {
+  route: ParamlessRoute;
+  title: string;
+  subtitle?: string;
+};
+
+const TIMERS: PracticeRow[] = [
+  { route: 'SimpleTimer', title: 'Simple Timer' },
+  { route: 'SittingWalking', title: 'Sitting & Walking', subtitle: 'zazen & kinhin timer' },
+  { route: 'VipassanaTimer', title: 'Vipassana', subtitle: 'silent sit · 60 min' },
+];
+
+const BREATHWORK: PracticeRow[] = [
+  { route: 'Pranayama', title: 'Pranayama', subtitle: '7 · 4 · 7 · 4 breath' },
+  { route: 'SquareBreathing', title: 'Square Breathing', subtitle: '4 · 4 · 4 · 4 breath' },
+];
+
+const GUIDED: PracticeRow[] = [
+  { route: 'Vipassana', title: 'Body Scan', subtitle: '10 min guided' },
+  { route: 'CrownToSole', title: 'Crown to Sole', subtitle: '10 min guided' },
+  { route: 'Vision', title: 'Clear Seeing', subtitle: '10 min guided' },
+  { route: 'DirectInquiry', title: 'Direct Inquiry', subtitle: '10 min guided' },
+  { route: 'ChakraCenters', title: 'The Chakra Centers', subtitle: '11 min guided' },
+  { route: 'GeometryOfAttention', title: 'The Geometry of Attention', subtitle: '10 min guided' },
+  { route: 'RecognizingThought', title: 'Recognizing Thought', subtitle: '10 min guided' },
+];
+
+const KIDS: PracticeRow[] = [
+  { route: 'ChildrensSleep', title: 'Jungle Safari', subtitle: '9 min guided' },
+  { route: 'BodySeaVoyage', title: 'Sea Voyage', subtitle: '7 min guided' },
+  { route: 'StarryNight', title: 'Starry Night', subtitle: '8 min guided' },
+  { route: 'MarshCreek', title: 'Marsh Creek', subtitle: '7 min guided' },
+  { route: 'QuietCove', title: 'The Quiet Cove', subtitle: '7 min guided' },
+  { route: 'PrairieWind', title: 'Prairie Wind', subtitle: '9 min guided' },
+  { route: 'WhereTheStarsTurn', title: 'Where the Stars Turn', subtitle: '8 min guided' },
+  { route: 'TheFirstSnow', title: 'The First Snow', subtitle: '10 min guided' },
+  { route: 'PlayFort', title: 'The Play Fort', subtitle: '7 min guided' },
+  { route: 'FireflyMeadow', title: 'The Firefly Meadow', subtitle: '7 min guided' },
+  { route: 'SleepyZoo', title: 'The Sleepy Zoo', subtitle: '8 min guided' },
+  { route: 'CityOfLights', title: 'The City of Lights', subtitle: '8 min guided' },
+  { route: 'RainOnTheRoof', title: 'Rain on the Roof', subtitle: '8 min guided' },
+];
+
+type PracticeGroup = {
+  id: string;
+  title: string;
+  description: string;
+  rows: PracticeRow[];
+};
+
+// Order here is chip order, and the first entry is what a new user lands on:
+// Guided leads because it's what most people open this tab for. Descriptions
+// are rendered after the row count ("7 narrated practices…"), so they read as
+// a continuation of it — lowercase, plural, no leading article.
+const PRACTICE_GROUPS: PracticeGroup[] = [
+  {
+    id: 'guided',
+    title: 'Guided',
+    description: 'narrated practices, 10–11 minutes each',
+    rows: GUIDED,
+  },
+  {
+    id: 'timers',
+    title: 'Timers',
+    description: 'silent sits — bells, intervals, walking',
+    rows: TIMERS,
+  },
+  {
+    id: 'breathwork',
+    title: 'Breathwork',
+    description: 'counted breath patterns, self-paced',
+    rows: BREATHWORK,
+  },
+  {
+    id: 'kids',
+    title: 'Kids',
+    description: 'bedtime meditations for children, 7–10 minutes',
+    rows: KIDS,
+  },
+];
+
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { appSettings, updateAppSettings, userSchedule, todayInstances } = useApp();
   const [extraMinutes, setExtraMinutes] = useState(0);
+
+  // One practice group is shown at a time, chosen by the strip above the list.
+  // Remembered across launches, so a parent who lives in Kids doesn't re-pick
+  // it every visit.
+  const [groupId, setGroupId] = useState<string>(PRACTICE_GROUPS[0].id);
+
+  useEffect(() => {
+    getSelectedPracticeGroup().then((saved) => {
+      // Ignore a stored id whose group has since been renamed or removed.
+      if (saved && PRACTICE_GROUPS.some((g) => g.id === saved)) setGroupId(saved);
+    });
+  }, []);
+
+  const selectGroup = (id: string) => {
+    setGroupId(id);
+    void saveSelectedPracticeGroup(id);
+  };
+
+  const activeGroup =
+    PRACTICE_GROUPS.find((g) => g.id === groupId) ?? PRACTICE_GROUPS[0];
 
   // Load extra practice minutes when screen comes into focus
   useFocusEffect(
@@ -130,6 +246,37 @@ export const SettingsScreen: React.FC = () => {
     return null;
   }
 
+  const renderPracticeRow = (row: PracticeRow) => (
+    <TouchableOpacity
+      key={row.route}
+      style={styles.menuItem}
+      onPress={() => navigation.navigate(row.route as never)}
+    >
+      <Text style={styles.menuItemText}>{row.title}</Text>
+      {!!row.subtitle && <Text style={styles.menuItemSubtext}>{row.subtitle}</Text>}
+      <Text style={styles.menuItemArrow}>›</Text>
+    </TouchableOpacity>
+  );
+
+  // Selector for the practice list below it. Nothing nests and nothing pushes:
+  // switching groups swaps the rows in place, so the list always begins at the
+  // same spot and the sections below it barely move.
+  const renderGroupChip = (group: PracticeGroup) => {
+    const isActive = group.id === activeGroup.id;
+    return (
+      <TouchableOpacity
+        key={group.id}
+        style={[styles.chip, isActive && styles.chipActive]}
+        onPress={() => selectGroup(group.id)}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isActive }}
+        accessibilityLabel={`${group.title}, ${group.rows.length} items`}
+      >
+        <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{group.title}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} pinchGestureEnabled={false} maximumZoomScale={1} minimumZoomScale={1}>
@@ -140,249 +287,19 @@ export const SettingsScreen: React.FC = () => {
           <Text style={styles.todayLabel}>minutes today</Text>
         </View>
 
+        {/* Ordered by what brings someone to this tab: a practice to do, then
+            the record of practices done, then settings that are set once. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Practice</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('SimpleTimer')}
-          >
-            <Text style={styles.menuItemText}>Simple Timer</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Pranayama')}
-          >
-            <Text style={styles.menuItemText}>Pranayama</Text>
-            <Text style={styles.menuItemSubtext}>7 · 4 · 7 · 4 breath</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('SquareBreathing')}
-          >
-            <Text style={styles.menuItemText}>Square Breathing</Text>
-            <Text style={styles.menuItemSubtext}>4 · 4 · 4 · 4 breath</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('SittingWalking')}
-          >
-            <Text style={styles.menuItemText}>Sitting &amp; Walking</Text>
-            <Text style={styles.menuItemSubtext}>zazen &amp; kinhin timer</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('VipassanaTimer')}
-          >
-            <Text style={styles.menuItemText}>Vipassana</Text>
-            <Text style={styles.menuItemSubtext}>silent sit · 60 min</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Vipassana')}
-          >
-            <Text style={styles.menuItemText}>Body Scan</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('CrownToSole')}
-          >
-            <Text style={styles.menuItemText}>Crown to Sole</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Vision')}
-          >
-            <Text style={styles.menuItemText}>Clear Seeing</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('DirectInquiry')}
-          >
-            <Text style={styles.menuItemText}>Direct Inquiry</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('ChakraCenters')}
-          >
-            <Text style={styles.menuItemText}>The Chakra Centers</Text>
-            <Text style={styles.menuItemSubtext}>11 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('GeometryOfAttention')}
-          >
-            <Text style={styles.menuItemText}>The Geometry of Attention</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('RecognizingThought')}
-          >
-            <Text style={styles.menuItemText}>Recognizing Thought</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
+          <View style={styles.chipRow}>{PRACTICE_GROUPS.map(renderGroupChip)}</View>
+          <Text style={styles.groupDescription}>
+            {activeGroup.rows.length} {activeGroup.description}
+          </Text>
+          {activeGroup.rows.map(renderPracticeRow)}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kids</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('ChildrensSleep')}
-          >
-            <Text style={styles.menuItemText}>Jungle Safari</Text>
-            <Text style={styles.menuItemSubtext}>9 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('BodySeaVoyage')}
-          >
-            <Text style={styles.menuItemText}>Sea Voyage</Text>
-            <Text style={styles.menuItemSubtext}>7 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('StarryNight')}
-          >
-            <Text style={styles.menuItemText}>Starry Night</Text>
-            <Text style={styles.menuItemSubtext}>8 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('MarshCreek')}
-          >
-            <Text style={styles.menuItemText}>Marsh Creek</Text>
-            <Text style={styles.menuItemSubtext}>7 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('QuietCove')}
-          >
-            <Text style={styles.menuItemText}>The Quiet Cove</Text>
-            <Text style={styles.menuItemSubtext}>7 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('PrairieWind')}
-          >
-            <Text style={styles.menuItemText}>Prairie Wind</Text>
-            <Text style={styles.menuItemSubtext}>9 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('WhereTheStarsTurn')}
-          >
-            <Text style={styles.menuItemText}>Where the Stars Turn</Text>
-            <Text style={styles.menuItemSubtext}>8 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('TheFirstSnow')}
-          >
-            <Text style={styles.menuItemText}>The First Snow</Text>
-            <Text style={styles.menuItemSubtext}>10 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('PlayFort')}
-          >
-            <Text style={styles.menuItemText}>The Play Fort</Text>
-            <Text style={styles.menuItemSubtext}>7 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('FireflyMeadow')}
-          >
-            <Text style={styles.menuItemText}>The Firefly Meadow</Text>
-            <Text style={styles.menuItemSubtext}>7 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('SleepyZoo')}
-          >
-            <Text style={styles.menuItemText}>The Sleepy Zoo</Text>
-            <Text style={styles.menuItemSubtext}>8 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('CityOfLights')}
-          >
-            <Text style={styles.menuItemText}>The City of Lights</Text>
-            <Text style={styles.menuItemSubtext}>8 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('RainOnTheRoof')}
-          >
-            <Text style={styles.menuItemText}>Rain on the Roof</Text>
-            <Text style={styles.menuItemSubtext}>8 min guided</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Schedule</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('ScheduleSettings')}
-          >
-            <Text style={styles.menuItemText}>Session Times</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Enable Notifications</Text>
-            <Switch
-              value={appSettings.notificationsEnabled}
-              onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.ritualSurface, true: colors.primary }}
-              thumbColor={colors.white}
-            />
-          </View>
-          {Platform.OS !== 'web' && (
-            <>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleRescheduleNotifications}
-              >
-                <Text style={styles.menuItemText}>Reschedule Notifications</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Data</Text>
+          <Text style={styles.sectionTitle}>Your Practice</Text>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('Journal')}
@@ -396,13 +313,37 @@ export const SettingsScreen: React.FC = () => {
             onPress={() => navigation.navigate('History')}
           >
             <Text style={styles.menuItemText}>History</Text>
+            <Text style={styles.menuItemSubtext}>Every session you've completed</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={handleResetApp}>
-            <Text style={[styles.menuItemText, styles.destructive]}>
-              Reset App
-            </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Settings</Text>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('ScheduleSettings')}
+          >
+            <Text style={styles.menuItemText}>Session Times</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Enable Notifications</Text>
+            <Switch
+              value={appSettings.notificationsEnabled}
+              onValueChange={handleNotificationToggle}
+              trackColor={{ false: colors.ritualSurface, true: colors.primary }}
+              thumbColor={colors.white}
+            />
+          </View>
+          {Platform.OS !== 'web' && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleRescheduleNotifications}
+            >
+              <Text style={styles.menuItemText}>Reschedule Notifications</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -415,6 +356,17 @@ export const SettingsScreen: React.FC = () => {
             <Text style={styles.menuItemSubtext}>Philosophy & practice roots</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Onboarding')}
+          >
+            <Text style={styles.menuItemText}>Revisit Orientation</Text>
+            <Text style={styles.menuItemSubtext}>The opening walkthrough and times</Text>
+            <Text style={styles.menuItemArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={handleResetApp}>
+            <Text style={[styles.menuItemText, styles.destructive]}>Reset App</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.aboutSection}>
@@ -426,14 +378,6 @@ export const SettingsScreen: React.FC = () => {
           <Text style={styles.aboutText}>
             Six daily sessions for awareness and compassion.
           </Text>
-          <Text style={styles.aboutVersion}>Version 1.0.0</Text>
-          <TouchableOpacity
-            onPress={() => Linking.openURL('https://freesound.org/people/milivolt/sounds/367128/')}
-          >
-            <Text style={styles.creditText}>
-              Keisu bell: "Keisu temple bell" by milivolt, CC BY 4.0 ↗
-            </Text>
-          </TouchableOpacity>
           {Platform.OS !== 'ios' && (
             <TouchableOpacity
               onPress={() => Linking.openURL('https://www.paypal.com/donate/?business=KEY6EUVRF3SPY&no_recurring=0&item_name=If+MandalaDay+has+been+useful+to+you%2C+your+donation+keeps+the+server+lights+on+and+the+development+going.+Thank+you.&currency_code=USD')}
@@ -448,6 +392,18 @@ export const SettingsScreen: React.FC = () => {
             "Practice without edges."
           </Text>
         </View>
+
+        {/* Sound attribution. keisu-bell.mp3 (Sitting & Walking) is CC BY 4.0,
+            which requires crediting the author wherever the work is
+            distributed — so it stays in the app, but as the last line of the
+            scroll rather than inside the branding block. */}
+        <TouchableOpacity
+          onPress={() => Linking.openURL('https://freesound.org/people/milivolt/sounds/367128/')}
+        >
+          <Text style={styles.creditText}>
+            Keisu bell: "Keisu temple bell" by milivolt, CC BY 4.0 ↗
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -498,6 +454,46 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: spacing.sm,
+  },
+  // Practice group selector, drawn as a segmented control: the shared track is
+  // what makes these read as controls for the list below rather than as tags on
+  // it. Wraps rather than scrolling horizontally so no group sits off-screen.
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    padding: spacing.xs,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.ritualSurface,
+    marginBottom: spacing.sm,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.sm,
+    backgroundColor: 'transparent',
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+  },
+  chipText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
+  },
+  chipTextActive: {
+    color: colors.white,
+  },
+  // Sits between the strip and the list, naming what the active chip selected.
+  // Leads with the count so it reads as a result summary — the line that tells
+  // you the strip above filtered the rows below.
+  groupDescription: {
+    marginBottom: spacing.sm,
+    color: colors.textTertiary,
+    fontSize: typography.fontSizes.sm,
+    lineHeight: typography.fontSizes.sm * typography.lineHeights.normal,
   },
   menuItem: {
     flexDirection: 'row',
@@ -554,23 +550,20 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.md,
     textAlign: 'center',
   },
-  aboutVersion: {
-    color: colors.textTertiary,
-    fontSize: typography.fontSizes.sm,
-    marginTop: spacing.sm,
-  },
   donateLink: {
     color: colors.textTertiary,
     fontSize: typography.fontSizes.sm,
     marginTop: spacing.md,
     opacity: 0.7,
   },
+  // Deliberately the quietest thing on the screen: micro type, low opacity,
+  // below the closing line. Present for the licence, not for the reader.
   creditText: {
     color: colors.textTertiary,
-    fontSize: typography.fontSizes.xs,
+    fontSize: typography.fontSizes.micro,
     textAlign: 'center',
-    marginTop: spacing.sm,
-    opacity: 0.6,
+    marginTop: spacing.lg,
+    opacity: 0.4,
   },
   gentleMessage: {
     alignItems: 'center',

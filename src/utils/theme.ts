@@ -236,6 +236,7 @@ export const STORAGE_KEYS = {
   EVENT_LOG: '@mandala_day/event_log',
   EXTRA_PRACTICE_MINUTES: '@mandala_day/extra_practice_minutes',
   JOURNAL_ENTRIES: '@mandala_day/journal_entries',
+  EXTRAS_GROUP: '@mandala_day/extras_group',
 };
 
 // =============================================================================

@@ -364,7 +364,6 @@ export const HistoryScreen: React.FC = () => {
           <Text style={styles.aboutText}>
             Six daily sessions for awareness and compassion.
           </Text>
-          <Text style={styles.aboutVersion}>Version 1.0.0</Text>
         </View>
 
         <View style={styles.gentleReminder}>
@@ -518,11 +517,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.fontSizes.md,
     textAlign: 'center',
-  },
-  aboutVersion: {
-    color: colors.textTertiary,
-    fontSize: typography.fontSizes.sm,
-    marginTop: spacing.sm,
   },
   gentleReminder: {
     alignItems: 'center',
