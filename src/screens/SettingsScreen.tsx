@@ -470,8 +470,14 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    // Grow to divide the track between them rather than bunching at the left.
+    // flexBasis stays auto so a long label keeps its intrinsic width — equal
+    // segments (flexBasis: 0) would clip "Breathwork" on a narrow phone.
+    flexGrow: 1,
+    flexBasis: 'auto',
     paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.sm,
     backgroundColor: 'transparent',
   },
@@ -482,6 +488,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.medium,
+    textAlign: 'center',
   },
   chipTextActive: {
     color: colors.white,
