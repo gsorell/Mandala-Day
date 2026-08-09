@@ -36,6 +36,7 @@ import { FireflyMeadowScreen } from './src/screens/FireflyMeadowScreen';
 import { SleepyZooScreen } from './src/screens/SleepyZooScreen';
 import { CityOfLightsScreen } from './src/screens/CityOfLightsScreen';
 import { RainOnTheRoofScreen } from './src/screens/RainOnTheRoofScreen';
+import { TheQuietHallScreen } from './src/screens/TheQuietHallScreen';
 import { PranayamaScreen } from './src/screens/PranayamaScreen';
 import { SquareBreathingScreen } from './src/screens/SquareBreathingScreen';
 import { SittingWalkingScreen } from './src/screens/SittingWalkingScreen';
@@ -612,6 +613,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="RainOnTheRoof"
               component={RainOnTheRoofScreen}
+              options={{
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="TheQuietHall"
+              component={TheQuietHallScreen}
               options={{
                 presentation: 'card',
               }}

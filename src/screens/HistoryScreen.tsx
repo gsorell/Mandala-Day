@@ -227,6 +227,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A rainy-night bedtime journey for the little ones',
       abbr: 'RR',
     },
+    extra_the_quiet_hall: {
+      title: 'The Quiet Hall',
+      dedication: 'May the quiet room carry little ones into a soft, deep sleep.',
+      shareMessage: 'A candlelit bedtime journey for the little ones',
+      abbr: 'QH',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

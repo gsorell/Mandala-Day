@@ -88,6 +88,7 @@ const KIDS: PracticeRow[] = [
   { route: 'SleepyZoo', title: 'The Sleepy Zoo', subtitle: '8 min guided' },
   { route: 'CityOfLights', title: 'The City of Lights', subtitle: '8 min guided' },
   { route: 'RainOnTheRoof', title: 'Rain on the Roof', subtitle: '8 min guided' },
+  { route: 'TheQuietHall', title: 'The Quiet Hall', subtitle: '7 min guided' },
 ];
 
 type PracticeGroup = {

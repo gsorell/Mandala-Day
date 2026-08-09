@@ -127,6 +127,7 @@ export type RootStackParamList = {
   SleepyZoo: undefined;
   CityOfLights: undefined;
   RainOnTheRoof: undefined;
+  TheQuietHall: undefined;
   Pranayama: undefined;
   SquareBreathing: undefined;
   SittingWalking: undefined;
