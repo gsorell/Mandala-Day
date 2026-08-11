@@ -10,7 +10,7 @@ import {
   Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_SESSIONS } from '../data/sessions';
@@ -41,10 +41,15 @@ export const OnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
 
   // Revisit mode: the same screen reached from Extras -> Data after setup is
-  // already done. Derived from the flag rather than a route param so the two
-  // can't drift. In this mode the flow doesn't "complete" anything — it edits
+  // already done. In this mode the flow doesn't "complete" anything — it edits
   // schedule/reminders in place and exits by popping back to Extras.
-  const isRevisit = !!appSettings?.hasCompletedOnboarding;
+  //
+  // Derived from which route mounted the screen, NOT from
+  // hasCompletedOnboarding. That flag also drives the navigator's tree swap in
+  // App.tsx, so reading it here meant the screen re-rendered into revisit
+  // chrome ("Done" + close) the instant first-run completion set it — offering
+  // two exits that both goBack() onto a stack with nothing beneath them.
+  const isRevisit = useRoute().name === 'Orientation';
 
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [selectedSession, setSelectedSession] = useState<string | null>(null);

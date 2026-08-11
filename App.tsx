@@ -460,11 +460,18 @@ const AppNavigator: React.FC = () => {
           <>
             <Stack.Screen name="Main" component={MainTabs} />
             {/* Orientation is also reachable after setup (Extras -> Data ->
-                Revisit Orientation). The screen detects the revisit via
-                hasCompletedOnboarding and exits by going back instead of
-                flipping the flag. */}
+                Revisit Orientation). It mounts the same component under a
+                *different route name* than first-run "Onboarding", and that
+                difference is load-bearing: React Navigation preserves the
+                current route across a screen-list change whenever the name
+                still exists in the new list. When both branches called it
+                "Onboarding", completing first-run setup swapped the tree but
+                kept Onboarding as the only route at index 0 — Main never
+                mounted, and every exit (Done, close, hardware back) was a
+                no-op against an empty stack. The screen reads this name to
+                decide revisit mode. */}
             <Stack.Screen
-              name="Onboarding"
+              name="Orientation"
               component={OnboardingScreen}
               options={{ presentation: 'card' }}
             />

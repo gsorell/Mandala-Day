@@ -48,6 +48,7 @@ export const getActivePractice = (): ActivePractice | null => activePractice;
 const NON_PRACTICE_ROUTES = new Set([
   'Main',
   'Onboarding',
+  'Orientation',
   'Settings',
   'ScheduleSettings',
   'History',

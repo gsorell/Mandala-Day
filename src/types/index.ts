@@ -101,6 +101,10 @@ export interface AppSettings {
 // Navigation types
 export type RootStackParamList = {
   Onboarding: undefined;
+  // Same screen as Onboarding, revisited from Extras after setup. Kept as a
+  // distinct route name so the navigator drops the first-run route on the
+  // tree swap — see the comment on the Stack.Screen in App.tsx.
+  Orientation: undefined;
   Main: undefined;
   SessionPlayer: { instanceId: string };
   SessionComplete: { instanceId?: string; sessionTitle: string; dedication?: string; shareMessage?: string; completedAt?: string; duration?: number; playEndingGong?: boolean };

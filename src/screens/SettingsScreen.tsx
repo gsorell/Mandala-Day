@@ -359,7 +359,7 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => navigation.navigate('Onboarding')}
+            onPress={() => navigation.navigate('Orientation')}
           >
             <Text style={styles.menuItemText}>Revisit Orientation</Text>
             <Text style={styles.menuItemSubtext}>The opening walkthrough and times</Text>
