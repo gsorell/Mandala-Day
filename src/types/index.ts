@@ -132,6 +132,7 @@ export type RootStackParamList = {
   CityOfLights: undefined;
   RainOnTheRoof: undefined;
   TheQuietHall: undefined;
+  WhenTheParkSleeps: undefined;
   Pranayama: undefined;
   SquareBreathing: undefined;
   SittingWalking: undefined;

@@ -233,6 +233,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A candlelit bedtime journey for the little ones',
       abbr: 'QH',
     },
+    extra_when_the_park_sleeps: {
+      title: 'When the Park Sleeps',
+      dedication: 'May the sleeping park carry little ones into a soft, deep sleep.',
+      shareMessage: 'A lantern-lit bedtime journey for the little ones',
+      abbr: 'WP',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {
