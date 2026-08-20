@@ -98,6 +98,58 @@ score does it. Everywhere else, one observation per line with a measured break b
 
 > Established on *The Firefly Meadow*. The rendered close is the reference performance.
 
+### The closing descent
+
+One caesura fixes *where* the line breathes, but it leaves `the soft, deep night` to be read
+as a single quick descriptive phrase — commas get a comma's worth of time — and the piece
+ends before the ear knows it has ended. The last words must land as **separate descending
+weights**, not as a list.
+
+The validated form splits the trademark line into **three** units across **two** untagged
+blank lines, with a single ellipsis inside the last:
+
+```
+And the whole quiet park
+
+drifts into the soft,
+
+deep... night.
+```
+
+Three weights, each lighter and lower than the one before:
+
+1. **the environment, named and held** — the subject alone;
+2. **the verb descending onto it** — and note the **comma is kept**. The phrase is left
+   grammatically *open* across the breath, so the third unit resumes the sentence instead of
+   starting a new one. Drop that comma and the close reads as two sentences;
+3. **the last two words** — `deep` and `night`, held apart by an ellipsis only, because they
+   must stay inside one breath.
+
+The wording of the trademark line never changes; only its layout and punctuation do, and
+only inside a score. Quote it as one sentence in prose.
+
+**Why each gap gets the mark it gets.** The three available marks are not
+interchangeable — they are three different weights:
+
+- an **ellipsis** is *unfolding within one breath* (see **Internal pauses**) — the lightest;
+- an **untagged blank line** is ElevenLabs' own paragraph breath — unmeasured, heavier than
+  an ellipsis, but still inside one sentence's prosody;
+- a `<break>` is a *measured stop* and reads as the gap between sentences — too heavy
+  anywhere in this line. It fragments the close into separate utterances and resets the
+  prosody between them, which is fatal on the last thing the listener hears.
+
+The first gap needs the paragraph breath; the last needs only the ellipsis. **Notating both
+gaps as ellipses is not enough** — that version was tried on the render and still went by
+briskly, which is how this rule was found.
+
+**Hold the silence before the line at `12s`** rather than the usual `10s`, so the close
+arrives out of a deeper quiet. The `1.5s` closing frame is unaffected — it is a frame, not
+part of the descent.
+
+> Established by ear on *When the Park Sleeps*; that master's close is the reference
+> performance. Masters rendered before this rule keep their existing performances — the
+> descent applies to every score written from here on.
+
 ## Target length
 
 A children's Studio Master should run **about 7 minutes** of rendered audio. **Adult**
@@ -108,6 +160,21 @@ adjust.** If it lands under target, spend the room on genuine *deepening* — a 
 that revisits elements to reveal new relationships — and on longer final-third silences.
 Never pad arbitrarily. ("Where the Stars Turn" first rendered at 5:34; adding the Deepen
 pass shown below brought it to ≈7 min.)
+
+**Estimating a render before you hear it.** The arithmetic is
+`total ≈ (paragraph units × per-unit rate) + summed break time`. Two rules keep it honest:
+
+- **Count paragraph units, not sentences.** ElevenLabs bills every block separated by a
+  blank line as its own read, with its own breath. The **closing descent is three units, not
+  one** — the two untagged blank lines inside that single sentence each start a new read.
+  Miscounting it as one line is a ~10s error, all of it at the end.
+- **Re-total the break tags after the last pause edit.** A late `10s → 12s` hold is invisible
+  to an estimate written before it.
+
+Observed per-unit rates on children's masters: **~5.1–5.2s** (*The Quiet Hall* 5.2, *When the
+Park Sleeps* 5.13) for scores built from whole observations, rising to **~5.4s** on scores
+heavy with short fragment-lines and ellipses (*Rain on the Roof*). Fragments are slower per
+unit, not faster. For a true 7:00, budget **~45 units against ~200s of break.**
 
 **How the ten minutes is filled varies with the piece.** An instruction-dense investigation
 (a body descent, a guided scan) spends most of it in *speech* — the Deepen pass carries the
@@ -123,6 +190,11 @@ restoring cut material to fill time.
 The canonical example. Note how the pauses start short, grow through the middle, reserve
 `7–8s` dwelling for scene changes, use `2.5s` echoed beats in the gather, and land the
 single `10s` immersion right after "Seen together".
+
+> **Its close is the one thing not to copy.** This master predates both the caesura and the
+> descent, so its trademark line is written straight through. It is reproduced as rendered,
+> as a record of the performance. Notate a new close per **The closing caesura** and **The
+> closing descent** above.
 
 ```
 <break time="1.5s"/>
@@ -347,6 +419,9 @@ What it demonstrates:
   returned), points only at what is really there, goes unanswered, and is followed by a
   real 5s silence. The metaphor — *"a quiet river of stars"* — arrives late, simple,
   hooked to something a child knows.
+
+> As with the marsh, **its close predates the caesura and the descent** and is reproduced as
+> rendered. Copy its structure and its pauses, not its final line.
 
 ```
 <break time="1.5s"/>

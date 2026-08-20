@@ -265,6 +265,12 @@ Treat this as the definitive guide for children's Studio Masters.
 - Narrator disappears.
 - Leave the world continuing.
 - **Trademark ending:** "And the whole [environment] drifts into the soft, deep night."
+- The line is **notated, not merely written.** In a score it descends in three units across
+  two untagged blank lines, the last gap an ellipsis — *And the whole quiet park* / *drifts
+  into the soft,* / *deep... night.* — so the final words land as separate descending weights
+  instead of one quick phrase. The kept comma matters: it leaves the sentence open across the
+  breath. The wording never changes; the layout does, and only inside a score. See **The
+  closing caesura** and **The closing descent** in [NOTATION.md](NOTATION.md).
 
 ---
 
