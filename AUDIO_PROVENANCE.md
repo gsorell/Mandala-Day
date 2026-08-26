@@ -151,6 +151,29 @@ Note the library sits 7–10 LU below spoken-word norms (−16 to −19). That i
 choice for meditation audio, not a defect — but if it is ever revisited, `NORM_LUFS` is
 the single number to change.
 
+### Exception: Crown to Sole
+
+**Crown to Sole is the one track whose source of record is not its master.** On
+2026-08-26 it was replaced by hand in `…/Audio/MP3-deboomed/` rather than in
+`…/Audio/MP3/`. The replacement is 15 s longer than the master (600.2 s vs 585.3 s,
+which also fixed the screen's 10-minute claim — the old file undershot it by 15 s) and
+arrived already corrected (+4.1 dB at 60–120 Hz, −25.7 LUFS), so it is not something
+`deboom-audio.py` can reproduce from `…/Audio/MP3/Crown to Sole.mp3`.
+
+The script therefore holds it back — see `HAND_EDITED` in `scripts/deboom-audio.py`.
+Without that guard, the next run would rebuild the track from the stale 585 s master
+and silently revert both the shipped asset and the hand-edited file.
+
+Two consequences while this stands: `scripts/check-audio-quality.sh` compares this
+track against content that no longer matches, so its pass is not meaningful for this
+one file; and `transcripts/crown-to-sole.txt` reflects the older, shorter audio.
+
+**Going forward, audio edits belong in `…/Audio/MP3/`** — the master folder. A master
+that has already been corrected is safe to re-run, because the solve targets an
+absolute +4 dB rather than applying a relative cut, so an already-corrected input
+solves to a ~0 dB cut instead of double-processing. Once this track's master is
+replaced with the 10-minute version, delete its `HAND_EDITED` entry.
+
 ### What is deliberately NOT corrected
 
 Tonal matching between tracks. Outside the bass band the library is already tight —

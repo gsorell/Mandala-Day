@@ -52,6 +52,23 @@ NORM_LUFS = -26.0    # normalise every track to this integrated loudness.
 SR        = 44100
 
 UTILITY = {"gong", "pranayama-muted", "pranayama-sustain", "keisu-bell"}
+
+# Tracks whose source of record is NOT the master in MASTERS/, and which this script
+# must therefore leave alone. Regenerating one of these would rebuild it from a stale
+# master and silently revert both the app asset and the hand-edited file itself.
+#
+# Normally this set is empty: edits belong in MASTERS/, and a master that has already
+# been corrected is safe to re-run (the solve targets an ABSOLUTE +4 dB, so an
+# already-corrected input just solves to a ~0 dB cut -- it does not double-process).
+HAND_EDITED = {
+    # 2026-08-26: Crown to Sole was replaced by hand in the DEBOOMED folder rather
+    # than in MASTERS/. The replacement is 15s longer than the master (600.2s vs
+    # 585.3s -- it also fixed the screen's 10-minute claim, which the old file
+    # undershot) and arrived already corrected (+4.1 dB at 60-120, -25.7 LUFS), so it
+    # is not something this script can reproduce from MASTERS/Crown to Sole.mp3.
+    # Remove this entry once that master is replaced with the 10-minute version.
+    "crown-to-sole.mp3": "hand-edited in MP3-deboomed/ 2026-08-26; master is stale",
+}
 BOOM = (60., 120.); SPEECH = (250., 4000.)
 
 
@@ -145,9 +162,13 @@ def main():
              else "loudness preserved per track)"))
     print(f"{'track':<30}{'before':>8}{'cut':>7}{'after':>8}{'LUFS':>8}{'was':>8}")
     print("-" * 70)
-    missing, done = [], 0
+    missing, done, held = [], 0, 0
     for f in app:
         base = os.path.basename(f); key = norm(f)
+        if base in HAND_EDITED:
+            print(f"{base:<30}{'':>8}{'':>7}{'':>8}{'':>8}{'':>8}  SKIP ({HAND_EDITED[base]})")
+            held += 1
+            continue
         m = masters.get(key)
         if not m:
             missing.append(base); print(f"{base:<30}{'':>8}{'':>7}{'':>8}   NO MASTER"); continue
@@ -222,7 +243,10 @@ def main():
         print(f"corrected {done} track(s); corrected masters -> {OUT}")
         print("next: scripts/check-audio.sh --update && git add assets/audio/CHECKSUMS.sha256")
     else:
-        print(f"{len(app) - len(missing)} track(s) would be corrected. Re-run with --apply.")
+        print(f"{len(app) - len(missing) - held} track(s) would be corrected. "
+              f"Re-run with --apply.")
+    if held:
+        print(f"held back {held} hand-edited track(s); see HAND_EDITED in this script.")
     if missing:
         print("unmatched:", ", ".join(missing)); return 1
     return 0
