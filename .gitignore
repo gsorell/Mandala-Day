@@ -54,3 +54,7 @@ debug.log
 
 # Claude Code per-machine settings (name says local; keep it local)
 .claude/settings.local.json
+
+# Python
+__pycache__/
+*.pyc
