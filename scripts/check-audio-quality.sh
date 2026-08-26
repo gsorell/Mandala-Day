@@ -86,12 +86,28 @@ printf -- "---------------------------------------------------------------------
 # meaningless, so we intentionally don't quality-gate these.
 UTILITY=" gong.mp3 pranayama-muted.mp3 pranayama-sustain.mp3 keisu-bell.mp3 "
 
-fail=0; checked=0; skipped=0; utility=0
+# Tracks whose master no longer matches the shipped file, so comparing the two says
+# nothing. This is NOT a quality judgement -- it means the reference is stale, and a
+# pass here would be meaningless rather than reassuring.
+#
+# crown-to-sole.mp3: replaced 2026-08-26 from a file hand-edited in .../MP3-deboomed/
+# rather than in the master folder. The shipped track is 15s longer than
+# .../Audio/MP3/Crown to Sole.mp3 (600.2s vs 585.3s). Remove this entry as soon as
+# that master is replaced with the 10-minute version -- see AUDIO_PROVENANCE.md and
+# the HAND_EDITED set in scripts/deboom-audio.py, which must be cleared at the same
+# time.
+STALE_MASTER=" crown-to-sole.mp3 "
+
+fail=0; checked=0; skipped=0; utility=0; stale=0
 for f in "$AUDIO_DIR"/*.mp3; do
   base=$(basename "$f")
   case "$UTILITY" in *" $base "*)
     printf "%-28s %-9s %8s %8s %8s   %s\n" "$base" "-" "" "" "" "UTILITY (not gated)"
     utility=$((utility+1)); continue ;;
+  esac
+  case "$STALE_MASTER" in *" $base "*)
+    printf "%-28s %-9s %8s %8s %8s   %s\n" "$base" "stale" "" "" "" "SKIP (master out of date)"
+    stale=$((stale+1)); continue ;;
   esac
   key=$(norm "$base")
   if ! master=$(find_master "$key"); then
@@ -129,7 +145,11 @@ for f in "$AUDIO_DIR"/*.mp3; do
 done
 
 printf -- "------------------------------------------------------------------------------------\n"
-echo "checked: $checked   utility (not gated): $utility   skipped (no master): $skipped   threshold: ${FAIL_DB} dB"
+echo "checked: $checked   utility (not gated): $utility   skipped (no master): $skipped   stale master: $stale   threshold: ${FAIL_DB} dB"
+if [ "$stale" -ne 0 ]; then
+  echo "NOTE: $stale track(s) skipped because their master is out of date, not because"
+  echo "      they are known good. See STALE_MASTER in this script."
+fi
 echo "Δ = how much high-end SHAPE the shipped file lost vs its master (positive = more muffled)."
 if [ "$fail" -ne 0 ]; then
   echo "" >&2
