@@ -239,6 +239,12 @@ export const HistoryScreen: React.FC = () => {
       shareMessage: 'A lantern-lit bedtime journey for the little ones',
       abbr: 'WP',
     },
+    extra_the_paper_bird: {
+      title: 'The Paper Bird',
+      dedication: 'May the quiet classroom carry little ones into a soft, deep sleep.',
+      shareMessage: 'A quiet bedtime journey for the little ones',
+      abbr: 'PB',
+    },
   };
 
   const handleShareSession = (instance: DailySessionInstance) => {

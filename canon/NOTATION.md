@@ -19,6 +19,10 @@ and the break tags.
 ignored — it produces a real, unmeasured breath. See **The closing caesura** below, the only
 place the form uses it.
 
+**And a third mark, lighter than either:** a *single* newline inside a line — no blank line —
+does not start a new read, but it does stop the voice from sprinting through a long sentence.
+See **Line length and the soft break** below.
+
 ## Pause vocabulary
 
 Each pause length has a **function**. Choose by what the moment is doing, not by
@@ -58,6 +62,77 @@ Bands, if you prefer them: **2–2.5s continuation · 3–4s recognition · 5–
    pause *before* you name the thing.
 6. **The performance test.** Read the score aloud. If the pause pattern alone sounds
    arbitrary, revise it. Every pause should be defensible.
+
+## Line length and the soft break
+
+**No line may run long enough for the voice to sprint through it.** A long line is not read
+slowly and spaciously — ElevenLabs reads it *faster*, flattening a whole observation into one
+hurried breath. The break tag after it cannot repair this: the damage happens inside the
+line, before the silence arrives.
+
+**The measure.** Across every finalized master, **89% of lines are 12 words or fewer** and
+the mean is ~8. That is the form's natural line, and it is not an accident — it is one
+observation, one breath.
+
+- **≤ 12 words** — the working range. Leave it alone.
+- **13–15 words** — allowed only if the line is a *single* grammatical movement with no
+  second clause. Read it aloud; if you run out of breath or speed up, break it.
+- **> 15 words** — break it. There are no unbroken lines this long in the canon except the
+  earned metaphors, and those are late-arc lines whose weight the extra length is paying for.
+
+**The mark is a single newline** — not a blank line, not a break tag:
+
+```
+At the front of the room,
+pale cloudy sweeps are drying where the writing used to be.
+```
+
+The three whitespace marks are not interchangeable, and they get lighter in this order:
+
+- a **single newline** — a pacing mark inside one read. The voice takes the line in two
+  movements instead of one. Nothing else changes;
+- an **untagged blank line** — ElevenLabs' paragraph breath, unmeasured, and it starts a new
+  read. Reserved for the closing caesura (below);
+- a `<break>` — a measured stop, heard as the gap between sentences.
+
+**Where the break falls.** At a real grammatical joint, never inside a phrase — and the joint
+is almost always already marked by a comma:
+
+1. after an opening phrase that sets the place or the time — *At the front of the room,* /
+   *In every cup on the sill,* / *A little later,* — the commonest case by far, and the one
+   the form invites, since so many observations open by saying where to look;
+2. before a second clause joined by *and* / *then* / *but* — *The sun drops below the window
+   frame,* / *and the room turns soft and blue.*
+
+**Two parts only.** A line breaks once. The three-part descent belongs to the trademark
+closing line alone (see **The closing descent**), and splitting an ordinary observation three
+ways spends that gesture where it has not been earned.
+
+**Prefer the shorter line to the softer break.** The soft break is a repair, not a licence to
+compose long. If a line needs breaking, first ask whether it wants cutting — nine words that
+say the thing beat sixteen that say it twice. Reach for the newline when the length is load-
+bearing and the sentence genuinely will not shorten.
+
+**The soft break costs ~3s. Budget for it.** Measured on *The Paper Bird*, the first score
+written under this rule: 43 paragraph units and 199.5s of break predicted 420.5s; it rendered
+**439.0s**, and the six soft breaks are the whole 18.5s difference — **≈3.1s each.**
+
+That is far more than the breath it was assumed to be. It is roughly **60% of a full
+paragraph unit**, and the arithmetic in **Target length** below carries a third term because
+of it. Two things follow:
+
+- **A soft break is not free punctuation.** Six of them cost as much as three and a half
+  extra observations. This is the strongest argument for the rule above — *prefer the
+  shorter line to the softer break*. Shortening a line costs nothing and gains time;
+  breaking it buys the same slower read at ~3s a piece.
+- **It is also the cheapest legitimate way to slow a piece down.** A score landing short can
+  buy time in ~3s units without adding a word — though deepening is still the better answer
+  (see **Target length**).
+
+> One render, one number. It cannot fully separate the per-break cost from ordinary drift in
+> the per-unit rate, though the alternative reading is worse-fitting: counting each broken
+> line as two units gives 4.89s/unit, below the observed 5.13–5.2 band, which is what says a
+> soft break is *not* a whole unit. Re-measure on the next soft-break score and tighten this.
 
 ## Structure of a finished score
 
@@ -162,7 +237,8 @@ Never pad arbitrarily. ("Where the Stars Turn" first rendered at 5:34; adding th
 pass shown below brought it to ≈7 min.)
 
 **Estimating a render before you hear it.** The arithmetic is
-`total ≈ (paragraph units × per-unit rate) + summed break time`. Two rules keep it honest:
+`total ≈ (paragraph units × per-unit rate) + summed break time + (soft breaks × ~3.1s)`.
+Three rules keep it honest:
 
 - **Count paragraph units, not sentences.** ElevenLabs bills every block separated by a
   blank line as its own read, with its own breath. The **closing descent is three units, not
@@ -170,11 +246,15 @@ pass shown below brought it to ≈7 min.)
   Miscounting it as one line is a ~10s error, all of it at the end.
 - **Re-total the break tags after the last pause edit.** A late `10s → 12s` hold is invisible
   to an estimate written before it.
+- **Add the soft breaks.** They create no paragraph unit but cost ~3.1s apiece — six of them
+  put *The Paper Bird* 18.5s over an estimate that ignored them. See **Line length and the
+  soft break**.
 
 Observed per-unit rates on children's masters: **~5.1–5.2s** (*The Quiet Hall* 5.2, *When the
 Park Sleeps* 5.13) for scores built from whole observations, rising to **~5.4s** on scores
 heavy with short fragment-lines and ellipses (*Rain on the Roof*). Fragments are slower per
-unit, not faster. For a true 7:00, budget **~45 units against ~200s of break.**
+unit, not faster. For a true 7:00, budget **~45 units against ~200s of break** — and if the
+score carries soft breaks, subtract ~3.1s of that break budget for each one.
 
 **How the ten minutes is filled varies with the piece.** An instruction-dense investigation
 (a body descent, a guided scan) spends most of it in *speech* — the Deepen pass carries the

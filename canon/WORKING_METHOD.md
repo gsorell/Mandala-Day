@@ -50,6 +50,9 @@ Before sending a script, silently check it against the canon:
 
 - Opens with an observation of the world (no greeting/relaxation/"imagine").
 - One observation per line; behavior not psychology; living verbs.
+- No line runs longer than one unhurried breath — ~8 words is the canon's mean, 12 the
+  working ceiling. Over that, shorten it; split with a single newline at the comma only
+  when the length is load-bearing (NOTATION.md, **Line length and the soft break**).
 - One home, one anchor, one continuous guiding thread; three passes present.
 - Pauses follow the arc of trust; longest silences in the final third; frame at both ends.
 - Children's scripts end on the trademark line and return to the opening image; adult

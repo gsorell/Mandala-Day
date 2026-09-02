@@ -299,6 +299,12 @@ placement rules live in **[NOTATION.md](NOTATION.md)**; this volume is the philo
 - Compose at the level of breaths.
 - Pauses follow discoveries rather than punctuation.
 - Rhythm should emerge from the environment itself.
+- **One breath, one line.** A line the voice cannot carry in a single unhurried breath is
+  read *faster*, not slower, and the whole observation flattens — the silence after it
+  cannot repair what was rushed inside it. The canon's own measure is ~8 words to a line,
+  89% of them at 12 or fewer. Past that, shorten the line; where the length is genuinely
+  load-bearing, split it with a single newline at the comma. Mechanics in
+  **Line length and the soft break**, [NOTATION.md](NOTATION.md).
 
 **Initial and final silence**
 

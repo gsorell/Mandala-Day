@@ -1,0 +1,80 @@
+A small classroom rests at the end of the afternoon.
+[pause 5.1s]
+One window is open at the top and the outside air moves quietly in.
+[pause 4.4s]
+Above the desks, a little paper bird hangs from a thread.
+[pause 4.5s]
+It turns slowly around and slowly back again.
+[pause 8.6s]
+The day's paintings hang in a row from a string.
+[pause 4.1s]
+The moving air lifts their corners and lays them down again.
+[pause 8.5s]
+A fish tank glows in the low light.
+[pause 4.2s]
+Small bubbles rise through the water, reach the top.
+[pause 7.8s]
+On the windowsill, a row of paper cups holds dark, damp soil.
+[pause 4.7s]
+In one of them, a small green chute has pushed up through the top.
+[pause 6.1s]
+At the front of the room, pale, cloudy sweeps are drying where the writing used to be.
+[pause 7.9s]
+A little guinea pig sleeps under a heap of straw.
+[pause 4.6s]
+The straw rises and settles and rises again.
+[pause 7.1s]
+The painting's edges have gone dry and pale, and they lift more easily now.
+[pause 7.4s]
+The paper bird turns until its thread will turn no further.
+[pause 4.4s]
+Then, all on its own, it begins to unwind the other way.
+[pause 7.6s]
+Low in the tank, one small snail crosses the glass.
+[pause 4.3s]
+Behind it, a clean, clear path is left through the green.
+[pause 5.7s]
+It has been crossing since the middle of the day.
+[pause 7.9s]
+In every cup on the sill, the new leaves turn the same way, toward the glass.
+[pause 8.7s]
+The last pale sweeps dry, and the writing is gone.
+[pause 7.8s]
+Under its heap of straw, the guinea pig turns once, and settles.
+[pause 8.5s]
+The sun drops below the window frame, and the room turns soft and blue.
+[pause 8.6s]
+On the sill, the smallest chute stands dark against the pale glass.
+[pause 4.0s]
+Was it that tall this morning?
+[pause 9.4s]
+The fish tank is now the brightest thing in the room.
+[pause 5.1s]
+Its light reaches up and rests on the ceiling.
+[pause 4.5s]
+The whole ceiling ripples the way water does on the floor of a pool.
+[pause 9.4s]
+The little paper bird turns slowly through the moving light,
+[pause 9.7s]
+the paper bird turns above the quiet desks.
+[pause 3.2s]
+The day's paintings hang dry along their string.
+[pause 3.4s]
+The small snail crosses the last of the glass.
+[pause 3.8s]
+The green shoots stand in their row of paper cups.
+[pause 6.1s]
+Wiped, clean, and
+[pause 5.7s]
+dark, it leaps beneath its heap of straw.
+[pause 13.0s]
+Seen together, the whole small classroom rests in the light of the water.
+[pause 8.9s]
+The outside air comes in at the window once more.
+[pause 3.4s]
+The paintings lift and lie down.
+or
+[pause 25.6s]
+quiet classroom,
+[pause 1.6s]
+drifts into the soft, deep.
