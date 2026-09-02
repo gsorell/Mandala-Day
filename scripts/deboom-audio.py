@@ -1,7 +1,19 @@
 #!/usr/bin/env python3
 """Tame the vocal-fundamental boom in the narrated tracks.
 
-Every narrated track is the same ElevenLabs voice (see docs/AUDIO_PROVENANCE.md),
+*** NOT CURRENTLY APPLIED. Running this with --apply will re-process every
+*** track and undo a deliberate revert. Read this paragraph first.
+***
+*** This correction WAS applied to all 28 tracks on 2026-08-26 and REVERTED on
+*** 2026-09-02, after several days of listening on-device: it fixed the boom the
+*** measurements describe below, but was judged to have degraded the audio in
+*** other ways. The measurements here are sound and the boom is real; the
+*** judgement was that this cure cost more than the disease. If you revisit it,
+*** treat a gentler TARGET_DB (say +6 or +7 rather than +4) as the first thing
+*** to try, and listen on a bass-heavy speaker before and after.
+
+
+Every narrated track is the same ElevenLabs voice (see AUDIO_PROVENANCE.md),
 whose fundamental sits at ~72-80 Hz -- unusually low, and unusually strong relative
 to the rest of the voice. Measured across the library, roughly 75% of each track's
 total signal power lives in 60-120 Hz. Headphones and phone speakers barely

@@ -23,16 +23,13 @@ They are not recoverable from anything in git.
 ElevenLabs render (MP3 download)
   → Audacity project        …/Audio/AUP3/<Name>.aup3      (32-bit float @ 44.1 kHz, single mono voice track)
   → exported MP3 master     …/Audio/MP3/<Name>.mp3        (the "master" that scripts/check-audio-quality.sh compares against)
-  → low-end correction      scripts/deboom-audio.py       (per-track cut at 78 Hz — see below)
   → app encode              assets/audio/<hyphen-name>.mp3 (64 kbps mono LAME)
 ```
 
-`…/Audio/MP3/` remains the master folder and the reference for both audio guards.
-`scripts/deboom-audio.py` also writes a corrected copy of each master to
-`…/Audio/MP3-deboomed/`, but that folder is an **archive convenience, not a pipeline
-input** — the app assets are encoded straight from `…/Audio/MP3/` with the correction
-applied in the same pass, so there is still only one lossy generation between the
-master and the app.
+`…/Audio/MP3/` is the master folder and the reference for both audio guards. There is
+one lossy generation between master and app. `…/Audio/MP3-deboomed/` holds the output
+of the reverted correction; it is **not** a pipeline input, and the only file in it
+that still matters is Crown to Sole (see below), which was hand-edited there.
 
 There is **no lossless original.** The Audacity projects store 32-bit float, but the
 content inside them is decoded from the ElevenLabs MP3 download, so re-rendering a
@@ -106,7 +103,15 @@ projects — Body Safari, Prairie Wind, The Sleepy Zoo — where the clips were 
 before saving, so the source names are gone. For those, assume the house setting for
 their era and expect to tune by ear against a neighbouring track.
 
-## The low-end correction
+## The low-end correction (applied 2026-08-26, REVERTED 2026-09-02)
+
+> **This correction is not in the shipped audio.** It was applied to all 28 tracks
+> and then reverted after several days of on-device listening: it fixed the boom
+> described below, but was judged to have degraded the audio in other ways. The
+> measurements are sound and the problem is real — the judgement was that this
+> particular cure cost more than the disease. Kept here because the diagnosis is
+> worth having if it is ever revisited; a gentler `TARGET_DB` (+6 or +7 rather than
+> +4) is the first thing to try. `scripts/deboom-audio.py` carries the same warning.
 
 This voice's fundamental sits at ~72–80 Hz — very low, and very strong relative to the
 rest of the voice. Measured across the library, **~75% of each track's total signal
@@ -136,10 +141,15 @@ Two things that are easy to get wrong, both learned the hard way:
 
 ### Loudness
 
-The same pass also normalises every track to **−26.0 LUFS** integrated (`NORM_LUFS`),
-capped at −1 dBTP. Two reasons it belongs here rather than in a separate step: cutting
-the boom changes loudness anyway, so the level has to be set explicitly regardless; and
-doing it in one pass avoids a second gain stage.
+The same pass also normalised every track to **−26.0 LUFS** integrated (`NORM_LUFS`),
+capped at −1 dBTP. It belonged in the same pass rather than a separate step because
+cutting the boom changes loudness anyway, so the level had to be set explicitly
+regardless — and one pass avoids a second gain stage.
+
+**This went away with the revert.** The shipped library is back to its original
+3.8 LU spread. Loudness normalisation was never the thing under complaint, so it is
+worth noting it could be re-applied on its own: it needs a variant of the script that
+sets `TARGET_DB` aside and only does the measure-and-gain half.
 
 −26.0 is the library's own mean, chosen so the app's overall level is unchanged — this
 removes the jumps *between* tracks, it does not make the app louder. Before: 3.8 LU
@@ -160,19 +170,28 @@ which also fixed the screen's 10-minute claim — the old file undershot it by 1
 arrived already corrected (+4.1 dB at 60–120 Hz, −25.7 LUFS), so it is not something
 `deboom-audio.py` can reproduce from `…/Audio/MP3/Crown to Sole.mp3`.
 
-The script therefore holds it back — see `HAND_EDITED` in `scripts/deboom-audio.py`.
-Without that guard, the next run would rebuild the track from the stale 585 s master
-and silently revert both the shipped asset and the hand-edited file.
+The script holds it back — see `HAND_EDITED` in `scripts/deboom-audio.py`. Without
+that guard, a run would rebuild the track from the stale 585 s master and silently
+discard the hand-edited file.
 
-Two consequences while this stands: `scripts/check-audio-quality.sh` compares this
-track against content that no longer matches, so its pass is not meaningful for this
-one file; and `transcripts/crown-to-sole.txt` reflects the older, shorter audio.
+**When the de-boom was reverted on 2026-09-02, this track could not simply be reverted
+with the others** — the hand-edited replacement was made *on top of* the de-boomed
+version, so reverting it would have thrown away the 15 s of new content. Instead the EQ
+was reversed: a +5.90 dB peaking boost at 78 Hz Q1.0, solved to return the 60–120 Hz
+band to +9.3 dB (the pre-de-boom file's value), then set to −25.9 LUFS to match that
+file's loudness. It lands at +9.4 dB / −25.9 LUFS / 600.2 s. This is an *undo of the
+filter*, not a return to an untouched source — the only track in the library that has
+been through both a cut and a matching boost.
 
-**Going forward, audio edits belong in `…/Audio/MP3/`** — the master folder. A master
-that has already been corrected is safe to re-run, because the solve targets an
-absolute +4 dB rather than applying a relative cut, so an already-corrected input
-solves to a ~0 dB cut instead of double-processing. Once this track's master is
-replaced with the 10-minute version, delete its `HAND_EDITED` entry.
+One consequence while this stands: `scripts/check-audio-quality.sh` would compare this
+track against content that no longer matches, so it is skipped there via `STALE_MASTER`
+rather than reporting a meaningless pass. `transcripts/crown-to-sole.txt` **was**
+refreshed against the 600 s audio and is current.
+
+**Going forward, audio edits belong in `…/Audio/MP3/`** — the master folder. Once this
+track's master is replaced with the 10-minute version, delete its `HAND_EDITED` entry
+here and its `STALE_MASTER` entry in `scripts/check-audio-quality.sh`, and the track
+rejoins the normal pipeline with no special cases.
 
 ### What is deliberately NOT corrected
 
