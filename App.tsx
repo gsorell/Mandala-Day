@@ -441,7 +441,26 @@ const AppNavigator: React.FC = () => {
   const showOnboarding = !appSettings?.hasCompletedOnboarding;
 
   return (
-    <NavigationContainer ref={navigationRef} onStateChange={handleRouteChange}>
+    // The key on the container is load-bearing. Completing first-run setup
+    // flips hasCompletedOnboarding and swaps the screen list below, and the
+    // stack router *keeps* every existing route whose name is still registered
+    // in the new list — it only falls through to the new list's first screen
+    // when nothing survives. 1c70f70 closed that for the onboarding route by
+    // renaming the post-setup copy to "Orientation", but TheView is still
+    // registered under the same name in both branches: reach it from the
+    // invitation card's "Explore the philosophy" link and it survives the swap,
+    // so Main never mounts and both exits on that card ("Begin Direct Inquiry",
+    // "Explore on my own") are dead taps.
+    //
+    // Keying the *container* — not the navigator, which still rehydrates from
+    // the container's root state — throws that state away on the swap, so no
+    // route can carry over and Main always mounts. This also stops a screen
+    // shared by both branches from being a trap for the next one added.
+    <NavigationContainer
+      key={showOnboarding ? 'onboarding' : 'main'}
+      ref={navigationRef}
+      onStateChange={handleRouteChange}
+    >
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
