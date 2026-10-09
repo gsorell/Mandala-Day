@@ -21,7 +21,7 @@ import { addExtraPracticeMinutes, appendExtraInstance } from '../services/storag
 import { SessionStatus } from '../types';
 import { usePracticeNotificationGuard } from '../hooks/usePracticeNotificationGuard';
 
-const CHILDRENS_SLEEP_DURATION_MIN = 9; // ~8:45 rounded up
+const CHILDRENS_SLEEP_DURATION_MIN = 7; // 6:36 rounded up
 const CHILDRENS_SLEEP_DURATION_SEC = CHILDRENS_SLEEP_DURATION_MIN * 60;
 
 // Audio asset - using require for bundling
@@ -259,7 +259,7 @@ export const ChildrensSleepScreen: React.FC = () => {
 
       <View style={styles.content}>
         <View style={styles.durationDisplay}>
-          <Text style={styles.durationNumber}>9</Text>
+          <Text style={styles.durationNumber}>7</Text>
           <Text style={styles.durationLabel}>minutes</Text>
         </View>
 

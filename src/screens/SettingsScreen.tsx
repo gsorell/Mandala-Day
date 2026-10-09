@@ -75,7 +75,7 @@ const GUIDED: PracticeRow[] = [
 ];
 
 const KIDS: PracticeRow[] = [
-  { route: 'ChildrensSleep', title: 'Jungle Safari', subtitle: '9 min guided' },
+  { route: 'ChildrensSleep', title: 'Jungle Safari', subtitle: '7 min guided' },
   { route: 'BodySeaVoyage', title: 'Sea Voyage', subtitle: '7 min guided' },
   { route: 'StarryNight', title: 'Starry Night', subtitle: '8 min guided' },
   { route: 'MarshCreek', title: 'Marsh Creek', subtitle: '7 min guided' },
