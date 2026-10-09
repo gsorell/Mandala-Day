@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mandala Day",
     "slug": "mandala-day",
-    "version": "1.0.35",
+    "version": "1.0.36",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mandaladay.app",
-      "buildNumber": "28",
+      "buildNumber": "29",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio",
@@ -36,7 +36,7 @@
         "backgroundColor": "#0b0817"
       },
       "package": "com.mandaladay.app",
-      "versionCode": 42,
+      "versionCode": 43,
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
