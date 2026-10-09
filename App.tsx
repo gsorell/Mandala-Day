@@ -460,6 +460,18 @@ const AppNavigator: React.FC = () => {
       key={showOnboarding ? 'onboarding' : 'main'}
       ref={navigationRef}
       onStateChange={handleRouteChange}
+      // Dev-only: the teaching screen is otherwise reachable only from a native
+      // notification tap, so `?teaching` opens it in the browser for testing.
+      onReady={() => {
+        if (
+          __DEV__ &&
+          Platform.OS === 'web' &&
+          !showOnboarding &&
+          new URLSearchParams(window.location.search).has('teaching')
+        ) {
+          navigationRef.current?.navigate('DailyTeaching');
+        }
+      }}
     >
       <Stack.Navigator
         screenOptions={{
